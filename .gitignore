@@ -16,5 +16,8 @@ __pycache__/
 !dashboard_preview.html
 !dashboard_template.html
 
+# Local config
+.feature_blacklist
+
 # OS
 .DS_Store

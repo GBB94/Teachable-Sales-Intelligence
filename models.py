@@ -56,6 +56,29 @@ DEFAULT_FEATURE_KEYWORDS: List[str] = [
     "reporting dashboard",
 ]
 
+# ---------------------------------------------------------------------------
+# Blacklisted feature keywords — matches on these terms are skipped.
+# Managed via --blacklist-add / --blacklist-remove CLI flags, which write to
+# .feature_blacklist (one term per line). This in-code list is merged with
+# the file at runtime.
+# ---------------------------------------------------------------------------
+BLACKLISTED_FEATURES: List[str] = []
+
+
+def load_blacklist(filepath: str = ".feature_blacklist") -> List[str]:
+    """Load blacklisted terms from file, merged with in-code BLACKLISTED_FEATURES."""
+    terms = list(BLACKLISTED_FEATURES)
+    try:
+        with open(filepath, "r") as f:
+            for line in f:
+                term = line.strip()
+                if term and term not in terms:
+                    terms.append(term)
+    except FileNotFoundError:
+        pass
+    return terms
+
+
 def _build_keyword_pattern(keyword: str) -> re.Pattern:
     """
     Build a compiled regex for a keyword with word-boundary anchors.

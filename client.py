@@ -26,7 +26,7 @@ from collections import Counter
 
 from models import (
     Call, CallFilter, FeatureRequest, FeatureRequestReport,
-    DEFAULT_FEATURE_KEYWORDS, build_keyword_patterns,
+    DEFAULT_FEATURE_KEYWORDS, build_keyword_patterns, load_blacklist,
 )
 
 
@@ -377,6 +377,7 @@ class FirefliesRetriever:
         keywords: Optional[List[str]] = None,
         exclude_domains: Optional[List[str]] = None,
         exclude_speakers: Optional[List[str]] = None,
+        blacklist: Optional[List[str]] = None,
         context_chars: int = 200,
         verbose: bool = True,
     ) -> FeatureRequestReport:
@@ -386,6 +387,11 @@ class FirefliesRetriever:
             exclude_domains = self.DEFAULT_EXCLUDE_DOMAINS
         if exclude_speakers is None:
             exclude_speakers = self.DEFAULT_EXCLUDE_SPEAKERS
+        if blacklist is None:
+            blacklist = load_blacklist()
+
+        # Normalize blacklist for case-insensitive comparison
+        blacklist_lower = {term.lower() for term in blacklist}
 
         # Pre-compile keyword patterns (word-boundary for acronyms)
         kw_patterns = build_keyword_patterns(keywords)
@@ -395,6 +401,8 @@ class FirefliesRetriever:
             if exclude_domains or exclude_speakers:
                 excluded = exclude_domains + exclude_speakers
                 print(f"   Excluding internal speakers: {', '.join(excluded)}")
+            if blacklist_lower:
+                print(f"   Blacklisted keywords: {', '.join(sorted(blacklist_lower))}")
             print()
 
         all_requests: List[FeatureRequest] = []
@@ -426,6 +434,8 @@ class FirefliesRetriever:
                     continue
 
                 for kw, pat in kw_patterns:
+                    if kw.lower() in blacklist_lower:
+                        continue
                     if pat.search(text):
                         keyword_counter[kw] += 1
                         calls_with_matches.add(call.id)

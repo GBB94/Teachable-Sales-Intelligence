@@ -9,7 +9,7 @@ import os
 from dotenv import load_dotenv
 
 from client import FirefliesRetriever
-from models import CallFilter
+from models import CallFilter, load_blacklist, BLACKLISTED_FEATURES
 from exports import (
     export_to_json,
     export_to_csv,
@@ -105,7 +105,57 @@ Examples:
     parser.add_argument('--backfill', action='store_true',
                         help='Backfill mode: scan 90 days with limit 200 (more API calls than normal)')
 
+    # Blacklist management
+    parser.add_argument('--blacklist-add', metavar='TERM',
+                        help='Add a term to the feature keyword blacklist')
+    parser.add_argument('--blacklist-remove', metavar='TERM',
+                        help='Remove a term from the feature keyword blacklist')
+    parser.add_argument('--blacklist-show', action='store_true',
+                        help='Show the current feature keyword blacklist and exit')
+
     args = parser.parse_args()
+
+    BLACKLIST_FILE = ".feature_blacklist"
+
+    # ------------------------------------------------------------------
+    # Blacklist management (no API key needed)
+    # ------------------------------------------------------------------
+    if args.blacklist_show:
+        terms = load_blacklist(BLACKLIST_FILE)
+        if terms:
+            print("Feature keyword blacklist:")
+            for term in sorted(terms):
+                print(f"  - {term}")
+        else:
+            print("Feature keyword blacklist is empty.")
+        return 0
+
+    if args.blacklist_add:
+        term = args.blacklist_add.strip()
+        existing = load_blacklist(BLACKLIST_FILE)
+        if term.lower() in [t.lower() for t in existing]:
+            print(f"'{term}' is already in the blacklist.")
+        else:
+            with open(BLACKLIST_FILE, "a") as f:
+                f.write(term + "\n")
+            print(f"Added '{term}' to blacklist.")
+        return 0
+
+    if args.blacklist_remove:
+        term = args.blacklist_remove.strip()
+        try:
+            with open(BLACKLIST_FILE, "r") as f:
+                lines = f.readlines()
+            remaining = [l for l in lines if l.strip().lower() != term.lower()]
+            if len(remaining) == len(lines):
+                print(f"'{term}' not found in blacklist file.")
+            else:
+                with open(BLACKLIST_FILE, "w") as f:
+                    f.writelines(remaining)
+                print(f"Removed '{term}' from blacklist.")
+        except FileNotFoundError:
+            print(f"No blacklist file found. Nothing to remove.")
+        return 0
 
     # Load .env file (if present)
     load_dotenv()
