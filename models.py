@@ -225,7 +225,11 @@ class Call:
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
-    def to_hubspot_note(self, include_action_items: bool = True) -> str:
+    def to_hubspot_note(
+        self,
+        include_action_items: bool = True,
+        feature_requests: Optional[List["FeatureRequest"]] = None,
+    ) -> str:
         lines: List[str] = []
 
         lines.append(f"CALL: {self.title}")
@@ -278,8 +282,21 @@ class Call:
                 lines.append("KEY TOPICS")
                 lines.append(", ".join(keywords))
 
+        # Feature requests section (from AI analysis or keyword scanner)
+        if feature_requests:
+            lines.append("---")
+            lines.append("FEATURE REQUESTS")
+            for req in feature_requests:
+                ts_part = f" ({req.timestamp_display})" if req.timestamp_display else ""
+                quote = req.surrounding_text[:120].replace("\n", " ")
+                lines.append(f"- {req.keyword_matched}{ts_part} - \"{quote}\"")
+
         if self.transcript_url:
             lines.append("---")
+            # NOTE: Fireflies has no public share URL. The /view/ link requires
+            # a Fireflies account. Checked the GraphQL schema — no share_url or
+            # share_link field exists. /share/<id> returns 404. Revisit if
+            # Fireflies adds a share endpoint to their API.
             lines.append(f"TRANSCRIPT: {self.transcript_url}")
 
         return "\n".join(lines)

@@ -8,7 +8,7 @@ import os
 from typing import List
 from string import Template
 
-from models import Call, FeatureRequestReport
+from models import Call, FeatureRequest, FeatureRequestReport
 
 
 DASHBOARD_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "dashboard_template.html")
@@ -39,12 +39,21 @@ def export_to_csv(calls: List[Call], filename: str):
     print(f"Exported {len(calls)} calls to {filename}")
 
 
-def export_hubspot_notes(calls: List[Call], filename: str):
+def export_hubspot_notes(
+    calls: List[Call],
+    filename: str,
+    feature_requests_by_call: dict = None,
+):
+    """Export HubSpot notes. feature_requests_by_call maps call_id → [FeatureRequest]."""
+    if feature_requests_by_call is None:
+        feature_requests_by_call = {}
     with open(filename, "w") as f:
         for i, call in enumerate(calls):
             if i > 0:
                 f.write("\n\n" + "=" * 70 + "\n\n")
-            f.write(call.to_hubspot_note())
+            f.write(call.to_hubspot_note(
+                feature_requests=feature_requests_by_call.get(call.id),
+            ))
     print(f"Exported {len(calls)} HubSpot notes to {filename}")
 
 
@@ -81,6 +90,11 @@ def export_feature_dashboard(
     filename: str,
 ):
     """Generate an interactive HTML dashboard from a template file."""
+    # Build lookup: call_id → [FeatureRequest]
+    features_by_call: dict = {}
+    for req in report.requests:
+        features_by_call.setdefault(req.call_id, []).append(req)
+
     mentions_data = []
     for req in report.requests:
         mentions_data.append({
@@ -106,7 +120,9 @@ def export_feature_dashboard(
             "organizer": call.organizer_email or "",
             "attendees": ", ".join(call.attendee_names) or "",
             "transcript": call.transcript_url or "",
-            "hubspot_note": call.to_hubspot_note(),
+            "hubspot_note": call.to_hubspot_note(
+                feature_requests=features_by_call.get(call.id),
+            ),
             "transcript_text": call.full_transcript_text or "",
         })
 

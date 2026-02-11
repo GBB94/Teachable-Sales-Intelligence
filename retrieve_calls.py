@@ -275,17 +275,12 @@ Examples:
         export_to_csv(calls, _output_path(od, f"{args.export}.csv"))
 
     # ------------------------------------------------------------------
-    # HubSpot notes
+    # Feature requests (runs before HubSpot notes so features can be included)
     # ------------------------------------------------------------------
-    if args.hubspot_notes and calls:
-        path = _output_path(od, args.hubspot_notes)
-        export_hubspot_notes(calls, path)
-        print(f"\n   Open {path} and copy/paste notes into HubSpot.\n")
+    report = None
+    features_by_call = {}
 
-    # ------------------------------------------------------------------
-    # Feature requests
-    # ------------------------------------------------------------------
-    if args.feature_requests or args.feature_export or args.dashboard:
+    if args.feature_requests or args.feature_export or args.dashboard or args.hubspot_notes:
         scan_kwargs = {}
         if args.exclude_domains is not None:
             scan_kwargs['exclude_domains'] = args.exclude_domains
@@ -293,6 +288,10 @@ Examples:
             scan_kwargs['exclude_speakers'] = args.exclude_speakers
 
         report = retriever.scan_feature_requests(calls, **scan_kwargs)
+
+        # Build per-call lookup for HubSpot notes
+        for req in report.requests:
+            features_by_call.setdefault(req.call_id, []).append(req)
 
         if args.feature_export:
             export_feature_report(report, _output_path(od, f"{args.feature_export}.json"))
@@ -302,6 +301,14 @@ Examples:
             path = _output_path(od, args.dashboard)
             export_feature_dashboard(report, calls, path)
             print(f"\n   Open {path} in your browser to review.\n")
+
+    # ------------------------------------------------------------------
+    # HubSpot notes (after feature scanning so requests can be included)
+    # ------------------------------------------------------------------
+    if args.hubspot_notes and calls:
+        path = _output_path(od, args.hubspot_notes)
+        export_hubspot_notes(calls, path, feature_requests_by_call=features_by_call)
+        print(f"\n   Open {path} and copy/paste notes into HubSpot.\n")
 
     # ------------------------------------------------------------------
     # API usage summary
