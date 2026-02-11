@@ -106,6 +106,8 @@ def export_feature_dashboard(
             "organizer": call.organizer_email or "",
             "attendees": ", ".join(call.attendee_names) or "",
             "transcript": call.transcript_url or "",
+            "hubspot_note": call.to_hubspot_note(),
+            "transcript_text": call.full_transcript_text or "",
         })
 
     stats = {

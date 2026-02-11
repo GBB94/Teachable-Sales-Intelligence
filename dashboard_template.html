@@ -145,6 +145,49 @@ body {
     margin-bottom: 0.15rem;
 }
 
+/* Collapsible sections (HubSpot note, transcript) */
+.section-toggle {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.73rem; font-weight: 500; color: #555a6e;
+    cursor: pointer; user-select: none; padding: 0.35rem 0;
+    transition: color 0.12s;
+}
+.section-toggle:hover { color: #8b8fa3; }
+.section-toggle .arrow {
+    font-size: 0.5rem; display: inline-block; transition: transform 0.15s;
+}
+.section-toggle.open .arrow { transform: rotate(90deg); }
+
+.section-body {
+    display: none; margin-top: 0.35rem; margin-bottom: 0.5rem;
+}
+.section-toggle.open + .section-body { display: block; }
+
+.section-pre {
+    background: #0c0e14; border: 1px solid #1e2130; border-radius: 6px;
+    padding: 0.7rem 0.85rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; line-height: 1.55; color: #9a9db0;
+    white-space: pre-wrap; word-break: break-word;
+}
+
+.section-scroll {
+    max-height: 400px; overflow-y: auto;
+}
+
+.copy-btn {
+    float: right; font-size: 0.68rem; font-weight: 500;
+    padding: 0.2rem 0.55rem; border-radius: 4px;
+    background: #1e2130; border: 1px solid #2a2d40; color: #8b8fa3;
+    cursor: pointer; transition: all 0.12s; margin-left: 0.5rem;
+}
+.copy-btn:hover { background: #2a2d40; color: #f0f1f4; }
+.copy-btn.copied { background: #1a3a2a; border-color: #2d5a3d; color: #4ade80; }
+
+.sections-wrap {
+    margin-top: 0.6rem; padding-top: 0.5rem;
+    border-top: 1px solid #1a1c28;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .stats { flex-wrap: wrap; }
@@ -247,6 +290,38 @@ function buildCalls() {
 
         const transcriptLink = c.transcript ? ' <a class="call-link" href="' + esc(c.transcript) + '" target="_blank">Open full transcript</a>' : '';
 
+        // Build collapsible sections
+        let sectionsHTML = '<div class="sections-wrap">';
+
+        // HubSpot Note section
+        if (c.hubspot_note) {
+            sectionsHTML +=
+                '<div>' +
+                    '<span class="section-toggle" onclick="toggleSection(this)">' +
+                        '<span class="arrow">&#9654;</span> Show HubSpot Note' +
+                    '</span>' +
+                    '<div class="section-body">' +
+                        '<button class="copy-btn" onclick="event.stopPropagation(); copyNote(this, \'' + esc(c.id) + '\')">Copy to Clipboard</button>' +
+                        '<div class="section-pre">' + esc(c.hubspot_note) + '</div>' +
+                    '</div>' +
+                '</div>';
+        }
+
+        // Full Transcript section
+        if (c.transcript_text) {
+            sectionsHTML +=
+                '<div>' +
+                    '<span class="section-toggle" onclick="toggleSection(this)">' +
+                        '<span class="arrow">&#9654;</span> Show Transcript' +
+                    '</span>' +
+                    '<div class="section-body">' +
+                        '<div class="section-scroll"><div class="section-pre">' + esc(c.transcript_text) + '</div></div>' +
+                    '</div>' +
+                '</div>';
+        }
+
+        sectionsHTML += '</div>';
+
         html += '<div class="card" data-search="' + esc((c.title + ' ' + features.join(' ') + ' ' + mentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '">' +
             '<div class="card-hdr" onclick="toggleCard(this)">' +
                 '<div class="left"><span class="arrow">&#9654;</span><span class="name">' + esc(c.title) + '</span></div>' +
@@ -258,6 +333,7 @@ function buildCalls() {
                     '<div>' + tags + '</div>' +
                 '</div>' +
                 mHTML +
+                sectionsHTML +
             '</div></div>';
     });
 
@@ -266,6 +342,20 @@ function buildCalls() {
 
 function toggleCard(el) {
     el.parentElement.classList.toggle('open');
+}
+
+function toggleSection(el) {
+    el.classList.toggle('open');
+}
+
+function copyNote(btn, callId) {
+    const call = DATA.calls.find(c => c.id === callId);
+    if (!call || !call.hubspot_note) return;
+    navigator.clipboard.writeText(call.hubspot_note).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy to Clipboard'; btn.classList.remove('copied'); }, 2000);
+    });
 }
 
 function switchTab(tab) {
