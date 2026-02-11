@@ -229,7 +229,13 @@ class Call:
         self,
         include_action_items: bool = True,
         feature_requests: Optional[List["FeatureRequest"]] = None,
+        override_note: Optional[str] = None,
     ) -> str:
+        # If a fully-formed note was provided (e.g. from Claude Code analysis),
+        # use it directly instead of auto-generating.
+        if override_note:
+            return override_note
+
         lines: List[str] = []
 
         lines.append(f"CALL: {self.title}")

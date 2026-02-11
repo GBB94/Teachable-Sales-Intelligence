@@ -18,6 +18,7 @@ __pycache__/
 
 # Local config
 .feature_blacklist
+.feature_names
 
 # OS
 .DS_Store

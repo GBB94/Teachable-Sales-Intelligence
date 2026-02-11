@@ -11,152 +11,327 @@
 
 body {
     font-family: 'DM Sans', -apple-system, sans-serif;
+    font-size: clamp(16px, 1.1vw, 18px);
     background: #0c0e14;
     color: #d0d3db;
     min-height: 100vh;
 }
 
-/* Layout */
-.wrap { max-width: 940px; margin: 0 auto; padding: 2rem 1.5rem; }
+/* Layout — full width, fluid padding */
+.wrap { padding: 2rem clamp(1rem, 4vw, 4rem); }
 
 /* Header */
-.hdr { margin-bottom: 1.5rem; }
-.hdr h1 { font-size: 1.35rem; font-weight: 700; color: #f0f1f4; }
-.hdr .sub { font-size: 0.78rem; color: #555a6e; margin-top: 0.2rem; }
-
-/* Stats */
-.stats { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
-.st {
-    flex: 1; background: #14161e; border: 1px solid #1e2130;
-    border-radius: 8px; padding: 1rem;
+.hdr {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 1.75rem; flex-wrap: wrap; gap: 0.75rem;
 }
-.st .v {
-    font-size: 1.75rem; font-weight: 700; color: #fff;
-    font-family: 'JetBrains Mono', monospace;
+.hdr-left { display: flex; flex-direction: column; gap: 0.25rem; }
+.hdr h1 { font-size: 2rem; font-weight: 800; color: #ffffff; white-space: nowrap; letter-spacing: -0.02em; }
+.hdr-tagline { font-size: 0.85rem; color: #6b7084; }
+.hdr-stats {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
 }
-.st .l {
-    font-size: 0.68rem; color: #555a6e; text-transform: uppercase;
-    letter-spacing: 0.04em; margin-top: 0.15rem;
+.hdr-pill {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: #14161e; border: 1px solid #1e2130; border-radius: 20px;
+    padding: 0.25rem 0.7rem; font-size: 0.82rem;
 }
+.hdr-pill .n {
+    font-family: 'JetBrains Mono', monospace; font-weight: 600;
+    color: #f0f1f4;
+}
+.hdr-pill .l { color: #555a6e; }
 
 /* Tabs */
 .tabs {
-    display: flex; gap: 0; margin-bottom: 1.25rem;
+    display: flex; gap: 0.25rem; margin-bottom: 1rem;
     border-bottom: 1px solid #1e2130;
 }
 .tab {
-    padding: 0.6rem 1.2rem; font-size: 0.82rem; font-weight: 500;
-    color: #555a6e; cursor: pointer; border-bottom: 2px solid transparent;
+    padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;
+    color: #8b8fa3; cursor: pointer; border-bottom: 2px solid transparent;
+    border-radius: 8px 8px 0 0;
     transition: all 0.15s; user-select: none;
 }
-.tab:hover { color: #8b8fa3; }
-.tab.active { color: #f0f1f4; border-bottom-color: #4a7cff; }
+.tab:hover { color: #c8cad2; background: rgba(255,255,255,0.02); }
+.tab.active { color: #f0f1f4; background: #1a1d2e; border-bottom-color: #4a7cff; }
 
-/* Search */
-.search {
-    margin-bottom: 1rem;
+/* Filter row */
+.filter-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-bottom: 1.25rem;
 }
-.search input {
-    width: 100%; padding: 0.6rem 0.85rem;
-    background: #14161e; border: 1px solid #1e2130; border-radius: 6px;
-    color: #d0d3db; font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+.filter-row .search-box { width: 280px; min-width: 160px; flex-shrink: 1; }
+.filter-row input {
+    width: 100%; padding: 0.4rem 0.65rem;
+    background: #14161e; border: 1px solid #2a2d40; border-radius: 6px;
+    color: #d0d3db; font-family: 'DM Sans', sans-serif; font-size: max(0.82rem, 13px);
     outline: none; transition: border-color 0.15s;
 }
-.search input:focus { border-color: #4a7cff; }
-.search input::placeholder { color: #3a3d4e; }
+.filter-row input:focus { border-color: #4a7cff; }
+.filter-row input::placeholder { color: #555a6e; }
+
+/* Dropdown triggers + panels */
+.dd-wrap { position: relative; }
+.dd-btn {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.82rem; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: 0.4rem 0.7rem; border-radius: 6px;
+    background: #14161e; border: 1px solid #2a2d40; color: #9a9db0;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap; user-select: none;
+}
+.dd-btn:hover { border-color: #3a3f5c; color: #c8cad2; }
+.dd-btn.open, .dd-btn.has-filter { border-color: #4a7cff; color: #c8cad2; }
+.dd-btn .dd-arrow { font-size: 0.65rem; color: #555a6e; transition: transform 0.15s; }
+.dd-btn.open .dd-arrow { transform: rotate(180deg); }
+.dd-panel {
+    display: none; position: absolute; top: calc(100% + 4px); left: 0;
+    min-width: 180px; max-height: 320px; overflow-y: auto;
+    background: #14161e; border: 1px solid #2a2d40; border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45); z-index: 100;
+    padding: 0.3rem 0;
+}
+.dd-panel.open { display: block; }
+.dd-item {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 0.75rem; font-size: 0.82rem; color: #9a9db0;
+    cursor: pointer; transition: background 0.1s; user-select: none;
+}
+.dd-item:hover { background: #1a1d2e; color: #d0d3db; }
+.dd-item.selected { color: #f0f1f4; }
+.dd-item .dd-check {
+    width: 14px; height: 14px; border-radius: 3px;
+    border: 1px solid #3a3d50; background: transparent;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 0.65rem; color: transparent; transition: all 0.12s;
+}
+.dd-item.selected .dd-check {
+    background: #4a7cff; border-color: #4a7cff; color: #fff;
+}
+.dd-sep { height: 1px; background: #1e2130; margin: 0.25rem 0; }
+.expand-btn {
+    font-size: 0.82rem; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: 0.4rem 0.7rem; border-radius: 6px; margin-left: auto;
+    background: #14161e; border: 1px solid #2a2d40; color: #9a9db0;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.expand-btn:hover { border-color: #3a3f5c; color: #c8cad2; }
+
+/* ---- Features view ---- */
+#features-view {
+    display: flex; flex-direction: column; gap: 0;
+}
+
+/* Category accent colors */
+.cat-section { --cat-color: #4a7cff; }
+.cat-section[data-idx="0"] { --cat-color: #4a7cff; }
+.cat-section[data-idx="1"] { --cat-color: #4ade80; }
+.cat-section[data-idx="2"] { --cat-color: #a78bfa; }
+.cat-section[data-idx="3"] { --cat-color: #fb923c; }
+.cat-section[data-idx="4"] { --cat-color: #2dd4bf; }
+.cat-section[data-idx="5"] { --cat-color: #f472b6; }
+.cat-section[data-idx="6"] { --cat-color: #60a5fa; }
+.cat-section[data-idx="7"] { --cat-color: #86efac; }
+
+/* Category section — big gap between sections, tight cards within */
+.cat-section { padding-bottom: 1rem; }
+.cat-section + .cat-section {
+    margin-top: 1.5rem;
+    border-top: 1px solid #1e2130;
+    padding-top: 1.5rem;
+}
+.cat-hdr {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    padding: 0.55rem 0.9rem 0.55rem 0.9rem;
+    background: #12141c;
+    border-left: 5px solid var(--cat-color);
+    border-radius: 4px;
+    cursor: pointer; user-select: none;
+}
+.cat-hdr .cat-arrow {
+    font-size: 0.55rem; color: #555a6e; transition: transform 0.15s;
+    display: inline-block;
+}
+.cat-section.collapsed .cat-arrow { transform: rotate(0deg); }
+.cat-section:not(.collapsed) .cat-arrow { transform: rotate(90deg); }
+.cat-name {
+    font-size: max(1rem, 13px); font-weight: 600; color: #d0d3db;
+}
+.cat-count {
+    font-size: max(0.8rem, 13px); color: #555a6e;
+    font-family: 'JetBrains Mono', monospace; margin-left: auto;
+}
+.cat-cards {
+    columns: 2 480px;
+    column-gap: 0.5rem;
+    padding: 0.6rem 0 0 1rem;
+}
+.cat-section.collapsed .cat-cards { display: none; }
+.cat-cards .card {
+    break-inside: avoid;
+    margin-bottom: 0.5rem;
+}
+
+/* ---- Calls list (single column, generous padding) ---- */
+#calls-view {
+    display: flex; flex-direction: column; gap: 0.5rem;
+}
+
+/* Week group headers */
+.week-hdr {
+    display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;
+    padding: 0.6rem 0 0.3rem 0; margin-top: 0.75rem;
+    border-bottom: 1px solid #1a1c28;
+}
+.week-hdr:first-child { margin-top: 0; }
+.week-label {
+    font-size: max(1rem, 13px); font-weight: 600; color: #d0d3db;
+}
+.week-meta {
+    font-size: max(0.85rem, 13px); color: #8b8fa3;
+    font-family: 'JetBrains Mono', monospace;
+}
 
 /* Cards (shared) */
 .card {
-    background: #14161e; border: 1px solid #1e2130; border-radius: 8px;
-    margin-bottom: 0.4rem; overflow: hidden; transition: border-color 0.15s;
+    background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
+    overflow: hidden; transition: border-color 0.15s;
 }
 .card:hover { border-color: #2a2d40; }
 
 .card-hdr {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.7rem 0.9rem; cursor: pointer; user-select: none;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 0.85rem 1.1rem; cursor: pointer; user-select: none; gap: 1rem;
 }
-.card-hdr .left { display: flex; align-items: center; gap: 0.5rem; }
+.card-hdr .left { display: flex; align-items: flex-start; gap: 0.5rem; flex: 1; min-width: 0; }
 .card-hdr .arrow {
     font-size: 0.55rem; color: #555a6e; transition: transform 0.15s;
-    display: inline-block;
+    display: inline-block; margin-top: 0.35rem; flex-shrink: 0;
 }
 .card.open .card-hdr .arrow { transform: rotate(90deg); }
-.card-hdr .name { font-weight: 500; font-size: 0.88rem; }
+.card-hdr .name-block { flex: 1; min-width: 0; }
+.card-hdr .name { font-weight: 700; font-size: max(1.15rem, 13px); color: #f0f1f4; line-height: 1.35; }
 .card-hdr .right {
-    display: flex; align-items: center; gap: 0.6rem; min-width: 120px;
+    display: flex; align-items: flex-start; gap: 0.6rem; flex-shrink: 0;
 }
-.bar {
-    height: 5px; border-radius: 3px; flex: 1;
-    background: linear-gradient(90deg, #4a7cff, #6c5ce7); min-width: 0;
+
+/* Count pill (replaces tiny bar chart) */
+.cnt-pill {
+    font-family: 'JetBrains Mono', monospace; font-size: max(0.85rem, 13px);
+    font-weight: 600; color: #b0b4c8;
+    background: #1a1d30; border: 1px solid #252a4a; border-radius: 12px;
+    padding: 0.2rem 0.65rem; white-space: nowrap;
 }
-.cnt {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
-    font-weight: 500; color: #6b7084; min-width: 1.5rem; text-align: right;
+
+/* Header tags (visible without expanding) */
+.hdr-tags {
+    display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.35rem;
+}
+
+/* Feature tag pills */
+.feat-tag {
+    display: inline-block; font-size: max(0.85rem, 13px); font-weight: 500;
+    padding: 0.2rem 0.6rem; border-radius: 10px;
+    background: #1a1d35; color: #7c8aff;
+    border: 1px solid #252a4a;
+}
+/* Requester tag (for By Feature view) */
+.req-tag {
+    display: inline-block; font-size: max(0.85rem, 13px); font-weight: 500;
+    padding: 0.2rem 0.6rem; border-radius: 10px;
+    background: #1a2a1e; color: #6bc77a;
+    border: 1px solid #254a30;
+}
+
+/* Call card right-side meta (date + duration) */
+.card-date {
+    font-family: 'JetBrains Mono', monospace; font-size: max(0.85rem, 13px);
+    color: #8b8fa3; text-align: right; white-space: nowrap;
+    line-height: 1.5;
 }
 
 /* Mention list */
-.mentions { display: none; padding: 0 0.9rem 0.75rem 2rem; }
+.mentions { display: none; padding: 0 1.5rem 1rem 2.2rem; }
 .card.open .mentions { display: block; }
 
+/* Call cards get extra horizontal breathing room */
+#calls-view .mentions { padding: 0 2rem 1.2rem 2.5rem; }
+
 .m-row {
-    padding: 0.55rem 0; border-top: 1px solid #1a1c28;
-    display: flex; align-items: flex-start; gap: 0.6rem;
+    padding: 0.65rem 0; border-top: 1px solid #1a1c28;
+    display: flex; align-items: flex-start; gap: 0.75rem;
 }
 .m-ts {
-    flex-shrink: 0; min-width: 3.8rem; padding-top: 0.05rem;
-}
-.m-ts a, .m-ts span {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
-    padding: 0.1rem 0.4rem; border-radius: 3px;
+    flex-shrink: 0; min-width: 4.2rem; padding-top: 0.05rem;
 }
 .m-ts a {
+    font-family: 'JetBrains Mono', monospace; font-size: max(0.85rem, 13px);
+    font-weight: 500;
+    padding: 0.2rem 0.5rem; border-radius: 4px;
     color: #4a7cff; text-decoration: none;
-    border: 1px solid #253060; transition: all 0.12s;
+    background: #141830; border: 1px solid #253060;
+    transition: all 0.12s; display: inline-block;
 }
 .m-ts a:hover { background: #4a7cff; color: #fff; border-color: #4a7cff; }
-.m-ts span { color: #3a3d4e; }
+.m-ts span {
+    font-family: 'JetBrains Mono', monospace; font-size: max(0.85rem, 13px);
+    color: #555a6e; padding: 0.2rem 0.5rem;
+}
 
 .m-body { flex: 1; min-width: 0; }
 .m-call {
-    font-size: 0.78rem; font-weight: 500; color: #9a9db0;
+    font-size: max(0.9rem, 13px); font-weight: 500; color: #9a9db0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .m-quote {
-    font-size: 0.76rem; color: #6b7084; line-height: 1.45; margin-top: 0.15rem;
+    font-size: max(0.85rem, 13px); color: #8b8fa3; line-height: 1.5; margin-top: 0.3rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid #2a2d50;
 }
-.m-spk { color: #8b8fa3; font-weight: 500; }
+.m-spk { color: #9a9db0; font-weight: 600; }
 
 /* Call card extras */
-.call-meta {
-    display: flex; gap: 0.75rem; font-size: 0.73rem; color: #555a6e;
-    font-family: 'JetBrains Mono', monospace; margin-bottom: 0.15rem;
+/* Action bar (top of expanded card content) */
+.action-bar {
+    display: flex; justify-content: flex-end; gap: 0.4rem;
+    padding-bottom: 0.6rem; margin-bottom: 0.2rem;
+    border-bottom: 1px solid #1a1c28;
 }
+.action-btn {
+    font-size: max(0.82rem, 13px); font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: 0.2rem 0.6rem; border-radius: 6px;
+    background: #14161e; border: 1px solid #1e2130; color: #6b7084;
+    cursor: pointer; text-decoration: none; white-space: nowrap;
+    transition: all 0.12s; line-height: 1.4;
+}
+.action-btn:hover { background: #1e2130; color: #d0d3db; border-color: #2a2d40; }
+.action-btn.copied { background: #1a3a2a; border-color: #2d5a3d; color: #4ade80; }
 .call-link {
-    font-size: 0.73rem; color: #4a7cff; text-decoration: none;
+    font-size: max(0.85rem, 13px); color: #4a7cff; text-decoration: none;
 }
 .call-link:hover { text-decoration: underline; }
 
-/* Feature tag inside call view */
-.feat-tag {
-    display: inline-block; font-size: 0.68rem; font-weight: 500;
-    padding: 0.1rem 0.45rem; border-radius: 3px;
-    background: #1e2040; color: #7c8aff; margin-right: 0.3rem;
-    margin-bottom: 0.15rem;
+/* Collapsible sections (HubSpot note, transcript) */
+.sections-wrap {
+    margin-top: 0.75rem; padding-top: 0.6rem;
+    border-top: 1px solid #1a1c28;
+    display: flex; gap: 0.5rem; flex-direction: column;
 }
 
-/* Collapsible sections (HubSpot note, transcript) */
 .section-toggle {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    font-size: 0.73rem; font-weight: 500; color: #555a6e;
-    cursor: pointer; user-select: none; padding: 0.35rem 0;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: max(0.85rem, 13px); font-weight: 500; color: #6b7084;
+    cursor: pointer; user-select: none; padding: 0.3rem 0;
     transition: color 0.12s;
 }
 .section-toggle:hover { color: #8b8fa3; }
 .section-toggle .arrow {
-    font-size: 0.5rem; display: inline-block; transition: transform 0.15s;
+    font-size: 0.55rem; display: inline-block; transition: transform 0.15s;
 }
 .section-toggle.open .arrow { transform: rotate(90deg); }
+.section-toggle .ico {
+    font-size: max(0.85rem, 13px); line-height: 1; opacity: 0.6;
+}
 
 .section-body {
     display: none; margin-top: 0.35rem; margin-bottom: 0.5rem;
@@ -164,9 +339,9 @@ body {
 .section-toggle.open + .section-body { display: block; }
 
 .section-pre {
-    background: #0c0e14; border: 1px solid #1e2130; border-radius: 6px;
-    padding: 0.7rem 0.85rem; font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem; line-height: 1.55; color: #9a9db0;
+    background: #0c0e14; border: 1px solid #1e2130; border-radius: 8px;
+    padding: 0.85rem 1rem; font-family: 'JetBrains Mono', monospace;
+    font-size: max(0.85rem, 13px); line-height: 1.6; color: #9a9db0;
     white-space: pre-wrap; word-break: break-word;
 }
 
@@ -175,7 +350,7 @@ body {
 }
 
 .copy-btn {
-    float: right; font-size: 0.68rem; font-weight: 500;
+    float: right; font-size: max(0.82rem, 13px); font-weight: 500;
     padding: 0.2rem 0.55rem; border-radius: 4px;
     background: #1e2130; border: 1px solid #2a2d40; color: #8b8fa3;
     cursor: pointer; transition: all 0.12s; margin-left: 0.5rem;
@@ -183,38 +358,275 @@ body {
 .copy-btn:hover { background: #2a2d40; color: #f0f1f4; }
 .copy-btn.copied { background: #1a3a2a; border-color: #2d5a3d; color: #4ade80; }
 
-.sections-wrap {
-    margin-top: 0.6rem; padding-top: 0.5rem;
-    border-top: 1px solid #1a1c28;
+/* ---- Weekly Report email preview ---- */
+#report-view {
+    max-width: 720px;
+}
+.report-toolbar {
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;
+}
+.report-generate {
+    font-size: 0.9rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    padding: 0.5rem 1.25rem; border-radius: 8px;
+    background: #4a7cff; border: none; color: #fff;
+    cursor: pointer; transition: all 0.15s;
+    box-shadow: 0 2px 8px rgba(74,124,255,0.25);
+}
+.report-generate:hover { background: #5b8aff; box-shadow: 0 2px 12px rgba(74,124,255,0.35); }
+.report-generate.done { background: #1a3a2a; color: #4ade80; box-shadow: none; }
+.report-sep { width: 1px; height: 1.4rem; background: #2a2d40; }
+.report-btn {
+    font-size: 0.85rem; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: 0.45rem 1rem; border-radius: 6px;
+    background: #14161e; border: 1px solid #2a2d40; color: #9a9db0;
+    cursor: pointer; transition: all 0.15s;
+}
+.report-btn:hover { background: #1e2130; color: #d0d3db; border-color: #3a3f5c; }
+.report-btn.copied { background: #1a3a2a; border-color: #2d5a3d; color: #4ade80; }
+
+.email-card {
+    background: #fcfcfc; border-radius: 10px; border: 1px solid #e0e0e0;
+    padding: clamp(1.5rem, 4vw, 2.5rem); color: #1a1a1a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px; line-height: 1.6;
+}
+.email-card h1 {
+    font-size: 20px; font-weight: 700; color: #111; margin: 0 0 0.15rem;
+    letter-spacing: 0.02em;
+}
+.email-card .email-date { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+/* Feature recap block */
+.email-card .recap-block {
+    background: #f0f4ff; border-left: 3px solid #4a7cff; border-radius: 4px;
+    padding: 1rem 1.2rem; margin: 0.2rem 0 0.4rem;
+    color: #2a2e3a; font-size: 15px; line-height: 1.7;
 }
 
-/* Responsive */
+.email-card h2 {
+    font-size: 13px; font-weight: 700; color: #888; text-transform: uppercase;
+    letter-spacing: 0.06em; margin: 1.8rem 0 0.6rem; padding-bottom: 0.3rem;
+    border-bottom: 1px solid #e8e8e8;
+}
+.email-card h2:first-of-type { margin-top: 0; }
+.email-card .summary-list { margin: 0; padding: 0 0 0 1.2rem; }
+.email-card .summary-list li { margin-bottom: 0.3rem; color: #333; }
+.email-card .summary-list li strong { color: #111; }
+
+.email-card .cat-group { margin-bottom: 1.2rem; }
+.email-card .cat-title {
+    font-size: 15px; font-weight: 600; color: #222; margin-bottom: 0.3rem;
+}
+.email-card .cat-title .cat-co { font-weight: 400; color: #888; font-size: 13px; }
+.email-card .feat-line {
+    padding: 0.15rem 0 0.15rem 1rem; color: #444; font-size: 14px;
+}
+.email-card .feat-line strong { color: #222; }
+.email-card .call-links {
+    padding-left: 1rem; margin-top: 0.15rem; margin-bottom: 0.2rem;
+}
+.email-card .call-links a {
+    font-size: 13px; color: #4a7cff; text-decoration: none;
+}
+.email-card .call-links a:hover { text-decoration: underline; }
+
+.email-card .co-line {
+    padding: 0.2rem 0 0.2rem 0.2rem; color: #444; font-size: 14px; line-height: 1.5;
+}
+.email-card .co-line strong { color: #222; }
+.email-card .co-line a { color: #4a7cff; text-decoration: none; font-size: 13px; }
+.email-card .co-line a:hover { text-decoration: underline; }
+
+/* Excluded call cards */
+.card.excluded {
+    opacity: 0.4;
+}
+.card.excluded .card-hdr .name { text-decoration: line-through; }
+.card.excluded .mentions { display: none !important; }
+.excl-btn {
+    font-size: 0.75rem; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: 0.2rem 0.6rem; border-radius: 6px;
+    background: transparent; border: 1px solid #2a2d40; color: #6b7084;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.excl-btn:hover { border-color: #ff4a4a; color: #ff4a4a; }
+.card.excluded .excl-btn { display: none; }
+.incl-btn {
+    font-size: 0.75rem; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: 0.2rem 0.6rem; border-radius: 6px;
+    background: transparent; border: 1px solid #2a2d40; color: #6b7084;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap; display: none;
+}
+.incl-btn:hover { border-color: #4ade80; color: #4ade80; }
+.card.excluded .incl-btn { display: inline-block; }
+
+/* Scan for more calls button */
+.scan-row {
+    display: flex; justify-content: center; padding: 1.5rem 0 0.5rem;
+}
+.scan-btn {
+    font-size: max(0.85rem, 13px); font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: 0.5rem 1.2rem; border-radius: 8px;
+    background: #14161e; border: 1px solid #1e2130; color: #6b7084;
+    cursor: pointer; transition: all 0.15s;
+}
+.scan-btn:hover { background: #1e2130; color: #d0d3db; border-color: #2a2d40; }
+.scan-btn.copied { background: #1a3a2a; border-color: #2d5a3d; color: #4ade80; }
+
+/* ---- Responsive breakpoints ---- */
+
+/* Large screens 1400px+ : feature cards can do 3 columns */
+@media (min-width: 1400px) {
+    .cat-cards { columns: 3; }
+}
+
+/* Narrow screens under 900px : single column everything */
+@media (max-width: 900px) {
+    .wrap { padding: 1.5rem clamp(0.75rem, 3vw, 2rem); }
+    .cat-cards { columns: 1; }
+    .mentions { padding: 0 1rem 0.85rem 1.5rem; }
+    #calls-view .mentions { padding: 0 1rem 1rem 1.5rem; }
+}
+
+/* Very narrow / mobile */
 @media (max-width: 600px) {
-    .stats { flex-wrap: wrap; }
-    .st { flex: 1 1 45%; }
+    .wrap { padding: 1rem 0.75rem; }
+    .hdr { flex-direction: column; gap: 0.5rem; }
+    .hdr-stats { justify-content: flex-start; }
+    .search { width: 100%; }
+    .card-hdr { flex-direction: column; gap: 0.5rem; padding: 0.75rem; }
+    .card-hdr .right { align-self: flex-end; }
+    .mentions { padding: 0 0.75rem 0.75rem 1.2rem; }
+    #calls-view .mentions { padding: 0 0.75rem 0.75rem 1.2rem; }
 }
 </style>
 </head>
 <body>
 <div class="wrap">
     <div class="hdr">
-        <h1>Feature Requests</h1>
-        <div class="sub" id="sub"></div>
+        <div class="hdr-left">
+            <h1>Sales Intelligence</h1>
+            <div class="hdr-tagline" id="hdr-tagline"></div>
+        </div>
+        <div class="hdr-stats" id="hdr-stats"></div>
     </div>
-    <div class="stats" id="stats"></div>
     <div class="tabs">
         <div class="tab active" data-tab="features" onclick="switchTab('features')">By Feature</div>
         <div class="tab" data-tab="calls" onclick="switchTab('calls')">By Call</div>
+        <div class="tab" data-tab="report" onclick="switchTab('report')">Weekly Report</div>
     </div>
-    <div class="search"><input id="q" placeholder="Search..." oninput="filter(this.value)"></div>
+    <div class="filter-row" id="filter-row">
+        <div class="search-box"><input id="q" placeholder="Search..." oninput="filter(this.value)"></div>
+        <div class="dd-wrap" id="date-dd">
+            <button class="dd-btn" onclick="toggleDD('date-dd')"><span id="date-label">All Time</span><span class="dd-arrow">&#9660;</span></button>
+            <div class="dd-panel" id="date-panel"></div>
+        </div>
+        <div class="dd-wrap" id="co-dd" style="display:none">
+            <button class="dd-btn" onclick="toggleDD('co-dd')"><span id="co-label">Companies</span><span class="dd-arrow">&#9660;</span></button>
+            <div class="dd-panel" id="co-panel"></div>
+        </div>
+        <button class="expand-btn" id="expand-btn" onclick="toggleExpandAll()" style="display:none">Collapse All</button>
+    </div>
     <div id="features-view"></div>
     <div id="calls-view" style="display:none"></div>
+    <div id="report-view" style="display:none"></div>
 </div>
 
 <script>
 const DATA = {{DATA_JSON}};
 
 let currentTab = 'features';
+let excludedCalls = new Set();
+let activeDateRange = 'all';
+
+// Parse hash: #calls&exclude=id1,id2 or #features&exclude=id1,id2
+function parseHash() {
+    const raw = location.hash.replace('#', '');
+    const parts = raw.split('&');
+    let tab = '';
+    parts.forEach(p => {
+        if (p.startsWith('exclude=')) {
+            p.slice(8).split(',').filter(Boolean).forEach(id => excludedCalls.add(id));
+        } else if (p.startsWith('range=')) {
+            activeDateRange = p.slice(6);
+        } else if (['features', 'calls', 'report'].includes(p)) {
+            tab = p;
+        }
+    });
+    return tab;
+}
+
+function updateHash() {
+    let h = currentTab;
+    if (activeDateRange !== 'all') h += '&range=' + activeDateRange;
+    if (excludedCalls.size) h += '&exclude=' + [...excludedCalls].join(',');
+    location.hash = h;
+}
+
+// Date range filter — returns {start, end} Date objects or null for "all"
+function getDateRange() {
+    if (activeDateRange === 'all') return null;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const day = today.getDay(); // 0=Sun
+    const diffToMon = day === 0 ? 6 : day - 1;
+    const thisMonday = new Date(today);
+    thisMonday.setDate(today.getDate() - diffToMon);
+    if (activeDateRange === 'this-week') return { start: thisMonday, end: new Date(now.getTime() + 86400000) };
+    if (activeDateRange === 'last-week') {
+        const lastMon = new Date(thisMonday);
+        lastMon.setDate(thisMonday.getDate() - 7);
+        return { start: lastMon, end: thisMonday };
+    }
+    if (activeDateRange === 'last-2-weeks') {
+        const twoWeeksAgo = new Date(thisMonday);
+        twoWeeksAgo.setDate(thisMonday.getDate() - 7);
+        return { start: twoWeeksAgo, end: new Date(now.getTime() + 86400000) };
+    }
+    if (activeDateRange === 'last-30-days') {
+        const thirtyAgo = new Date(today);
+        thirtyAgo.setDate(today.getDate() - 30);
+        return { start: thirtyAgo, end: new Date(now.getTime() + 86400000) };
+    }
+    return null;
+}
+
+function isCallInRange(callDate) {
+    const range = getDateRange();
+    if (!range) return true;
+    const d = new Date(callDate + 'T00:00:00');
+    return d >= range.start && d < range.end;
+}
+
+// Set of call IDs that pass the date filter
+function activeCallIds() {
+    const ids = new Set();
+    DATA.calls.forEach(c => {
+        if (isCallInRange(c.date || '2000-01-01')) ids.add(c.id);
+    });
+    return ids;
+}
+
+// Get active (non-excluded, date-filtered) mentions
+function activeMentions() {
+    const dateIds = activeCallIds();
+    return DATA.mentions.filter(m => !excludedCalls.has(m.call_id) && dateIds.has(m.call_id));
+}
+
+function toggleExclude(callId) {
+    if (excludedCalls.has(callId)) {
+        excludedCalls.delete(callId);
+    } else {
+        excludedCalls.add(callId);
+    }
+    updateHash();
+    // Update the card's visual state
+    const card = document.querySelector('#calls-view .card[data-callid="' + callId + '"]');
+    if (card) card.classList.toggle('excluded', excludedCalls.has(callId));
+    // Rebuild other views and stats
+    buildFeatures();
+    buildReport();
+    updateStats();
+}
 
 function esc(s) {
     const d = document.createElement('div');
@@ -222,8 +634,15 @@ function esc(s) {
     return d.innerHTML;
 }
 
+function extractCompany(attendeeStr) {
+    if (!attendeeStr) return '';
+    const parts = attendeeStr.split(',').map(s => s.trim()).filter(Boolean);
+    const external = parts.filter(p => !p.toLowerCase().includes('teachable'));
+    return external.join(', ');
+}
+
 function tsLink(m) {
-    if (m.link) return '<a href="' + esc(m.link) + '" target="_blank" title="Jump to recording">' + esc(m.ts || '0:00') + '</a>';
+    if (m.link) return '<a href="' + esc(m.link) + '" target="_blank" title="Jump to this moment in the recording">' + esc(m.ts || '0:00') + '</a>';
     if (m.transcript) return '<a href="' + esc(m.transcript) + '" target="_blank">' + (m.ts || 'open') + '</a>';
     return '<span>' + esc(m.ts || '--') + '</span>';
 }
@@ -234,85 +653,234 @@ function mentionHTML(m, showFeature) {
         '<div class="m-ts">' + tsLink(m) + '</div>' +
         '<div class="m-body">' +
             '<div class="m-call">' + tag + esc(m.call_title) + ' &middot; ' + m.call_date + '</div>' +
-            '<div class="m-quote"><span class="m-spk">' + esc(m.speaker) + ':</span> "' + esc(m.text.slice(0, 140)) + '..."</div>' +
+            '<div class="m-quote"><span class="m-spk">' + esc(m.speaker) + ':</span> "' + esc(m.text.slice(0, 160)) + '"</div>' +
         '</div></div>';
 }
 
-// ---- Features view ----
-function buildFeatures() {
-    const groups = {};
-    DATA.mentions.forEach(m => {
-        if (!groups[m.keyword]) groups[m.keyword] = [];
-        groups[m.keyword].push(m);
+// ---- Features view (grouped by category) ----
+function buildFeatureCard(kw, mentions, callMap, companies) {
+    const mSorted = mentions.sort((a, b) => (b.call_date || '').localeCompare(a.call_date || ''));
+
+    const reqSet = new Set();
+    mentions.forEach(m => {
+        const call = callMap[m.call_id];
+        if (call && call.attendees) {
+            const ext = extractCompany(call.attendees);
+            if (ext) ext.split(',').map(s => s.trim()).filter(Boolean).forEach(name => reqSet.add(name));
+        }
+        if (m.speaker && !m.speaker.toLowerCase().includes('unknown')) {
+            reqSet.add(m.speaker);
+        }
     });
-    const sorted = Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
-    const maxCount = sorted.length ? sorted[0][1].length : 1;
+    const reqTags = [...reqSet].slice(0, 6).map(r => '<span class="req-tag">' + esc(r) + '</span>').join('');
+
+    let mHTML = '';
+    mSorted.forEach(m => { mHTML += mentionHTML(m, false); });
+
+    const countLabel = mentions.length === 1 ? '1 mention' : mentions.length + ' mentions';
+
+    return '<div class="card" data-companies="' + esc((companies || []).join(',').toLowerCase()) + '" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + ' ' + esc([...reqSet].join(' ').toLowerCase()) + '">' +
+        '<div class="card-hdr" onclick="toggleCard(this)">' +
+            '<div class="left"><span class="arrow">&#9654;</span>' +
+                '<div class="name-block">' +
+                    '<div class="name">' + esc(kw) + '</div>' +
+                    (reqTags ? '<div class="hdr-tags">' + reqTags + '</div>' : '') +
+                '</div>' +
+            '</div>' +
+            '<div class="right"><span class="cnt-pill">' + countLabel + '</span></div>' +
+        '</div>' +
+        '<div class="mentions">' + mHTML + '</div></div>';
+}
+
+function buildFeatures() {
+    // Group mentions by feature (filtered by exclusions)
+    const mentions = activeMentions();
+    const featureGroups = {};
+    mentions.forEach(m => {
+        if (!featureGroups[m.keyword]) featureGroups[m.keyword] = { mentions: [], category: m.category || 'Other' };
+        featureGroups[m.keyword].mentions.push(m);
+    });
+
+    const callMap = {};
+    DATA.calls.forEach(c => { callMap[c.id] = c; });
+
+    // Collect all companies for filter pills (use getCompany from report if available, else speaker)
+    const allCompanies = new Set();
+    mentions.forEach(m => {
+        const spk = m.speaker || '';
+        const paren = spk.match(/\(([^)]+)\)/);
+        if (paren) {
+            // Derive company name same logic as report's getCompany
+            const call = callMap[m.call_id];
+            const title = call ? call.title : '';
+            let co = paren[1].split('/')[0].trim();
+            const chevron = title.match(/^(.+?)\s*<>\s*Teachable/i) || title.match(/^Teachable\s*<>\s*(.+)/i);
+            if (chevron) co = chevron[1].trim();
+            else if (title.toLowerCase().includes('speravita')) co = 'Speravita';
+            else if (title.toLowerCase().includes('dot compliance')) co = 'Dot Compliance';
+            else if (title.toLowerCase().includes('lta') || co.toLowerCase().includes('lta') ||
+                     spk.toLowerCase().includes('hui ching') || spk.toLowerCase().includes('kai shan')) co = 'LTA';
+            else if (co === 'Simon Davey') co = 'Simon Davey';
+            else if (['Simon', 'Sabine', 'Katrina'].includes(co)) co = 'Simon & Sabine';
+            else if (['Ibrahim', 'Bryan', 'Oghenetejiri'].includes(co)) co = 'Dot Compliance';
+            else if (['Hui Ching', 'Kai Shan'].includes(co)) co = 'LTA';
+            if (co) allCompanies.add(co);
+            // Tag the mention with company for filtering
+            m._company = co;
+        }
+    });
+
+    // Build company dropdown
+    buildCompanyDropdown(allCompanies);
+
+    // Group features by category
+    const categories = {};
+    Object.entries(featureGroups).forEach(([kw, data]) => {
+        const cat = data.category;
+        if (!categories[cat]) categories[cat] = { features: [], totalMentions: 0 };
+        categories[cat].features.push({ keyword: kw, mentions: data.mentions });
+        categories[cat].totalMentions += data.mentions.length;
+    });
+
+    // Sort categories by total mentions descending
+    const sortedCats = Object.entries(categories).sort((a, b) => b[1].totalMentions - a[1].totalMentions);
 
     let html = '';
-    sorted.forEach(([kw, mentions]) => {
-        const barW = Math.max(8, (mentions.length / maxCount) * 100);
-        const mSorted = mentions.sort((a, b) => (b.call_date || '').localeCompare(a.call_date || ''));
+    sortedCats.forEach(([catName, catData], idx) => {
+        catData.features.sort((a, b) => b.mentions.length - a.mentions.length);
 
-        let mHTML = '';
-        mSorted.forEach(m => { mHTML += mentionHTML(m, false); });
+        const featCount = catData.features.length;
+        const mentionCount = catData.totalMentions;
+        const statsText = featCount + ' feature' + (featCount > 1 ? 's' : '') +
+            ' &middot; ' + mentionCount + ' mention' + (mentionCount > 1 ? 's' : '');
 
-        html += '<div class="card" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + '">' +
-            '<div class="card-hdr" onclick="toggleCard(this)">' +
-                '<div class="left"><span class="arrow">&#9654;</span><span class="name">' + esc(kw) + '</span></div>' +
-                '<div class="right"><div class="bar" style="width:' + barW + '%"></div><span class="cnt">' + mentions.length + '</span></div>' +
+        // Collect companies in this category for filtering
+        const catCompanies = new Set();
+        catData.features.forEach(f => f.mentions.forEach(m => { if (m._company) catCompanies.add(m._company); }));
+
+        let cardsHTML = '';
+        catData.features.forEach(f => {
+            const cardCompanies = new Set(f.mentions.map(m => m._company).filter(Boolean));
+            cardsHTML += buildFeatureCard(f.keyword, f.mentions, callMap, [...cardCompanies]);
+        });
+
+        html += '<div class="cat-section" data-idx="' + (idx % 8) + '" data-cat="' + esc(catName.toLowerCase()) + '" data-companies="' + esc([...catCompanies].join(',').toLowerCase()) + '">' +
+            '<div class="cat-hdr" onclick="toggleCat(this)">' +
+                '<span class="cat-arrow">&#9654;</span>' +
+                '<span class="cat-name">' + esc(catName) + '</span>' +
+                '<span class="cat-count">' + statsText + '</span>' +
             '</div>' +
-            '<div class="mentions">' + mHTML + '</div></div>';
+            '<div class="cat-cards">' + cardsHTML + '</div>' +
+        '</div>';
     });
+
     document.getElementById('features-view').innerHTML = html || '<div style="padding:2rem;color:#3a3d4e;text-align:center">No feature requests found.</div>';
 }
 
-// ---- Calls view ----
+// ---- Week grouping helpers ----
+function getWeekStart(dateStr) {
+    // Returns Monday 00:00 of the week containing dateStr
+    const d = new Date(dateStr + 'T00:00:00');
+    const day = d.getDay(); // 0=Sun
+    const diff = day === 0 ? 6 : day - 1; // shift so Mon=0
+    d.setDate(d.getDate() - diff);
+    return d;
+}
+
+function fmtShortDate(d) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[d.getMonth()] + ' ' + d.getDate();
+}
+
+function weekLabel(weekStart) {
+    const now = new Date();
+    const thisWeekStart = getWeekStart(now.toISOString().slice(0,10));
+    const lastWeekStart = new Date(thisWeekStart);
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 4); // Friday
+
+    const range = fmtShortDate(weekStart) + ' – ' + fmtShortDate(weekEnd);
+
+    if (weekStart.getTime() === thisWeekStart.getTime()) return 'This Week (' + range + ')';
+    if (weekStart.getTime() === lastWeekStart.getTime()) return 'Last Week (' + range + ')';
+    return range;
+}
+
+// ---- Calls view (grouped by week) ----
 function buildCalls() {
+    const mentions = activeMentions();
     const byCall = {};
-    DATA.mentions.forEach(m => {
+    mentions.forEach(m => {
         if (!byCall[m.call_id]) byCall[m.call_id] = [];
         byCall[m.call_id].push(m);
     });
 
+    const dateIds = activeCallIds();
     const callList = DATA.calls
-        .filter(c => byCall[c.id])
+        .filter(c => byCall[c.id] && dateIds.has(c.id))
         .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-    let html = '';
+    // Group into weeks
+    const weeks = new Map(); // weekKey -> { start, calls[] }
     callList.forEach(c => {
+        const ws = getWeekStart(c.date || '2000-01-01');
+        const key = ws.toISOString().slice(0,10);
+        if (!weeks.has(key)) weeks.set(key, { start: ws, calls: [] });
+        weeks.get(key).calls.push(c);
+    });
+
+    let html = '';
+    for (const [, week] of weeks) {
+        const totalFeatures = week.calls.reduce((sum, c) => sum + (byCall[c.id] || []).length, 0);
+        html += '<div class="week-hdr">' +
+            '<span class="week-label">' + esc(weekLabel(week.start)) + '</span>' +
+            '<span class="week-meta">' + week.calls.length + ' call' + (week.calls.length > 1 ? 's' : '') +
+            ' &middot; ' + totalFeatures + ' feature' + (totalFeatures > 1 ? 's' : '') + '</span>' +
+        '</div>';
+
+    week.calls.forEach(c => {
         const mentions = byCall[c.id].sort((a, b) => (a.ts_sec || 0) - (b.ts_sec || 0));
         const features = [...new Set(mentions.map(m => m.keyword))];
 
         let tags = features.map(f => '<span class="feat-tag">' + esc(f) + '</span>').join('');
+        const extAttendees = extractCompany(c.attendees);
 
         let mHTML = '';
         mentions.forEach(m => { mHTML += mentionHTML(m, true); });
 
-        const transcriptLink = c.transcript ? ' <a class="call-link" href="' + esc(c.transcript) + '" target="_blank">Open full transcript</a>' : '';
+        // Action bar (inside expanded content)
+        let actionBar = '<div class="action-bar">';
+        if (c.transcript) {
+            actionBar += '<a class="action-btn" href="' + esc(c.transcript) + '" target="_blank">Call &#8599;</a>';
+        }
+        if (c.hubspot_note) {
+            actionBar += '<button class="action-btn" onclick="copyNote(this, \'' + esc(c.id) + '\')">Share</button>';
+        }
+        actionBar += '</div>';
 
-        // Build collapsible sections
+        // Collapsible sections
         let sectionsHTML = '<div class="sections-wrap">';
 
-        // HubSpot Note section
         if (c.hubspot_note) {
             sectionsHTML +=
                 '<div>' +
                     '<span class="section-toggle" onclick="toggleSection(this)">' +
-                        '<span class="arrow">&#9654;</span> Show HubSpot Note' +
+                        '<span class="ico">&#128203;</span> <span class="arrow">&#9654;</span> HubSpot Note' +
                     '</span>' +
                     '<div class="section-body">' +
-                        '<button class="copy-btn" onclick="event.stopPropagation(); copyNote(this, \'' + esc(c.id) + '\')">Copy to Clipboard</button>' +
+                        '<button class="copy-btn" onclick="event.stopPropagation(); copyNote(this, \'' + esc(c.id) + '\')">Copy</button>' +
                         '<div class="section-pre">' + esc(c.hubspot_note) + '</div>' +
                     '</div>' +
                 '</div>';
         }
 
-        // Full Transcript section
         if (c.transcript_text) {
             sectionsHTML +=
                 '<div>' +
                     '<span class="section-toggle" onclick="toggleSection(this)">' +
-                        '<span class="arrow">&#9654;</span> Show Transcript' +
+                        '<span class="ico">&#128196;</span> <span class="arrow">&#9654;</span> Full Transcript' +
                     '</span>' +
                     '<div class="section-body">' +
                         '<div class="section-scroll"><div class="section-pre">' + esc(c.transcript_text) + '</div></div>' +
@@ -322,22 +890,437 @@ function buildCalls() {
 
         sectionsHTML += '</div>';
 
-        html += '<div class="card" data-search="' + esc((c.title + ' ' + features.join(' ') + ' ' + mentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '">' +
+        const displayTitle = esc(c.title) + (extAttendees ? '<span style="color:#9a9db0;font-weight:400"> &mdash; ' + esc(extAttendees) + '</span>' : '');
+
+        const isExcluded = excludedCalls.has(c.id);
+        html += '<div class="card' + (isExcluded ? ' excluded' : '') + '" data-callid="' + esc(c.id) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + mentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '">' +
             '<div class="card-hdr" onclick="toggleCard(this)">' +
-                '<div class="left"><span class="arrow">&#9654;</span><span class="name">' + esc(c.title) + '</span></div>' +
-                '<div class="right"><span class="cnt" style="min-width:auto">' + mentions.length + ' mention' + (mentions.length > 1 ? 's' : '') + '</span></div>' +
+                '<div class="left"><span class="arrow">&#9654;</span>' +
+                    '<div class="name-block">' +
+                        '<div class="name">' + displayTitle + '</div>' +
+                        '<div class="hdr-tags">' + tags + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="right">' +
+                    '<button class="excl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Exclude</button>' +
+                    '<button class="incl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Include</button>' +
+                    '<div class="card-date">' + c.date + '<br>' + c.duration + ' min &middot; ' + mentions.length + ' feature' + (mentions.length > 1 ? 's' : '') + '</div>' +
+                '</div>' +
             '</div>' +
             '<div class="mentions">' +
-                '<div style="margin-bottom:0.5rem">' +
-                    '<div class="call-meta">' + c.date + ' &middot; ' + c.duration + ' min' + transcriptLink + '</div>' +
-                    '<div>' + tags + '</div>' +
-                '</div>' +
+                actionBar +
                 mHTML +
                 sectionsHTML +
             '</div></div>';
-    });
+    }); // end week.calls.forEach
+    } // end for weeks
+
+    // "Scan for More Calls" button at bottom
+    const scanCmd = 'python retrieve_calls.py --days 30 --limit 20 --owner zach.mccall \\\n  --title-keywords demo discovery followup follow-up sales \\\n  --dashboard dashboard.html --output-dir test_output/';
+    html += '<div class="scan-row">' +
+        '<button class="scan-btn" onclick="copyScanCmd(this)">' +
+            'Scan for More Calls' +
+        '</button>' +
+    '</div>';
 
     document.getElementById('calls-view').innerHTML = html || '<div style="padding:2rem;color:#3a3d4e;text-align:center">No calls with feature requests found.</div>';
+    document.getElementById('calls-view').dataset.scanCmd = scanCmd;
+}
+
+// ---- Weekly Report builder ----
+function buildReport() {
+    const callMap = {};
+    DATA.calls.forEach(c => { callMap[c.id] = c; });
+    const mentions = activeMentions();
+
+    // Extract company name from speaker field: "Customer (Speravita)" → "Speravita"
+    // Or from call title: "Dot Compliance <> Teachable" → "Dot Compliance"
+    function getCompany(m) {
+        // Try speaker field first: "Customer (Company Name)" or "Customer (Name/Name)"
+        const spk = m.speaker || '';
+        const paren = spk.match(/\(([^)]+)\)/);
+        if (paren) {
+            // Take the first name before / as the company identifier
+            const raw = paren[1].split('/')[0].trim();
+            // Map known first names to company names using call title
+            const call = callMap[m.call_id];
+            const title = call ? call.title : '';
+            // If call title has "Company <> Teachable" pattern, use that
+            const chevron = title.match(/^(.+?)\s*<>\s*Teachable/i) || title.match(/^Teachable\s*<>\s*(.+)/i);
+            if (chevron) return chevron[1].trim();
+            // If title has "Followup" and speaker has a company-like name in parens
+            // Check if it looks like a person name (short, single word) vs company
+            // Known mappings from call titles containing the company name
+            if (title.toLowerCase().includes('speravita')) return 'Speravita';
+            if (title.toLowerCase().includes('dot compliance')) return 'Dot Compliance';
+            if (title.toLowerCase().includes('lta') || raw.toLowerCase().includes('lta') ||
+                spk.toLowerCase().includes('hui ching') || spk.toLowerCase().includes('kai shan')) return 'LTA';
+            // For generic "Teachable Followup" titles, derive from speaker context
+            if (raw === 'Simon Davey') return 'Simon Davey';
+            if (raw === 'Simon' || raw === 'Sabine' || raw === 'Katrina') return 'Simon & Sabine (Coaching)';
+            if (raw === 'Ibrahim' || raw === 'Bryan' || raw === 'Oghenetejiri') return 'Dot Compliance';
+            if (raw === 'Hui Ching' || raw === 'Kai Shan') return 'LTA';
+            return raw;
+        }
+        return '';
+    }
+
+    // Format timestamp for display: ts_sec → "mm:ss"
+    function fmtTs(sec) {
+        if (sec == null) return '';
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    // Figure out the week date range from call dates
+    const callsWithFeatures = DATA.calls.filter(c => mentions.some(m => m.call_id === c.id));
+    const dates = callsWithFeatures.map(c => c.date).filter(Boolean).sort();
+    const startDate = dates[0] || '';
+    const endDate = dates[dates.length - 1] || '';
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function fmtD(ds) {
+        if (!ds) return '?';
+        const p = ds.split('-');
+        return months[parseInt(p[1], 10) - 1] + ' ' + parseInt(p[2], 10);
+    }
+    const dateRange = fmtD(startDate) + ' – ' + fmtD(endDate) + ', ' + (startDate ? startDate.slice(0, 4) : '');
+
+    // Build feature groups by category, with per-mention company + timestamp data
+    // Each feature tracks: [{company, ts, tsDisplay, link}]
+    const featureGroups = {};  // cat → feat → { entries: [{company, ts, link}] }
+    mentions.forEach(m => {
+        const company = getCompany(m);
+        if (!company) return;  // No company = skip
+        const cat = m.category || 'Other';
+        if (!featureGroups[cat]) featureGroups[cat] = {};
+        if (!featureGroups[cat][m.keyword]) featureGroups[cat][m.keyword] = [];
+        featureGroups[cat][m.keyword].push({
+            company: company,
+            ts: m.ts || '',
+            tsSec: m.ts_sec,
+            tsDisplay: fmtTs(m.ts_sec),
+            link: m.link || '',
+            callId: m.call_id,
+        });
+    });
+
+    // Sort categories by total mentions
+    const catEntries = Object.entries(featureGroups).map(([cat, feats]) => {
+        let total = 0;
+        const allCompanies = new Set();
+        Object.values(feats).forEach(entries => {
+            total += entries.length;
+            entries.forEach(e => allCompanies.add(e.company));
+        });
+        return { cat, feats, total, companies: allCompanies };
+    }).sort((a, b) => b.total - a.total);
+
+    // Top theme
+    const topTheme = catEntries[0] || { cat: 'N/A', total: 0, companies: new Set() };
+
+    // Build company breakdown
+    const companyMap = {};
+    mentions.forEach(m => {
+        const company = getCompany(m);
+        if (!company) return;
+        if (!companyMap[company]) companyMap[company] = { features: new Set(), calls: new Map() };
+        companyMap[company].features.add(m.keyword);
+        if (!companyMap[company].calls.has(m.call_id)) {
+            const call = callMap[m.call_id];
+            companyMap[company].calls.set(m.call_id, call);
+        }
+    });
+    const companyEntries = Object.entries(companyMap).sort((a, b) => b[1].features.size - a[1].features.size);
+
+    const totalCalls = callsWithFeatures.length;
+    const totalFeatures = mentions.length;
+    const totalProspects = companyEntries.length;
+
+    // ---- Build HTML version ----
+    let h = '';
+    h += '<h1>WEEKLY CALL INTELLIGENCE</h1>';
+    h += '<div class="email-date">Week of ' + esc(dateRange) + '</div>';
+
+    h += '<h2>Summary</h2>';
+    h += '<ul class="summary-list">';
+    h += '<li><strong>' + totalCalls + '</strong> sales calls this week</li>';
+    h += '<li><strong>' + totalFeatures + '</strong> feature requests identified across <strong>' + totalProspects + '</strong> prospects</li>';
+    h += '<li>Top theme: <strong>' + esc(topTheme.cat) + '</strong> (' + topTheme.total + ' mentions, ' + topTheme.companies.size + ' compan' + (topTheme.companies.size === 1 ? 'y' : 'ies') + ')</li>';
+    h += '</ul>';
+
+    // Feature Recap
+    if (DATA.recap) {
+        h += '<h2>Feature Recap</h2>';
+        h += '<div class="recap-block">' + DATA.recap.replace(/\n/g, '<br>') + '</div>';
+    }
+
+    // Customers This Week — one-line summaries with call links
+    const coSummaries = DATA.company_summaries || {};
+    h += '<h2>Customers This Week</h2>';
+    // Sort companies by call date (most recent first)
+    const companiesByDate = companyEntries.slice().sort((a, b) => {
+        const aDate = [...a[1].calls.values()].map(c => c && c.date || '').sort().pop() || '';
+        const bDate = [...b[1].calls.values()].map(c => c && c.date || '').sort().pop() || '';
+        return bDate.localeCompare(aDate);
+    });
+    companiesByDate.forEach(([name, d]) => {
+        const summary = coSummaries[name] || '';
+        let links = [];
+        d.calls.forEach((c, id) => {
+            if (c && c.transcript) {
+                const dateStr = c.date ? c.date.slice(5).replace('-', '/') : '';
+                links.push('<a href="' + esc(c.transcript) + '" target="_blank">Call' + (dateStr ? ' (' + dateStr + ')' : '') + '</a>');
+            }
+        });
+        h += '<div class="co-line">– <strong>' + esc(name) + '</strong>';
+        if (summary) h += ' — ' + esc(summary);
+        if (links.length) h += ' → ' + links.join(' · ');
+        h += '</div>';
+    });
+
+    // Feature Themes
+    h += '<h2>Feature Themes</h2>';
+    catEntries.forEach(ce => {
+        h += '<div class="cat-group">';
+        h += '<div class="cat-title">' + esc(ce.cat) + ' <span class="cat-co">(' + ce.companies.size + ' compan' + (ce.companies.size === 1 ? 'y' : 'ies') + ')</span></div>';
+        Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
+            const byCompany = {};
+            entries.forEach(e => {
+                if (!byCompany[e.company]) byCompany[e.company] = [];
+                byCompany[e.company].push(e);
+            });
+            const parts = Object.entries(byCompany).map(([co, es]) => {
+                const e = es[0];
+                const tsStr = e.tsDisplay || e.ts || '';
+                if (e.link && tsStr) {
+                    return esc(co) + ' (<a href="' + esc(e.link) + '" target="_blank">' + esc(tsStr) + '</a>)';
+                } else if (tsStr) {
+                    return esc(co) + ' (' + esc(tsStr) + ')';
+                }
+                return esc(co);
+            });
+            h += '<div class="feat-line">– <strong>' + esc(feat) + '</strong> — ' + parts.join(' · ') + '</div>';
+        });
+        h += '</div>';
+    });
+
+    // ---- Build plain text version ----
+    let plain = 'WEEKLY CALL INTELLIGENCE\nWeek of ' + dateRange + '\n\n';
+    plain += 'SUMMARY\n';
+    plain += '- ' + totalCalls + ' sales calls, ' + totalFeatures + ' features identified across ' + totalProspects + ' prospects\n';
+    plain += '- Top theme: ' + topTheme.cat + ' (' + topTheme.total + ' mentions, ' + topTheme.companies.size + ' compan' + (topTheme.companies.size === 1 ? 'y' : 'ies') + ')\n\n';
+    if (DATA.recap) plain += 'FEATURE RECAP\n' + DATA.recap + '\n\n';
+    plain += 'CUSTOMERS THIS WEEK\n';
+    companiesByDate.forEach(([name, d]) => {
+        const summary = coSummaries[name] || '';
+        let callStrs = [];
+        d.calls.forEach((c, id) => {
+            if (c) {
+                const dateStr = c.date ? c.date.slice(5).replace('-', '/') : '';
+                callStrs.push('Call' + (dateStr ? ' (' + dateStr + ')' : '') + (c.transcript ? ': ' + c.transcript : ''));
+            }
+        });
+        plain += '- ' + name + (summary ? ' — ' + summary : '') + (callStrs.length ? ' → ' + callStrs.join(' · ') : '') + '\n';
+    });
+    plain += '\nFEATURE THEMES\n\n';
+    catEntries.forEach(ce => {
+        plain += ce.cat + ' (' + ce.companies.size + ' compan' + (ce.companies.size === 1 ? 'y' : 'ies') + ')\n';
+        Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
+            const byCompany = {};
+            entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
+            const parts = Object.entries(byCompany).map(([co, es]) => {
+                const ts = es[0].tsDisplay || es[0].ts || '';
+                return ts ? co + ' (' + ts + ')' : co;
+            });
+            plain += '  - ' + feat + ' — ' + parts.join(' · ') + '\n';
+        });
+        plain += '\n';
+    });
+
+    // Render
+    const wrap = document.getElementById('report-view');
+    wrap.innerHTML =
+        '<div class="report-toolbar">' +
+            '<button class="report-generate" onclick="generateReport(this)">Generate Report</button>' +
+            '<div class="report-sep"></div>' +
+            '<button class="report-btn" onclick="copyReportHTML(this)">Copy Email HTML</button>' +
+            '<button class="report-btn" onclick="copyReportPlain(this)">Copy Plain Text</button>' +
+        '</div>' +
+        '<div class="email-card" id="email-card">' + h + '</div>';
+    wrap.dataset.plainText = plain;
+}
+
+function generateReport(btn) {
+    buildReport();
+    // Flash confirmation on the new button instance
+    const newBtn = document.querySelector('.report-generate');
+    newBtn.textContent = 'Updated!';
+    newBtn.classList.add('done');
+    setTimeout(() => { newBtn.textContent = 'Generate Report'; newBtn.classList.remove('done'); }, 2000);
+}
+
+function copyReportHTML(btn) {
+    const card = document.getElementById('email-card');
+    const html = card.innerHTML;
+    const blob = new Blob([html], { type: 'text/html' });
+    const plainBlob = new Blob([card.innerText], { type: 'text/plain' });
+    const item = new ClipboardItem({ 'text/html': blob, 'text/plain': plainBlob });
+    navigator.clipboard.write([item]).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy Email HTML'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+function copyReportPlain(btn) {
+    const plain = document.getElementById('report-view').dataset.plainText;
+    navigator.clipboard.writeText(plain).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy Plain Text'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+let allExpanded = true;
+let activeCompanyFilters = new Set();
+
+// ---- Dropdown logic ----
+const DATE_OPTIONS = [
+    { value: 'all', label: 'All Time' },
+    { value: 'this-week', label: 'This Week' },
+    { value: 'last-week', label: 'Last Week' },
+    { value: 'last-2-weeks', label: 'Last 2 Weeks' },
+    { value: 'last-30-days', label: 'Last 30 Days' },
+];
+
+function buildDateDropdown() {
+    const panel = document.getElementById('date-panel');
+    panel.innerHTML = DATE_OPTIONS.map(o =>
+        '<div class="dd-item' + (activeDateRange === o.value ? ' selected' : '') + '" data-val="' + o.value + '" onclick="selectDate(this)">' +
+        '<span class="dd-check">&#10003;</span>' + esc(o.label) + '</div>'
+    ).join('');
+    syncDateLabel();
+}
+
+function selectDate(el) {
+    activeDateRange = el.dataset.val;
+    document.querySelectorAll('#date-panel .dd-item').forEach(d => d.classList.toggle('selected', d.dataset.val === activeDateRange));
+    syncDateLabel();
+    closeAllDD();
+    updateHash();
+    buildFeatures();
+    buildCalls();
+    buildReport();
+    updateStats();
+}
+
+function syncDateLabel() {
+    const opt = DATE_OPTIONS.find(o => o.value === activeDateRange) || DATE_OPTIONS[0];
+    const label = document.getElementById('date-label');
+    label.textContent = opt.label;
+    document.querySelector('#date-dd .dd-btn').classList.toggle('has-filter', activeDateRange !== 'all');
+}
+
+function buildCompanyDropdown(companies) {
+    const sorted = [...companies].sort();
+    const panel = document.getElementById('co-panel');
+    let html = '<div class="dd-item selected" data-val="__all__" onclick="selectCompany(this)"><span class="dd-check">&#10003;</span>All Companies</div>';
+    html += '<div class="dd-sep"></div>';
+    sorted.forEach(co => {
+        const sel = activeCompanyFilters.size === 0 || activeCompanyFilters.has(co.toLowerCase());
+        html += '<div class="dd-item' + (sel && activeCompanyFilters.size > 0 ? ' selected' : '') + '" data-val="' + esc(co) + '" onclick="selectCompany(this)">' +
+            '<span class="dd-check">&#10003;</span>' + esc(co) + '</div>';
+    });
+    panel.innerHTML = html;
+    syncCompanyLabel();
+}
+
+function selectCompany(el) {
+    const val = el.dataset.val;
+    if (val === '__all__') {
+        activeCompanyFilters.clear();
+        document.querySelectorAll('#co-panel .dd-item').forEach(d => {
+            d.classList.toggle('selected', d.dataset.val === '__all__');
+        });
+    } else {
+        // Deselect "All"
+        document.querySelector('#co-panel .dd-item[data-val="__all__"]').classList.remove('selected');
+        el.classList.toggle('selected');
+        const co = val.toLowerCase();
+        if (el.classList.contains('selected')) {
+            activeCompanyFilters.add(co);
+        } else {
+            activeCompanyFilters.delete(co);
+        }
+        if (activeCompanyFilters.size === 0) {
+            document.querySelector('#co-panel .dd-item[data-val="__all__"]').classList.add('selected');
+        }
+    }
+    syncCompanyLabel();
+    applyCompanyFilter();
+}
+
+function syncCompanyLabel() {
+    const label = document.getElementById('co-label');
+    const btn = document.querySelector('#co-dd .dd-btn');
+    if (activeCompanyFilters.size === 0) {
+        label.textContent = 'Companies';
+        btn.classList.remove('has-filter');
+    } else {
+        label.textContent = activeCompanyFilters.size + ' selected';
+        btn.classList.add('has-filter');
+    }
+}
+
+function toggleDD(id) {
+    const wrap = document.getElementById(id);
+    const btn = wrap.querySelector('.dd-btn');
+    const panel = wrap.querySelector('.dd-panel');
+    const opening = !panel.classList.contains('open');
+    closeAllDD();
+    if (opening) {
+        btn.classList.add('open');
+        panel.classList.add('open');
+    }
+}
+
+function closeAllDD() {
+    document.querySelectorAll('.dd-wrap').forEach(w => {
+        w.querySelector('.dd-btn').classList.remove('open');
+        w.querySelector('.dd-panel').classList.remove('open');
+    });
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.dd-wrap')) closeAllDD();
+});
+
+function toggleExpandAll() {
+    allExpanded = !allExpanded;
+    document.querySelectorAll('#features-view .cat-section').forEach(s => {
+        s.classList.toggle('collapsed', !allExpanded);
+    });
+    document.getElementById('expand-btn').textContent = allExpanded ? 'Collapse All' : 'Expand All';
+}
+
+function applyCompanyFilter() {
+    const noFilter = activeCompanyFilters.size === 0;
+    document.querySelectorAll('#features-view .cat-section').forEach(sec => {
+        let anyVisible = false;
+        sec.querySelectorAll('.card').forEach(card => {
+            const cardCos = (card.dataset.companies || '').split(',').filter(Boolean);
+            const vis = noFilter || cardCos.some(c => activeCompanyFilters.has(c));
+            card.style.display = vis ? '' : 'none';
+            if (vis) anyVisible = true;
+        });
+        sec.style.display = anyVisible ? '' : 'none';
+    });
+}
+
+function toggleCat(el) {
+    el.parentElement.classList.toggle('collapsed');
 }
 
 function toggleCard(el) {
@@ -348,42 +1331,101 @@ function toggleSection(el) {
     el.classList.toggle('open');
 }
 
+function copyScanCmd(btn) {
+    const cmd = document.getElementById('calls-view').dataset.scanCmd;
+    navigator.clipboard.writeText(cmd).then(() => {
+        btn.textContent = 'Command Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Scan for More Calls'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
 function copyNote(btn, callId) {
     const call = DATA.calls.find(c => c.id === callId);
     if (!call || !call.hubspot_note) return;
     navigator.clipboard.writeText(call.hubspot_note).then(() => {
+        const orig = btn.textContent;
         btn.textContent = 'Copied!';
         btn.classList.add('copied');
-        setTimeout(() => { btn.textContent = 'Copy to Clipboard'; btn.classList.remove('copied'); }, 2000);
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
     });
 }
 
 function switchTab(tab) {
     currentTab = tab;
+    updateHash();
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.getElementById('features-view').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('calls-view').style.display = tab === 'calls' ? '' : 'none';
+    document.getElementById('report-view').style.display = tab === 'report' ? '' : 'none';
+    document.querySelector('.search-box').style.display = tab === 'report' ? 'none' : '';
+    document.getElementById('co-dd').style.display = tab === 'features' ? '' : 'none';
+    document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('q').value = '';
+    closeAllDD();
     filter('');
 }
 
 function filter(q) {
     const low = q.toLowerCase();
-    const view = currentTab === 'features' ? 'features-view' : 'calls-view';
-    document.querySelectorAll('#' + view + ' .card').forEach(c => {
-        c.style.display = !low || c.dataset.search.includes(low) ? '' : 'none';
-    });
+    if (currentTab === 'features') {
+        document.querySelectorAll('#features-view .cat-section').forEach(sec => {
+            const catMatch = !low || (sec.dataset.cat || '').includes(low);
+            let anyCardVisible = false;
+            sec.querySelectorAll('.card').forEach(c => {
+                const vis = !low || catMatch || c.dataset.search.includes(low);
+                c.style.display = vis ? '' : 'none';
+                if (vis) anyCardVisible = true;
+            });
+            sec.style.display = anyCardVisible ? '' : 'none';
+        });
+    } else {
+        document.querySelectorAll('#calls-view .card').forEach(c => {
+            c.style.display = !low || c.dataset.search.includes(low) ? '' : 'none';
+        });
+    }
 }
 
-// Init
-document.getElementById('sub').textContent = 'Generated ' + DATA.stats.generated + '. ' + DATA.stats.total_mentions + ' mentions across ' + DATA.stats.unique_calls + ' calls.';
-document.getElementById('stats').innerHTML =
-    '<div class="st"><div class="v">' + DATA.stats.total_mentions + '</div><div class="l">Mentions</div></div>' +
-    '<div class="st"><div class="v">' + DATA.stats.unique_calls + '</div><div class="l">Calls</div></div>' +
-    '<div class="st"><div class="v">' + DATA.stats.unique_features + '</div><div class="l">Features</div></div>';
+function updateStats() {
+    const m = activeMentions();
+    const callIds = new Set(m.map(x => x.call_id));
+    const featureNames = new Set(m.map(x => x.keyword));
+    document.getElementById('hdr-stats').innerHTML =
+        '<span class="hdr-pill"><span class="n">' + m.length + '</span><span class="l">mentions</span></span>' +
+        '<span class="hdr-pill"><span class="n">' + callIds.size + '</span><span class="l">calls</span></span>' +
+        '<span class="hdr-pill"><span class="n">' + featureNames.size + '</span><span class="l">features</span></span>';
 
+    // Tagline: compute date range from visible calls
+    const dates = DATA.calls
+        .filter(c => callIds.has(c.id) && c.date)
+        .map(c => c.date.slice(0, 10))
+        .sort();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let tagline = '';
+    if (dates.length) {
+        const d0 = new Date(dates[0] + 'T00:00:00');
+        const d1 = new Date(dates[dates.length - 1] + 'T00:00:00');
+        const fmt = d => months[d.getMonth()] + ' ' + d.getDate();
+        if (d0.getTime() === d1.getTime()) {
+            tagline = fmt(d0) + ', ' + d0.getFullYear();
+        } else if (d0.getFullYear() === d1.getFullYear() && d0.getMonth() === d1.getMonth()) {
+            tagline = months[d0.getMonth()] + ' ' + d0.getDate() + '\u2013' + d1.getDate() + ', ' + d0.getFullYear();
+        } else {
+            tagline = fmt(d0) + ' \u2013 ' + fmt(d1) + ', ' + d1.getFullYear();
+        }
+        tagline += ' \u00b7 ' + callIds.size + ' call' + (callIds.size !== 1 ? 's' : '') + ' analyzed';
+    }
+    document.getElementById('hdr-tagline').textContent = tagline;
+}
+
+// Init — parse hash for exclusions, date range, and tab, then build
+const initTab = parseHash();
+buildDateDropdown();
+updateStats();
 buildFeatures();
 buildCalls();
+buildReport();
+switchTab(initTab || 'features');
 </script>
 </body>
 </html>

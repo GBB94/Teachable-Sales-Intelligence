@@ -104,6 +104,8 @@ Examples:
                         help='Delay in seconds between API batches (default: 1.0)')
     parser.add_argument('--backfill', action='store_true',
                         help='Backfill mode: scan 90 days with limit 200 (more API calls than normal)')
+    parser.add_argument('--no-prompt', action='store_true',
+                        help='Skip the call approval prompt (for automation)')
 
     # Blacklist management
     parser.add_argument('--blacklist-add', metavar='TERM',
@@ -244,26 +246,55 @@ Examples:
     # ------------------------------------------------------------------
     calls = retriever.get_calls(filter_criteria=filter_criteria)
 
-    # Display results
+    # ------------------------------------------------------------------
+    # Show calls and prompt for approval
+    # ------------------------------------------------------------------
     print("=" * 80)
-    print(f"RESULTS: {len(calls)} calls found")
+    print(f"CALLS FOUND: {len(calls)}")
     print("=" * 80)
     print()
 
     for i, call in enumerate(calls, 1):
-        print(f"{i}. {call.title}")
-        print(f"   Date: {call.date}")
-        print(f"   Duration: {call.duration_minutes:.1f} minutes")
-        print(f"   Organizer: {call.organizer_email or 'Unknown'}")
-        print(f"   Attendees: {', '.join(call.attendee_names) or 'None'}")
+        date_short = call.date[:10] if call.date else "N/A"
+        attendees = ', '.join(call.attendee_names) or 'None'
+        print(f"  {i:>2}. {call.title}")
+        print(f"      {date_short}  |  {call.duration_minutes:.0f} min  |  {attendees}")
 
-        if call.summary and call.summary.get('overview'):
-            overview = call.summary['overview']
-            if len(overview) > 150:
-                overview = overview[:150] + "..."
-            print(f"   Summary: {overview}")
+    print()
 
-        print()
+    if not calls:
+        print("No calls to process.")
+        print(f"API calls made: {retriever.api_calls_made} ({retriever.raw_transcripts_fetched} raw transcripts fetched)")
+        return 0
+
+    if not args.no_prompt:
+        try:
+            response = input("Exclude any calls? Enter numbers to skip (e.g. 1,3,5) or press Enter to keep all: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nAborted.")
+            return 0
+
+        if response:
+            try:
+                exclude_nums = {int(n.strip()) for n in response.split(",") if n.strip()}
+            except ValueError:
+                print("Invalid input — expected comma-separated numbers. Aborting.")
+                return 1
+
+            before = len(calls)
+            calls = [c for i, c in enumerate(calls, 1) if i not in exclude_nums]
+            excluded = before - len(calls)
+            if excluded:
+                print(f"Excluded {excluded} call(s). Proceeding with {len(calls)}.\n")
+            else:
+                print(f"No calls excluded. Proceeding with all {len(calls)}.\n")
+        else:
+            print(f"Keeping all {len(calls)} calls.\n")
+
+    if not calls:
+        print("All calls excluded. Nothing to do.")
+        print(f"API calls made: {retriever.api_calls_made} ({retriever.raw_transcripts_fetched} raw transcripts fetched)")
+        return 0
 
     # ------------------------------------------------------------------
     # Export

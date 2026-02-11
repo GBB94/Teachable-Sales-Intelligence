@@ -2,13 +2,15 @@
 """
 AI feature analysis helper for Claude Code workflow.
 
-Two-step process:
-  1. `extract` — reads a dashboard HTML file, prints call transcripts for review
-  2. `inject`  — takes a features JSON file, rewrites the dashboard + HubSpot notes
+Three-step process:
+  1. `extract`   — reads a dashboard HTML file, prints call transcripts for review
+  2. `normalize` — merges similar feature names in a features JSON file
+  3. `inject`    — takes a features JSON file, rewrites the dashboard + HubSpot notes
 
 Usage (inside Claude Code):
-  python3 analyze_features.py extract test_output/dashboard.html
+  python3 analyze_features.py extract test_output/dashboard.html [--prior old_dashboard.html]
   # ... Claude Code reads transcripts, builds features.json ...
+  python3 analyze_features.py normalize features.json --merge-map merge.json
   python3 analyze_features.py inject test_output/dashboard.html features.json [--notes test_output/notes.txt]
 """
 
@@ -17,6 +19,34 @@ import json
 import os
 import re
 import sys
+
+
+CANONICAL_NAMES_FILE = ".feature_names"
+
+
+def _load_canonical_names() -> list:
+    """Load canonical feature names from cache file."""
+    try:
+        with open(CANONICAL_NAMES_FILE, "r") as f:
+            return [line.strip() for line in f if line.strip()]
+    except FileNotFoundError:
+        return []
+
+
+def _save_canonical_names(names: list):
+    """Save canonical feature names to cache file."""
+    unique = sorted(set(names))
+    with open(CANONICAL_NAMES_FILE, "w") as f:
+        for name in unique:
+            f.write(name + "\n")
+    print(f"Saved {len(unique)} canonical feature names to {CANONICAL_NAMES_FILE}")
+
+
+def _get_feature_names_from_dashboard(html_path: str) -> list:
+    """Extract unique feature names from a dashboard HTML file."""
+    data = _extract_data_from_html(html_path)
+    mentions = data.get("mentions", [])
+    return sorted(set(m.get("keyword", "") for m in mentions if m.get("keyword")))
 
 
 def _extract_data_from_html(html_path: str) -> dict:
@@ -67,6 +97,23 @@ def _write_data_to_html(html_path: str, data: dict):
 
 def cmd_extract(args):
     """Extract and print call transcripts from dashboard HTML."""
+    # Load prior feature names for context
+    prior_names = _load_canonical_names()
+    if args.prior:
+        dashboard_names = _get_feature_names_from_dashboard(args.prior)
+        for name in dashboard_names:
+            if name not in prior_names:
+                prior_names.append(name)
+
+    if prior_names:
+        print(f"{'='*70}")
+        print(f"ESTABLISHED FEATURE NAMES ({len(prior_names)}):")
+        print("Reuse these names when a customer is asking for the same thing.")
+        print(f"{'─'*70}")
+        for name in sorted(prior_names):
+            print(f"  - {name}")
+        print()
+
     data = _extract_data_from_html(args.dashboard)
     calls = data.get("calls", [])
 
@@ -111,9 +158,28 @@ def cmd_extract(args):
 
 def cmd_inject(args):
     """Inject AI-analyzed features into dashboard HTML and optionally notes."""
-    # Load features JSON
+    # Load features JSON — supports two formats:
+    #   Old: { "call_id": [...features...] }
+    #   New: { "features": { "call_id": [...] }, "notes": { "call_id": "full note text" } }
     with open(args.features_json, "r") as f:
-        features_by_call = json.load(f)
+        raw = json.load(f)
+
+    if "features" in raw and isinstance(raw["features"], dict):
+        features_by_call = raw["features"]
+        notes_by_call = raw.get("notes", {})
+        recap_text = raw.get("recap", "")
+        company_summaries = raw.get("company_summaries", {})
+    else:
+        features_by_call = raw
+        notes_by_call = {}
+        recap_text = ""
+        company_summaries = {}
+
+    # Load categories map (optional)
+    categories_map = {}
+    if args.categories:
+        with open(args.categories, "r") as f:
+            categories_map = json.load(f)
 
     # Load dashboard data
     data = _extract_data_from_html(args.dashboard)
@@ -157,6 +223,7 @@ def cmd_inject(args):
                 "call_date": call.get("date", ""),
                 "speaker": speaker,
                 "keyword": feature_name,
+                "category": categories_map.get(feature_name, "Other"),
                 "text": quote,
                 "ts": timestamp,
                 "ts_sec": ts_seconds,
@@ -170,7 +237,11 @@ def cmd_inject(args):
             feature_lines.append(f"- {feature_name}{ts_part} - \"{short_quote}\"")
 
         # Update the HubSpot note embedded in the call data
-        if feature_lines:
+        override = notes_by_call.get(call_id)
+        if override:
+            # Use the full CC-generated note as-is
+            call["hubspot_note"] = override
+        elif feature_lines:
             note = call.get("hubspot_note", "")
             # Insert FEATURE REQUESTS section before the TRANSCRIPT line
             fr_section = "---\nFEATURE REQUESTS\n" + "\n".join(feature_lines)
@@ -183,7 +254,7 @@ def cmd_inject(args):
 
             call["hubspot_note"] = note
 
-    # Update stats and mentions in dashboard data
+    # Update stats, mentions, and recap in dashboard data
     data["mentions"] = new_mentions
     data["stats"] = {
         "total_mentions": len(new_mentions),
@@ -191,6 +262,10 @@ def cmd_inject(args):
         "unique_features": len(keyword_counts),
         "generated": data.get("stats", {}).get("generated", ""),
     }
+    if recap_text:
+        data["recap"] = recap_text
+    if company_summaries:
+        data["company_summaries"] = company_summaries
 
     # Write updated dashboard
     _write_data_to_html(args.dashboard, data)
@@ -206,6 +281,64 @@ def cmd_inject(args):
         print(f"Updated HubSpot notes: {args.notes}")
 
 
+def cmd_normalize(args):
+    """Normalize feature names in a features JSON file using a merge map."""
+    with open(args.features_json, "r") as f:
+        features_by_call = json.load(f)
+
+    if args.list_only:
+        # Just print unique feature names for review
+        all_names = set()
+        for call_features in features_by_call.values():
+            for feat in call_features:
+                all_names.add(feat.get("feature", ""))
+        print(f"Unique feature names ({len(all_names)}):\n")
+        for name in sorted(all_names):
+            print(f"  - {name}")
+        return
+
+    if not args.merge_map:
+        print("Error: --merge-map is required (or use --list to just view names)")
+        sys.exit(1)
+
+    # Load merge map: {"old name": "canonical name"}
+    with open(args.merge_map, "r") as f:
+        merge_map = json.load(f)
+
+    # Apply merges
+    rename_count = 0
+    all_names = set()
+
+    for call_id, call_features in features_by_call.items():
+        for feat in call_features:
+            old_name = feat.get("feature", "")
+            if old_name in merge_map:
+                feat["feature"] = merge_map[old_name]
+                rename_count += 1
+            all_names.add(feat["feature"])
+
+    # Write updated features
+    with open(args.features_json, "w") as f:
+        json.dump(features_by_call, f, indent=2)
+
+    print(f"Normalized {rename_count} feature name(s) across {len(features_by_call)} calls")
+
+    # Print merge summary
+    if merge_map:
+        print("\nMerges applied:")
+        for old, new in sorted(merge_map.items()):
+            print(f"  {old}  →  {new}")
+
+    # Update canonical names cache
+    existing = _load_canonical_names()
+    combined = list(set(existing) | all_names)
+    _save_canonical_names(combined)
+
+    print(f"\nFinal feature names ({len(all_names)}):")
+    for name in sorted(all_names):
+        print(f"  - {name}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="AI feature analysis helper")
     sub = parser.add_subparsers(dest="command")
@@ -215,16 +348,30 @@ def main():
     p_extract.add_argument("dashboard", help="Path to dashboard HTML file")
     p_extract.add_argument("--titles-only", action="store_true",
                            help="Only print call titles, not full transcripts")
+    p_extract.add_argument("--prior", metavar="DASHBOARD",
+                           help="Load existing feature names from a prior dashboard")
+
+    # Normalize
+    p_norm = sub.add_parser("normalize", help="Normalize feature names via merge map")
+    p_norm.add_argument("features_json", help="Path to features JSON file")
+    p_norm.add_argument("--merge-map", metavar="FILE",
+                        help="JSON file mapping old names to canonical names")
+    p_norm.add_argument("--list", dest="list_only", action="store_true",
+                        help="Just list unique feature names (no changes)")
 
     # Inject
     p_inject = sub.add_parser("inject", help="Inject AI features into dashboard")
     p_inject.add_argument("dashboard", help="Path to dashboard HTML file")
     p_inject.add_argument("features_json", help="Path to features JSON file")
     p_inject.add_argument("--notes", help="Path to HubSpot notes file to update")
+    p_inject.add_argument("--categories", metavar="FILE",
+                          help="JSON file mapping feature names to category names")
 
     args = parser.parse_args()
     if args.command == "extract":
         cmd_extract(args)
+    elif args.command == "normalize":
+        cmd_normalize(args)
     elif args.command == "inject":
         cmd_inject(args)
     else:
