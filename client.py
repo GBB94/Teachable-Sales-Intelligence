@@ -402,7 +402,16 @@ class FirefliesRetriever:
         calls_with_matches: set = set()
         skipped_internal = 0
 
+        # Dedup: track processed call IDs to avoid scanning the same call twice.
+        # This is where cache-based dedup will plug in — when loading calls from
+        # both cache and fresh API results, check this set to skip already-processed
+        # calls and avoid duplicate feature request entries.
+        processed_call_ids: set = set()
+
         for call in calls:
+            if call.id in processed_call_ids:
+                continue
+            processed_call_ids.add(call.id)
             if not call.sentences:
                 continue
             for sentence in call.sentences:

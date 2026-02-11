@@ -102,6 +102,8 @@ Examples:
                         help='Fetch one batch, show filter match rate, estimate API calls needed, then stop')
     parser.add_argument('--batch-delay', type=float, default=1.0,
                         help='Delay in seconds between API batches (default: 1.0)')
+    parser.add_argument('--backfill', action='store_true',
+                        help='Backfill mode: scan 90 days with limit 200 (more API calls than normal)')
 
     args = parser.parse_args()
 
@@ -131,6 +133,16 @@ Examples:
             print(f"  {user['name']:30s} {user['email']}")
 
         return 0
+
+    # ------------------------------------------------------------------
+    # Backfill mode
+    # ------------------------------------------------------------------
+    if args.backfill:
+        print("WARNING: Backfill mode — scanning 90 days, this will make more API calls than a normal run.\n")
+        if not args.days:
+            args.days = 90
+        if args.limit == 100:  # unchanged from default
+            args.limit = 200
 
     # ------------------------------------------------------------------
     # Build filter

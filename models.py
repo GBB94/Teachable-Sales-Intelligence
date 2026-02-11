@@ -79,7 +79,7 @@ class CallFilter:
     # Date filtering
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
-    days_back: Optional[int] = 30
+    days_back: Optional[int] = 14
 
     # Ownership filtering
     owner_emails: Optional[List[str]] = None
