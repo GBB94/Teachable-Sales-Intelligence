@@ -1,0 +1,19 @@
+# Environment
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Output files
+*.json
+*.csv
+*.txt
+!requirements.txt
+*.html
+!dashboard_preview.html
+
+# OS
+.DS_Store

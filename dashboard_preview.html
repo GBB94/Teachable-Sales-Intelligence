@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Request Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: #0c0e14;
+    color: #d0d3db;
+    min-height: 100vh;
+}
+
+/* Layout */
+.wrap { max-width: 940px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* Header */
+.hdr { margin-bottom: 1.5rem; }
+.hdr h1 { font-size: 1.35rem; font-weight: 700; color: #f0f1f4; }
+.hdr .sub { font-size: 0.78rem; color: #555a6e; margin-top: 0.2rem; }
+
+/* Stats */
+.stats { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+.st {
+    flex: 1; background: #14161e; border: 1px solid #1e2130;
+    border-radius: 8px; padding: 1rem;
+}
+.st .v {
+    font-size: 1.75rem; font-weight: 700; color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}
+.st .l {
+    font-size: 0.68rem; color: #555a6e; text-transform: uppercase;
+    letter-spacing: 0.04em; margin-top: 0.15rem;
+}
+
+/* Tabs */
+.tabs {
+    display: flex; gap: 0; margin-bottom: 1.25rem;
+    border-bottom: 1px solid #1e2130;
+}
+.tab {
+    padding: 0.6rem 1.2rem; font-size: 0.82rem; font-weight: 500;
+    color: #555a6e; cursor: pointer; border-bottom: 2px solid transparent;
+    transition: all 0.15s; user-select: none;
+}
+.tab:hover { color: #8b8fa3; }
+.tab.active { color: #f0f1f4; border-bottom-color: #4a7cff; }
+
+/* Search */
+.search {
+    margin-bottom: 1rem;
+}
+.search input {
+    width: 100%; padding: 0.6rem 0.85rem;
+    background: #14161e; border: 1px solid #1e2130; border-radius: 6px;
+    color: #d0d3db; font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    outline: none; transition: border-color 0.15s;
+}
+.search input:focus { border-color: #4a7cff; }
+.search input::placeholder { color: #3a3d4e; }
+
+/* Cards (shared) */
+.card {
+    background: #14161e; border: 1px solid #1e2130; border-radius: 8px;
+    margin-bottom: 0.4rem; overflow: hidden; transition: border-color 0.15s;
+}
+.card:hover { border-color: #2a2d40; }
+
+.card-hdr {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.7rem 0.9rem; cursor: pointer; user-select: none;
+}
+.card-hdr .left { display: flex; align-items: center; gap: 0.5rem; }
+.card-hdr .arrow {
+    font-size: 0.55rem; color: #555a6e; transition: transform 0.15s;
+    display: inline-block;
+}
+.card.open .card-hdr .arrow { transform: rotate(90deg); }
+.card-hdr .name { font-weight: 500; font-size: 0.88rem; }
+.card-hdr .right {
+    display: flex; align-items: center; gap: 0.6rem; min-width: 120px;
+}
+.bar {
+    height: 5px; border-radius: 3px; flex: 1;
+    background: linear-gradient(90deg, #4a7cff, #6c5ce7); min-width: 0;
+}
+.cnt {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+    font-weight: 500; color: #6b7084; min-width: 1.5rem; text-align: right;
+}
+
+/* Mention list */
+.mentions { display: none; padding: 0 0.9rem 0.75rem 2rem; }
+.card.open .mentions { display: block; }
+
+.m-row {
+    padding: 0.55rem 0; border-top: 1px solid #1a1c28;
+    display: flex; align-items: flex-start; gap: 0.6rem;
+}
+.m-ts {
+    flex-shrink: 0; min-width: 3.8rem; padding-top: 0.05rem;
+}
+.m-ts a, .m-ts span {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    padding: 0.1rem 0.4rem; border-radius: 3px;
+}
+.m-ts a {
+    color: #4a7cff; text-decoration: none;
+    border: 1px solid #253060; transition: all 0.12s;
+}
+.m-ts a:hover { background: #4a7cff; color: #fff; border-color: #4a7cff; }
+.m-ts span { color: #3a3d4e; }
+
+.m-body { flex: 1; min-width: 0; }
+.m-call {
+    font-size: 0.78rem; font-weight: 500; color: #9a9db0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.m-quote {
+    font-size: 0.76rem; color: #6b7084; line-height: 1.45; margin-top: 0.15rem;
+}
+.m-spk { color: #8b8fa3; font-weight: 500; }
+
+/* Call card extras */
+.call-meta {
+    display: flex; gap: 0.75rem; font-size: 0.73rem; color: #555a6e;
+    font-family: 'JetBrains Mono', monospace; margin-bottom: 0.15rem;
+}
+.call-link {
+    font-size: 0.73rem; color: #4a7cff; text-decoration: none;
+}
+.call-link:hover { text-decoration: underline; }
+
+/* Feature tag inside call view */
+.feat-tag {
+    display: inline-block; font-size: 0.68rem; font-weight: 500;
+    padding: 0.1rem 0.45rem; border-radius: 3px;
+    background: #1e2040; color: #7c8aff; margin-right: 0.3rem;
+    margin-bottom: 0.15rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .stats { flex-wrap: wrap; }
+    .st { flex: 1 1 45%; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="hdr">
+        <h1>Feature Requests</h1>
+        <div class="sub" id="sub"></div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="tabs">
+        <div class="tab active" data-tab="features" onclick="switchTab('features')">By Feature</div>
+        <div class="tab" data-tab="calls" onclick="switchTab('calls')">By Call</div>
+    </div>
+    <div class="search"><input id="q" placeholder="Search..." oninput="filter(this.value)"></div>
+    <div id="features-view"></div>
+    <div id="calls-view" style="display:none"></div>
+</div>
+
+<script>
+const DATA = {"stats": {"total_mentions": 19, "unique_calls": 7, "unique_features": 11, "generated": "2026-02-11"}, "mentions": [{"call_id": "c1", "call_title": "Demo with State Board of Nursing", "call_date": "2026-02-08", "speaker": "Jane Smith", "keyword": "certificate automation", "text": "Is there a way to automatically generate certificates?", "ts": "20:45", "ts_sec": 1245.0, "link": "https://app.fireflies.ai/view/abc123?t=1245", "transcript": "https://app.fireflies.ai/view/abc123"}, {"call_id": "c1", "call_title": "Demo with State Board of Nursing", "call_date": "2026-02-08", "speaker": "Jane Smith", "keyword": "compliance reporting", "text": "We need compliance reporting for our oversight board.", "ts": "26:20", "ts_sec": 1580.0, "link": "https://app.fireflies.ai/view/abc123?t=1580", "transcript": "https://app.fireflies.ai/view/abc123"}, {"call_id": "c2", "call_title": "Discovery Call - ANCC", "call_date": "2026-02-03", "speaker": "Tom Lee", "keyword": "certificate automation", "text": "The biggest gap is certificate automation for 50k certs a year.", "ts": "14:50", "ts_sec": 890.0, "link": "https://app.fireflies.ai/view/def456?t=890", "transcript": "https://app.fireflies.ai/view/def456"}, {"call_id": "c2", "call_title": "Discovery Call - ANCC", "call_date": "2026-02-03", "speaker": "Tom Lee", "keyword": "SCORM", "text": "Do you support SCORM packages? Our content is SCORM 1.2.", "ts": "18:40", "ts_sec": 1120.0, "link": "https://app.fireflies.ai/view/def456?t=1120", "transcript": "https://app.fireflies.ai/view/def456"}, {"call_id": "c2", "call_title": "Discovery Call - ANCC", "call_date": "2026-02-03", "speaker": "Tom Lee", "keyword": "SSO", "text": "SSO is a requirement for our IT department.", "ts": "22:30", "ts_sec": 1350.0, "link": "https://app.fireflies.ai/view/def456?t=1350", "transcript": "https://app.fireflies.ai/view/def456"}, {"call_id": "c3", "call_title": "Followup with Regional Training Co", "call_date": "2026-01-28", "speaker": "Sarah Park", "keyword": "certificate automation", "text": "Certificate automation is the main thing holding us back.", "ts": "10:20", "ts_sec": 620.0, "link": "https://app.fireflies.ai/view/ghi789?t=620", "transcript": "https://app.fireflies.ai/view/ghi789"}, {"call_id": "c3", "call_title": "Followup with Regional Training Co", "call_date": "2026-01-28", "speaker": "Sarah Park", "keyword": "credit tracking", "text": "We need credit tracking for CE credits toward renewal.", "ts": "15:40", "ts_sec": 940.0, "link": "https://app.fireflies.ai/view/ghi789?t=940", "transcript": "https://app.fireflies.ai/view/ghi789"}, {"call_id": "c3", "call_title": "Followup with Regional Training Co", "call_date": "2026-01-28", "speaker": "Sarah Park", "keyword": "reporting dashboard", "text": "A reporting dashboard would save us a ton of time.", "ts": "20:00", "ts_sec": 1200.0, "link": "https://app.fireflies.ai/view/ghi789?t=1200", "transcript": "https://app.fireflies.ai/view/ghi789"}, {"call_id": "c4", "call_title": "Demo with Insurance Institute", "call_date": "2026-02-07", "speaker": "Mark Jones", "keyword": "compliance reporting", "text": "Compliance reporting is a dealbreaker for regulators.", "ts": "13:00", "ts_sec": 780.0, "link": "https://app.fireflies.ai/view/jkl012?t=780", "transcript": "https://app.fireflies.ai/view/jkl012"}, {"call_id": "c4", "call_title": "Demo with Insurance Institute", "call_date": "2026-02-07", "speaker": "Mark Jones", "keyword": "SSO", "text": "Is there SSO? Our staff all use Okta.", "ts": "26:00", "ts_sec": 1560.0, "link": "https://app.fireflies.ai/view/jkl012?t=1560", "transcript": "https://app.fireflies.ai/view/jkl012"}, {"call_id": "c4", "call_title": "Demo with Insurance Institute", "call_date": "2026-02-07", "speaker": "Mark Jones", "keyword": "API access", "text": "We need API access for our internal systems.", "ts": "31:30", "ts_sec": 1890.0, "link": "https://app.fireflies.ai/view/jkl012?t=1890", "transcript": "https://app.fireflies.ai/view/jkl012"}, {"call_id": "c5", "call_title": "Sales Call - PharmaCE", "call_date": "2026-02-01", "speaker": "Lisa Chen", "keyword": "compliance reporting", "text": "Compliance reporting is non-negotiable. FDA regulated.", "ts": "7:00", "ts_sec": 420.0, "link": "https://app.fireflies.ai/view/mno345?t=420", "transcript": "https://app.fireflies.ai/view/mno345"}, {"call_id": "c5", "call_title": "Sales Call - PharmaCE", "call_date": "2026-02-01", "speaker": "Lisa Chen", "keyword": "white label", "text": "Can we white label the platform?", "ts": "15:00", "ts_sec": 900.0, "link": "https://app.fireflies.ai/view/mno345?t=900", "transcript": "https://app.fireflies.ai/view/mno345"}, {"call_id": "c5", "call_title": "Sales Call - PharmaCE", "call_date": "2026-02-01", "speaker": "Lisa Chen", "keyword": "SCORM", "text": "All our content is SCORM. Do you support it?", "ts": "18:20", "ts_sec": 1100.0, "link": "https://app.fireflies.ai/view/mno345?t=1100", "transcript": "https://app.fireflies.ai/view/mno345"}, {"call_id": "c6", "call_title": "Demo with Dental Board", "call_date": "2026-01-22", "speaker": "Amy Tran", "keyword": "certificate automation", "text": "We need certificate automation for license renewal.", "ts": "12:40", "ts_sec": 760.0, "link": "https://app.fireflies.ai/view/pqr678?t=760", "transcript": "https://app.fireflies.ai/view/pqr678"}, {"call_id": "c6", "call_title": "Demo with Dental Board", "call_date": "2026-01-22", "speaker": "Amy Tran", "keyword": "recertification", "text": "How does recertification work? Members recertify every two years.", "ts": "23:20", "ts_sec": 1400.0, "link": "https://app.fireflies.ai/view/pqr678?t=1400", "transcript": "https://app.fireflies.ai/view/pqr678"}, {"call_id": "c6", "call_title": "Demo with Dental Board", "call_date": "2026-01-22", "speaker": "Amy Tran", "keyword": "SSO", "text": "SSO is a must-have. We use Azure AD.", "ts": "27:30", "ts_sec": 1650.0, "link": "https://app.fireflies.ai/view/pqr678?t=1650", "transcript": "https://app.fireflies.ai/view/pqr678"}, {"call_id": "c7", "call_title": "Discovery Call - NatAcad", "call_date": "2026-01-15", "speaker": "David Kim", "keyword": "bulk upload", "text": "Is there bulk upload? We have 200 courses.", "ts": "9:00", "ts_sec": 540.0, "link": "https://app.fireflies.ai/view/stu901?t=540", "transcript": "https://app.fireflies.ai/view/stu901"}, {"call_id": "c7", "call_title": "Discovery Call - NatAcad", "call_date": "2026-01-15", "speaker": "David Kim", "keyword": "LTI integration", "text": "We run on Canvas so LTI is critical.", "ts": "13:40", "ts_sec": 820.0, "link": "https://app.fireflies.ai/view/stu901?t=820", "transcript": "https://app.fireflies.ai/view/stu901"}], "calls": [{"id": "c1", "title": "Demo with State Board of Nursing", "date": "2026-02-08", "duration": 40, "organizer": "zach@teachable.com", "attendees": "Jane Smith", "transcript": "https://app.fireflies.ai/view/abc123"}, {"id": "c2", "title": "Discovery Call - ANCC", "date": "2026-02-03", "duration": 30, "organizer": "zach@teachable.com", "attendees": "Tom Lee", "transcript": "https://app.fireflies.ai/view/def456"}, {"id": "c3", "title": "Followup with Regional Training Co", "date": "2026-01-28", "duration": 35, "organizer": "zach@teachable.com", "attendees": "Sarah Park", "transcript": "https://app.fireflies.ai/view/ghi789"}, {"id": "c4", "title": "Demo with Insurance Institute", "date": "2026-02-07", "duration": 45, "organizer": "zach@teachable.com", "attendees": "Mark Jones", "transcript": "https://app.fireflies.ai/view/jkl012"}, {"id": "c5", "title": "Sales Call - PharmaCE", "date": "2026-02-01", "duration": 25, "organizer": "zach@teachable.com", "attendees": "Lisa Chen", "transcript": "https://app.fireflies.ai/view/mno345"}, {"id": "c6", "title": "Demo with Dental Board", "date": "2026-01-22", "duration": 33, "organizer": "zach@teachable.com", "attendees": "Amy Tran", "transcript": "https://app.fireflies.ai/view/pqr678"}, {"id": "c7", "title": "Discovery Call - NatAcad", "date": "2026-01-15", "duration": 22, "organizer": "zach@teachable.com", "attendees": "David Kim", "transcript": "https://app.fireflies.ai/view/stu901"}]};
+
+let currentTab = 'features';
+
+function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+function tsLink(m) {
+    if (m.link) return '<a href="' + esc(m.link) + '" target="_blank" title="Jump to recording">' + esc(m.ts || '0:00') + '</a>';
+    if (m.transcript) return '<a href="' + esc(m.transcript) + '" target="_blank">' + (m.ts || 'open') + '</a>';
+    return '<span>' + esc(m.ts || '--') + '</span>';
+}
+
+function mentionHTML(m, showFeature) {
+    let tag = showFeature ? '<span class="feat-tag">' + esc(m.keyword) + '</span> ' : '';
+    return '<div class="m-row">' +
+        '<div class="m-ts">' + tsLink(m) + '</div>' +
+        '<div class="m-body">' +
+            '<div class="m-call">' + tag + esc(m.call_title) + ' &middot; ' + m.call_date + '</div>' +
+            '<div class="m-quote"><span class="m-spk">' + esc(m.speaker) + ':</span> "' + esc(m.text.slice(0, 140)) + '..."</div>' +
+        '</div></div>';
+}
+
+// ---- Features view ----
+function buildFeatures() {
+    const groups = {};
+    DATA.mentions.forEach(m => {
+        if (!groups[m.keyword]) groups[m.keyword] = [];
+        groups[m.keyword].push(m);
+    });
+    const sorted = Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
+    const maxCount = sorted.length ? sorted[0][1].length : 1;
+
+    let html = '';
+    sorted.forEach(([kw, mentions]) => {
+        const barW = Math.max(8, (mentions.length / maxCount) * 100);
+        const mSorted = mentions.sort((a, b) => (b.call_date || '').localeCompare(a.call_date || ''));
+
+        let mHTML = '';
+        mSorted.forEach(m => { mHTML += mentionHTML(m, false); });
+
+        html += '<div class="card" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + '">' +
+            '<div class="card-hdr" onclick="toggleCard(this)">' +
+                '<div class="left"><span class="arrow">&#9654;</span><span class="name">' + esc(kw) + '</span></div>' +
+                '<div class="right"><div class="bar" style="width:' + barW + '%"></div><span class="cnt">' + mentions.length + '</span></div>' +
+            '</div>' +
+            '<div class="mentions">' + mHTML + '</div></div>';
+    });
+    document.getElementById('features-view').innerHTML = html || '<div style="padding:2rem;color:#3a3d4e;text-align:center">No feature requests found.</div>';
+}
+
+// ---- Calls view ----
+function buildCalls() {
+    // Group mentions by call
+    const byCall = {};
+    DATA.mentions.forEach(m => {
+        if (!byCall[m.call_id]) byCall[m.call_id] = [];
+        byCall[m.call_id].push(m);
+    });
+
+    // Get call metadata + sort by date desc
+    const callList = DATA.calls
+        .filter(c => byCall[c.id])
+        .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    let html = '';
+    callList.forEach(c => {
+        const mentions = byCall[c.id].sort((a, b) => (a.ts_sec || 0) - (b.ts_sec || 0));
+        const features = [...new Set(mentions.map(m => m.keyword))];
+
+        let tags = features.map(f => '<span class="feat-tag">' + esc(f) + '</span>').join('');
+
+        let mHTML = '';
+        mentions.forEach(m => { mHTML += mentionHTML(m, true); });
+
+        const transcriptLink = c.transcript ? ' <a class="call-link" href="' + esc(c.transcript) + '" target="_blank">Open full transcript</a>' : '';
+
+        html += '<div class="card" data-search="' + esc((c.title + ' ' + features.join(' ') + ' ' + mentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '">' +
+            '<div class="card-hdr" onclick="toggleCard(this)">' +
+                '<div class="left"><span class="arrow">&#9654;</span><span class="name">' + esc(c.title) + '</span></div>' +
+                '<div class="right"><span class="cnt" style="min-width:auto">' + mentions.length + ' mention' + (mentions.length > 1 ? 's' : '') + '</span></div>' +
+            '</div>' +
+            '<div class="mentions">' +
+                '<div style="margin-bottom:0.5rem">' +
+                    '<div class="call-meta">' + c.date + ' &middot; ' + c.duration + ' min' + transcriptLink + '</div>' +
+                    '<div>' + tags + '</div>' +
+                '</div>' +
+                mHTML +
+            '</div></div>';
+    });
+
+    document.getElementById('calls-view').innerHTML = html || '<div style="padding:2rem;color:#3a3d4e;text-align:center">No calls with feature requests found.</div>';
+}
+
+function toggleCard(el) {
+    el.parentElement.classList.toggle('open');
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    document.getElementById('features-view').style.display = tab === 'features' ? '' : 'none';
+    document.getElementById('calls-view').style.display = tab === 'calls' ? '' : 'none';
+    document.getElementById('q').value = '';
+    filter('');
+}
+
+function filter(q) {
+    const low = q.toLowerCase();
+    const view = currentTab === 'features' ? 'features-view' : 'calls-view';
+    document.querySelectorAll('#' + view + ' .card').forEach(c => {
+        c.style.display = !low || c.dataset.search.includes(low) ? '' : 'none';
+    });
+}
+
+// Init
+document.getElementById('sub').textContent = 'Generated ' + DATA.stats.generated + '. ' + DATA.stats.total_mentions + ' mentions across ' + DATA.stats.unique_calls + ' calls.';
+document.getElementById('stats').innerHTML =
+    '<div class="st"><div class="v">' + DATA.stats.total_mentions + '</div><div class="l">Mentions</div></div>' +
+    '<div class="st"><div class="v">' + DATA.stats.unique_calls + '</div><div class="l">Calls</div></div>' +
+    '<div class="st"><div class="v">' + DATA.stats.unique_features + '</div><div class="l">Features</div></div>';
+
+buildFeatures();
+buildCalls();
+</script>
+</body>
+</html>
