@@ -56,26 +56,16 @@ DEFAULT_FEATURE_KEYWORDS: List[str] = [
     "reporting dashboard",
 ]
 
-# Keywords that should use word-boundary matching to avoid false positives
-# (e.g. "SSO" should not match "association").  Auto-detected for short
-# all-caps words, but you can add extras here.
-WORD_BOUNDARY_KEYWORDS = {"SSO", "SCORM", "LTI", "API", "CE"}
-
-
 def _build_keyword_pattern(keyword: str) -> re.Pattern:
     """
-    Build a compiled regex for a keyword.
+    Build a compiled regex for a keyword with word-boundary anchors.
 
-    Short acronyms / entries in WORD_BOUNDARY_KEYWORDS get word-boundary
-    anchors so that 'SSO' won't match 'association'.  Longer phrases use
-    plain case-insensitive substring matching via regex.
+    All keywords get \\b anchors so that partial-word matches are prevented
+    (e.g. "SSO" won't match "association", "CE credits" won't match
+    "service credits").
     """
     escaped = re.escape(keyword)
-    upper = keyword.strip().upper()
-
-    if upper in WORD_BOUNDARY_KEYWORDS or (len(keyword) <= 4 and keyword.isalpha() and keyword.isupper()):
-        return re.compile(r"\b" + escaped + r"\b", re.IGNORECASE)
-    return re.compile(escaped, re.IGNORECASE)
+    return re.compile(r"\b" + escaped + r"\b", re.IGNORECASE)
 
 
 def build_keyword_patterns(keywords: List[str]) -> List[tuple]:
