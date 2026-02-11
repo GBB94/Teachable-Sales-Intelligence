@@ -422,6 +422,11 @@ class FirefliesRetriever:
             processed_call_ids.add(call.id)
             if not call.sentences:
                 continue
+
+            # Per-call keyword dedup: only count each keyword once per call.
+            # Keeps the first (earliest) occurrence as the representative mention.
+            seen_keywords_this_call: set = set()
+
             for sentence in call.sentences:
                 text = sentence.get("text", "")
                 speaker = sentence.get("speaker_name", "Unknown")
@@ -436,7 +441,10 @@ class FirefliesRetriever:
                 for kw, pat in kw_patterns:
                     if kw.lower() in blacklist_lower:
                         continue
+                    if kw in seen_keywords_this_call:
+                        continue
                     if pat.search(text):
+                        seen_keywords_this_call.add(kw)
                         keyword_counter[kw] += 1
                         calls_with_matches.add(call.id)
 

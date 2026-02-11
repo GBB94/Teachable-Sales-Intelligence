@@ -17,21 +17,12 @@ from collections import Counter
 # automatically.  Longer phrases use exact substring matching.
 # ---------------------------------------------------------------------------
 DEFAULT_FEATURE_KEYWORDS: List[str] = [
-    # General product requests
+    # Explicit feature-request signals
     "feature request",
-    "would be nice if",
-    "it would be great if",
-    "can you add",
-    "do you support",
-    "is there a way to",
-    "we really need",
-    "we need the ability",
     "missing feature",
     "wish list",
     "wishlist",
     "on the roadmap",
-    "any plans to",
-    "are you planning",
     # Continuing-ed / credentialing specific
     "CE credits",
     "continuing education credits",
