@@ -96,7 +96,11 @@ def _write_data_to_html(html_path: str, data: dict):
 
 
 def cmd_extract(args):
-    """Extract and print call transcripts from dashboard HTML."""
+    """Extract and print call transcripts from dashboard HTML.
+
+    By default only extracts calls with pending_analysis=true.
+    Use --all to extract every call.
+    """
     # Load prior feature names for context
     prior_names = _load_canonical_names()
     if args.prior:
@@ -115,16 +119,37 @@ def cmd_extract(args):
         print()
 
     data = _extract_data_from_html(args.dashboard)
-    calls = data.get("calls", [])
+    all_calls = data.get("calls", [])
 
-    print(f"Found {len(calls)} calls in dashboard.\n")
+    # Determine which calls already have features extracted
+    analyzed_ids = {m.get("call_id") for m in data.get("mentions", [])}
+
+    if args.all:
+        calls = all_calls
+        print(f"Found {len(calls)} total calls in dashboard.\n")
+    else:
+        # Only extract calls that are pending analysis
+        calls = [c for c in all_calls if c.get("pending_analysis") or c.get("id") not in analyzed_ids]
+        pending_count = len([c for c in all_calls if c.get("pending_analysis")])
+        unanalyzed_count = len(calls) - pending_count
+        print(f"Found {len(all_calls)} calls total, {len(calls)} need analysis "
+              f"({pending_count} pending, {unanalyzed_count} unanalyzed).\n")
+        if not calls:
+            print("All calls have been analyzed. Use --all to re-extract everything.")
+            return
 
     for i, call in enumerate(calls, 1):
         transcript = call.get("transcript_text", "")
         word_count = len(transcript.split()) if transcript else 0
 
+        status = ""
+        if call.get("pending_analysis"):
+            status = " [PENDING]"
+        elif call.get("id") not in analyzed_ids:
+            status = " [UNANALYZED]"
+
         print(f"{'='*70}")
-        print(f"[{i}] {call['title']}")
+        print(f"[{i}] {call['title']}{status}")
         print(f"    Date: {call.get('date', 'N/A')}  |  Duration: {call.get('duration', 0)} min")
         print(f"    ID: {call.get('id', 'N/A')}")
         print(f"    Transcript: {word_count} words")
@@ -155,6 +180,230 @@ def cmd_extract(args):
         json.dump(extract_data, f, indent=2)
     print(f"Wrote {extract_path} for analysis.\n")
 
+    # Print analysis instructions and expected output format for CC
+    print(f"{'='*70}")
+    print("DATA SOURCE")
+    print(f"{'─'*70}")
+    print("""The transcripts above are already saved in the dashboard data. Each call
+has a transcript_text field with the full transcript. Do NOT re-pull from
+the Fireflies API. Just read the transcripts printed above (or from
+test_output/calls_for_analysis.json).
+
+Only pull from Fireflies when scanning for NEW calls that aren't already
+in the data (via the server scan UI or CLI).
+""")
+
+    print(f"{'='*70}")
+    print("ANALYSIS PROMPT")
+    print(f"{'─'*70}")
+    print("""Read each sales call transcript carefully IN ITS ENTIRETY. Identify every
+product feature, capability, or topic discussed in the context of what the
+customer needs, is evaluating, or is interested in.
+
+Include:
+- Features the customer explicitly asks for ("we need X")
+- Features the customer asks questions about ("how do your quizzes work?")
+- Features discussed as part of the customer's use case or requirements
+- Existing features the customer wants customized or improved
+- Features the rep demos or pitches that the customer engages with
+- Topics referenced in the call title or meeting agenda
+- Capabilities the customer compares to their current/competing platform
+- Pain points that imply a missing feature ("it's so manual", "we can't do X")
+
+Do NOT include:
+- Small talk, scheduling, or logistics
+- Generic platform questions ("how much does it cost?") unless tied to a
+  specific feature
+- Internal Teachable discussion not relevant to a product capability
+
+Be thorough. If in doubt, include it. A shallow analysis that misses
+features discussed on the call is worse than a slightly long list.
+""")
+
+    print(f"{'='*70}")
+    print("OUTPUT FORMAT")
+    print(f"{'─'*70}")
+    print("Write a JSON file with this structure:")
+    print("""
+{
+  "features": {
+    "<call_id>": [
+      {
+        "feature": "Short Normalized Feature Name",
+        "speaker": "Customer Name (Company)",
+        "quote": "most relevant 1-2 sentence verbatim quote",
+        "timestamp": "~MM:SS",
+        "ts_seconds": 123,
+        "type": "prospect_request | prospect_interest | rep_highlighted"
+      }
+    ]
+  },
+  "notes": {
+    "<call_id>": "full HubSpot note text (see format below)"
+  },
+  "recap": "optional weekly recap paragraph",
+  "company_summaries": { "Company": "one-line summary" }
+}
+
+Feature type meanings:
+  "prospect_request"  — customer explicitly asked for this feature
+  "prospect_interest" — customer asked about it or engaged positively
+  "rep_highlighted"   — rep pitched/demoed it and customer showed interest
+""")
+    print("HUBSPOT NOTE FORMAT (for the 'notes' field):")
+    print(f"{'─'*70}")
+    print("""CALL DATE: YYYY-MM-DD
+ATTENDEES: Name (email), Name (email)
+COMPANY: Company Name
+STAGE: Discovery / Demo / Followup / Negotiation / Closed
+
+---
+SUMMARY
+2-3 sentences: who they are, what they want to build, where they are in evaluation
+
+---
+USE CASE
+Primary goal:
+Audience:
+Business model:
+Content types:
+Scale expectations:
+
+---
+QUALIFICATION
+Budget:
+Authority:
+Need:
+Timeline:
+
+---
+TECHNICAL REQUIREMENTS
+Integrations:
+Reporting needs:
+Payments / checkout:
+Admin or seat management:
+Special workflows or constraints:
+
+---
+BUYING SIGNALS
+- specific signal observed
+
+---
+RISKS / OBJECTIONS
+- specific risk
+
+---
+PRODUCT FEEDBACK
+- specific feedback
+
+---
+PRICING DISCUSSED
+Plan discussed:
+Discounts offered:
+Contract length discussed:
+Constraints or approvals needed:
+
+---
+NEXT STEPS
+Zach:
+- action item
+
+Customer:
+- action item
+
+Scheduled:
+- Next meeting date:
+- Materials to send:
+
+---
+ADDITIONAL CONTEXT
+Personality, internal politics, seriousness level, gut feel
+
+---
+TRANSCRIPT: {fireflies_url}
+
+For short calls (<10 min), use compact version:
+Summary, Use Case, Qualification, Risks, Next Steps only.
+Skip empty sections — don't write "Not discussed."
+""")
+    print(f"{'='*70}")
+    print("MARKETING REPORT FORMAT")
+    print(f"{'─'*70}")
+    print("""In addition to features and notes, generate a marketing_report object.
+This is for the marketing team — a different lens on the same call data.
+
+IMPORTANT RULE: Do NOT fabricate or infer any information. Only include
+data that is EXPLICITLY stated in the call transcripts. If a section has
+no data from the calls, leave the array empty — the dashboard will show
+"No data from this week's calls" automatically. All quotes must be
+VERBATIM from transcripts with attribution.
+
+Add this to the top-level JSON output:
+
+  "marketing_report": {
+    "persona_profiles": [
+      {
+        "name": "Contact Name",
+        "title": "Their Title (only if stated)",
+        "company": "Company name and brief description from transcript context",
+        "industry": "Only if mentioned in the call",
+        "role_in_decision": "champion / influencer / decision-maker (only if clear)",
+        "team": ["Other people mentioned or on the call"]
+      }
+    ],
+    "voice_of_customer": {
+      "problem_descriptions": [
+        {
+          "quote": "Exact verbatim quote of how they describe their problem",
+          "speaker": "Speaker Name",
+          "call": "Call Title"
+        }
+      ],
+      "terminology": ["specific words/phrases prospects used"],
+      "frequent_questions": ["questions prospects asked on calls"]
+    },
+    "pain_points": [
+      {
+        "pain": "Short pain point description",
+        "company": "Company Name",
+        "quote": "Brief verbatim quote",
+        "current_workaround": "What they said they're currently using (only if stated)",
+        "business_impact": "Only if they stated it"
+      }
+    ],
+    "objections": {
+      "items": [
+        {
+          "objection": "The objection",
+          "company": "Company Name",
+          "quote": "Brief verbatim quote"
+        }
+      ],
+      "competitors_mentioned": ["Only names explicitly said in calls"],
+      "barriers": ["Barriers to adoption mentioned (only if stated)"]
+    },
+    "buying_signals": [
+      {
+        "trigger": "What triggered their interest (only if stated)",
+        "company": "Company Name",
+        "timeline": "Only if discussed",
+        "budget_feedback": "Only if discussed"
+      }
+    ],
+    "success_metrics": [
+      {
+        "metric": "How they measure success (only if stated)",
+        "company": "Company Name",
+        "quote": "Verbatim quote if available"
+      }
+    ],
+    "weekly_summary": {
+      "patterns": ["Only patterns clearly visible in the data"],
+      "surprising_insights": ["Anything unexpected from the calls"]
+    }
+  }
+""")
+
 
 def cmd_inject(args):
     """Inject AI-analyzed features into dashboard HTML and optionally notes."""
@@ -169,11 +418,13 @@ def cmd_inject(args):
         notes_by_call = raw.get("notes", {})
         recap_text = raw.get("recap", "")
         company_summaries = raw.get("company_summaries", {})
+        marketing_report = raw.get("marketing_report", {})
     else:
         features_by_call = raw
         notes_by_call = {}
         recap_text = ""
         company_summaries = {}
+        marketing_report = {}
 
     # Load categories map (optional)
     categories_map = {}
@@ -207,6 +458,7 @@ def cmd_inject(args):
             quote = feat.get("quote", "")
             timestamp = feat.get("timestamp", "")
             ts_seconds = feat.get("ts_seconds")
+            feat_type = feat.get("type", "prospect_request")
 
             # Build deep link
             deep_link = ""
@@ -224,6 +476,7 @@ def cmd_inject(args):
                 "speaker": speaker,
                 "keyword": feature_name,
                 "category": categories_map.get(feature_name, "Other"),
+                "type": feat_type,
                 "text": quote,
                 "ts": timestamp,
                 "ts_sec": ts_seconds,
@@ -254,7 +507,13 @@ def cmd_inject(args):
 
             call["hubspot_note"] = note
 
-    # Update stats, mentions, and recap in dashboard data
+    # Clear pending_analysis flag on all calls that now have features
+    for call in calls:
+        call_id = call.get("id", "")
+        if call_id in calls_with_features:
+            call.pop("pending_analysis", None)
+
+    # Fully rebuild stats from the complete dataset
     data["mentions"] = new_mentions
     data["stats"] = {
         "total_mentions": len(new_mentions),
@@ -266,10 +525,16 @@ def cmd_inject(args):
         data["recap"] = recap_text
     if company_summaries:
         data["company_summaries"] = company_summaries
+    if marketing_report:
+        data["marketing_report"] = marketing_report
 
     # Write updated dashboard
     _write_data_to_html(args.dashboard, data)
+
+    pending_remaining = sum(1 for c in calls if c.get("pending_analysis"))
     print(f"Updated dashboard: {len(new_mentions)} features across {len(calls_with_features)} calls")
+    if pending_remaining:
+        print(f"  {pending_remaining} call(s) still pending analysis")
 
     # Optionally regenerate HubSpot notes
     if args.notes:
@@ -339,6 +604,67 @@ def cmd_normalize(args):
         print(f"  - {name}")
 
 
+def cmd_refetch_empty(args):
+    """Re-fetch transcripts from Fireflies for calls with empty transcript_text."""
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
+
+    api_key = os.getenv('FIREFLIES_API_KEY')
+    if not api_key:
+        print("Error: FIREFLIES_API_KEY not set in .env")
+        sys.exit(1)
+
+    from client import FirefliesRetriever
+
+    data = _extract_data_from_html(args.dashboard)
+    calls = data.get("calls", [])
+
+    # Find calls with empty transcripts
+    empty_calls = [c for c in calls if not c.get("transcript_text", "").strip()]
+
+    if not empty_calls:
+        print("All calls have transcript text. Nothing to refetch.")
+        return
+
+    print(f"Found {len(empty_calls)} call(s) with empty transcripts:\n")
+    for c in empty_calls:
+        print(f"  - {c.get('title', '?')} ({c.get('date', '?')}) [{c.get('id', '?')}]")
+    print()
+
+    retriever = FirefliesRetriever(api_key)
+    updated = 0
+
+    for call_data in empty_calls:
+        call_id = call_data.get("id", "")
+        if not call_id:
+            continue
+
+        print(f"Refetching: {call_data.get('title', '?')}...")
+        call = retriever.fetch_single_transcript(call_id, verbose=True)
+
+        if call and call.full_transcript_text:
+            call_data["transcript_text"] = call.full_transcript_text
+            # Also fix duration if it was wrong
+            if call.duration > 0:
+                call_data["duration"] = round(call.duration / 60) if call.duration > 300 else round(call.duration)
+            # Fix attendees if empty
+            if not call_data.get("attendees") and call.attendee_names:
+                call_data["attendees"] = ", ".join(call.attendee_names)
+            updated += 1
+            print(f"  -> Got {len(call.full_transcript_text)} chars")
+        else:
+            print(f"  -> Still empty (transcript may not be processed yet)")
+
+    if updated:
+        _write_data_to_html(args.dashboard, data)
+        print(f"\nUpdated {updated} call(s) with fresh transcripts.")
+    else:
+        print("\nNo transcripts were updated.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="AI feature analysis helper")
     sub = parser.add_subparsers(dest="command")
@@ -348,6 +674,8 @@ def main():
     p_extract.add_argument("dashboard", help="Path to dashboard HTML file")
     p_extract.add_argument("--titles-only", action="store_true",
                            help="Only print call titles, not full transcripts")
+    p_extract.add_argument("--all", action="store_true",
+                           help="Extract all calls, not just pending/unanalyzed")
     p_extract.add_argument("--prior", metavar="DASHBOARD",
                            help="Load existing feature names from a prior dashboard")
 
@@ -367,6 +695,11 @@ def main():
     p_inject.add_argument("--categories", metavar="FILE",
                           help="JSON file mapping feature names to category names")
 
+    # Refetch empty transcripts
+    p_refetch = sub.add_parser("refetch-empty",
+                               help="Re-pull transcripts from Fireflies for calls with empty transcript_text")
+    p_refetch.add_argument("dashboard", help="Path to dashboard HTML file")
+
     args = parser.parse_args()
     if args.command == "extract":
         cmd_extract(args)
@@ -374,6 +707,8 @@ def main():
         cmd_normalize(args)
     elif args.command == "inject":
         cmd_inject(args)
+    elif args.command == "refetch-empty":
+        cmd_refetch_empty(args)
     else:
         parser.print_help()
 

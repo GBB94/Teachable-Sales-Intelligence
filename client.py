@@ -223,6 +223,94 @@ class FirefliesRetriever:
         return True
 
     # ------------------------------------------------------------------
+    # Single call retrieval (for backfilling missing data)
+    # ------------------------------------------------------------------
+    def fetch_single_transcript(self, call_id: str, verbose: bool = False) -> Optional[Call]:
+        """Fetch a single call by ID from Fireflies API.
+
+        Uses the singular `transcript(id:)` query which returns full data
+        even when the bulk `transcripts` endpoint returned empty sentences
+        (e.g. because processing wasn't finished at the original pull time).
+        """
+        query = """
+        query Transcript($id: String!) {
+          transcript(id: $id) {
+            id
+            title
+            date
+            duration
+            organizer_email
+            transcript_url
+            video_url
+            meeting_attendees {
+              displayName
+              email
+              name
+            }
+            sentences {
+              text
+              speaker_name
+              speaker_id
+              start_time
+              end_time
+            }
+            summary {
+              overview
+              shorthand_bullet
+              keywords
+              action_items
+              outline
+            }
+          }
+        }
+        """
+        try:
+            data = self._make_request(query, {"id": call_id})
+            raw = data.get("data", {}).get("transcript")
+            if not raw:
+                if verbose:
+                    print(f"   No transcript found for ID {call_id}")
+                return None
+
+            self.api_calls_made += 1
+
+            sentences = raw.get("sentences") or []
+            parsed_dt = self._parse_call_date(raw.get("date", ""))
+            date_iso = parsed_dt.isoformat() if parsed_dt else str(raw.get("date", ""))
+
+            # Use real duration from sentences if API duration looks wrong
+            api_duration = raw.get("duration", 0)
+            real_duration = api_duration
+            if sentences:
+                last_end = max(s.get("end_time", 0) for s in sentences)
+                if last_end > api_duration * 2:
+                    real_duration = last_end
+
+            call = Call(
+                id=raw["id"],
+                title=raw.get("title", "Untitled"),
+                date=date_iso,
+                duration=int(real_duration),
+                organizer_email=raw.get("organizer_email"),
+                attendees=raw.get("meeting_attendees", []),
+                transcript_url=raw.get("transcript_url"),
+                recording_url=raw.get("video_url"),
+                summary=raw.get("summary"),
+                sentences=sentences,
+                full_transcript_text=self._build_full_transcript(sentences),
+            )
+
+            if verbose:
+                has_text = "yes" if call.full_transcript_text else "EMPTY"
+                print(f"   Fetched: {call.title} ({len(sentences)} sentences, transcript={has_text})")
+
+            return call
+
+        except Exception as e:
+            print(f"Error fetching transcript {call_id}: {e}")
+            return None
+
+    # ------------------------------------------------------------------
     # Main retrieval
     # ------------------------------------------------------------------
     def get_calls(
@@ -299,6 +387,9 @@ class FirefliesRetriever:
                         call.full_transcript_text = self._build_full_transcript(
                             raw_call.get("sentences", [])
                         )
+                        if not call.full_transcript_text and verbose:
+                            date_str = date_iso[:10] if date_iso else "?"
+                            print(f"   WARNING: Call \"{call.title}\" ({date_str}) has no transcript text.")
                     filtered_calls.append(call)
 
             if len(batch) < batch_size:

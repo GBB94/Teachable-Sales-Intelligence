@@ -227,22 +227,22 @@ class Call:
 
     def to_hubspot_note(
         self,
-        include_action_items: bool = True,
-        feature_requests: Optional[List["FeatureRequest"]] = None,
         override_note: Optional[str] = None,
+        **kwargs,
     ) -> str:
-        # If a fully-formed note was provided (e.g. from Claude Code analysis),
-        # use it directly instead of auto-generating.
+        """Generate a structured HubSpot note.
+
+        If *override_note* is provided (e.g. from Claude Code analysis),
+        it is returned as-is.  Otherwise an auto-generated scaffold is
+        built from the Fireflies API data — CC fills in the rest during
+        analysis.
+        """
         if override_note:
             return override_note
 
-        lines: List[str] = []
-
-        lines.append(f"CALL: {self.title}")
         date_short = self.date[:10] if self.date else "N/A"
-        lines.append(f"DATE: {date_short}  |  DURATION: {self.duration_minutes:.0f} min")
-        lines.append(f"ORGANIZER: {self.organizer_email or 'Unknown'}")
 
+        # Build attendee string
         attendee_parts = []
         for a in self.attendees:
             name = a.get('displayName', '')
@@ -253,56 +253,105 @@ class Call:
                 attendee_parts.append(email)
             elif name:
                 attendee_parts.append(name)
-        lines.append(f"ATTENDEES: {', '.join(attendee_parts) or 'None listed'}")
-        lines.append("---")
+        attendees_str = ', '.join(attendee_parts) or 'None listed'
+
+        # Try to derive company from attendee emails (non-teachable domain)
+        company = ""
+        for a in self.attendees:
+            email = (a.get('email') or '').lower()
+            if email and 'teachable' not in email and '@' in email:
+                domain = email.split('@')[1].split('.')[0].title()
+                if domain not in ('Gmail', 'Yahoo', 'Hotmail', 'Outlook'):
+                    company = domain
+                    break
 
         overview = ""
         if self.summary:
-            overview = self.summary.get('overview', '') or ''
+            overview = (self.summary.get('overview', '') or '').strip()
+
+        # Build the note — short calls get the compact version
+        is_short = self.duration_minutes < 10
+        lines = []
+
+        lines.append(f"CALL DATE: {date_short}")
+        lines.append(f"ATTENDEES: {attendees_str}")
+        if company:
+            lines.append(f"COMPANY: {company}")
+        lines.append("")
+        lines.append("---")
         lines.append("SUMMARY")
-        lines.append(overview.strip() if overview.strip() else "(No summary available)")
+        lines.append(overview if overview else "(Pending CC analysis)")
 
-        if include_action_items and self.summary:
-            action_items = self.summary.get('action_items') or []
-            # Fireflies API returns action_items as a string, not a list
-            if isinstance(action_items, str):
-                action_items = [line.strip().strip("*-•").strip()
-                                for line in action_items.split("\n")
-                                if line.strip()]
-            if action_items:
-                lines.append("---")
-                lines.append("ACTION ITEMS")
-                for item in action_items:
-                    if isinstance(item, str):
-                        lines.append(f"- {item}")
-                    elif isinstance(item, dict):
-                        lines.append(f"- {item.get('text', str(item))}")
-
-        if self.summary:
-            keywords = self.summary.get('keywords') or []
-            # Fireflies API may return keywords as a string
-            if isinstance(keywords, str):
-                keywords = [k.strip() for k in keywords.split(",") if k.strip()]
-            if keywords:
-                lines.append("---")
-                lines.append("KEY TOPICS")
-                lines.append(", ".join(keywords))
-
-        # Feature requests section (from AI analysis or keyword scanner)
-        if feature_requests:
+        if not is_short:
+            lines.append("")
             lines.append("---")
-            lines.append("FEATURE REQUESTS")
-            for req in feature_requests:
-                ts_part = f" ({req.timestamp_display})" if req.timestamp_display else ""
-                quote = req.surrounding_text[:120].replace("\n", " ")
-                lines.append(f"- {req.keyword_matched}{ts_part} - \"{quote}\"")
+            lines.append("USE CASE")
+            lines.append("Primary goal: ")
+            lines.append("Audience: ")
+            lines.append("Business model: ")
+            lines.append("Content types: ")
+            lines.append("Scale expectations: ")
+
+        lines.append("")
+        lines.append("---")
+        lines.append("QUALIFICATION")
+        lines.append("Budget: ")
+        lines.append("Authority: ")
+        lines.append("Need: ")
+        lines.append("Timeline: ")
+
+        if not is_short:
+            lines.append("")
+            lines.append("---")
+            lines.append("TECHNICAL REQUIREMENTS")
+            lines.append("Integrations: ")
+            lines.append("Reporting needs: ")
+            lines.append("Payments / checkout: ")
+            lines.append("Admin or seat management: ")
+            lines.append("Special workflows or constraints: ")
+
+            lines.append("")
+            lines.append("---")
+            lines.append("BUYING SIGNALS")
+            lines.append("- ")
+
+        lines.append("")
+        lines.append("---")
+        lines.append("RISKS / OBJECTIONS")
+        lines.append("- ")
+
+        if not is_short:
+            lines.append("")
+            lines.append("---")
+            lines.append("PRODUCT FEEDBACK")
+            lines.append("- ")
+
+            lines.append("")
+            lines.append("---")
+            lines.append("PRICING DISCUSSED")
+            lines.append("Plan discussed: ")
+            lines.append("Discounts offered: ")
+            lines.append("Contract length discussed: ")
+            lines.append("Constraints or approvals needed: ")
+
+        lines.append("")
+        lines.append("---")
+        lines.append("NEXT STEPS")
+        lines.append("Zach:")
+        lines.append("- ")
+        lines.append("")
+        lines.append("Customer:")
+        lines.append("- ")
+
+        if not is_short:
+            lines.append("")
+            lines.append("---")
+            lines.append("ADDITIONAL CONTEXT")
+            lines.append("")
 
         if self.transcript_url:
+            lines.append("")
             lines.append("---")
-            # NOTE: Fireflies has no public share URL. The /view/ link requires
-            # a Fireflies account. Checked the GraphQL schema — no share_url or
-            # share_link field exists. /share/<id> returns 404. Revisit if
-            # Fireflies adds a share endpoint to their API.
             lines.append(f"TRANSCRIPT: {self.transcript_url}")
 
         return "\n".join(lines)

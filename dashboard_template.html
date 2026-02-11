@@ -359,7 +359,7 @@ body {
 .copy-btn.copied { background: #1a3a2a; border-color: #2d5a3d; color: #4ade80; }
 
 /* ---- Weekly Report email preview ---- */
-#report-view {
+#product-view, #marketing-view {
     max-width: 720px;
 }
 .report-toolbar {
@@ -471,6 +471,74 @@ body {
 }
 .scan-btn:hover { background: #1e2130; color: #d0d3db; border-color: #2a2d40; }
 .scan-btn.copied { background: #1a3a2a; border-color: #2d5a3d; color: #4ade80; }
+.scan-btn.scanning { animation: scanPulse 1.2s ease-in-out infinite; }
+@keyframes scanPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ---- Scan modal overlay ---- */
+.scan-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+}
+.scan-overlay.open { display: flex; }
+.scan-modal {
+    background: #14161e; border: 1px solid #2a2d40; border-radius: 12px;
+    width: min(560px, 92vw); max-height: 80vh; display: flex; flex-direction: column;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+}
+.scan-modal-hdr {
+    padding: 1.25rem 1.5rem; border-bottom: 1px solid #1e2130;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.scan-modal-hdr h2 { font-size: 1.1rem; font-weight: 700; color: #f0f1f4; margin: 0; }
+.scan-modal-close {
+    background: none; border: none; color: #555a6e; font-size: 1.4rem;
+    cursor: pointer; padding: 0 0.3rem; line-height: 1;
+}
+.scan-modal-close:hover { color: #d0d3db; }
+.scan-modal-body {
+    padding: 1rem 1.5rem; overflow-y: auto; flex: 1;
+}
+.scan-modal-footer {
+    padding: 1rem 1.5rem; border-top: 1px solid #1e2130;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.scan-modal-info { font-size: 0.82rem; color: #555a6e; }
+.scan-process-btn {
+    font-size: 0.9rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    padding: 0.5rem 1.5rem; border-radius: 8px;
+    background: #4a7cff; border: none; color: #fff;
+    cursor: pointer; transition: all 0.15s;
+}
+.scan-process-btn:hover { background: #5b8aff; }
+.scan-process-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.scan-process-btn.processing { animation: scanPulse 1.2s ease-in-out infinite; }
+
+/* Call list items in modal */
+.scan-call {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.7rem 0; border-bottom: 1px solid #1a1c28;
+}
+.scan-call:last-child { border-bottom: none; }
+.scan-call input[type="checkbox"] {
+    margin-top: 0.25rem; flex-shrink: 0;
+    accent-color: #4a7cff; width: 16px; height: 16px; cursor: pointer;
+}
+.scan-call-info { flex: 1; min-width: 0; }
+.scan-call-title { font-size: 0.92rem; font-weight: 600; color: #f0f1f4; }
+.scan-call-meta {
+    font-size: 0.78rem; color: #6b7084; margin-top: 0.15rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+.scan-call-dupe {
+    font-size: 0.72rem; color: #fb923c; font-weight: 500; margin-top: 0.15rem;
+}
+.scan-empty {
+    text-align: center; padding: 2rem; color: #555a6e; font-size: 0.9rem;
+}
+.scan-error {
+    text-align: center; padding: 1.5rem; color: #e74c3c; font-size: 0.9rem;
+}
 
 /* ---- Responsive breakpoints ---- */
 
@@ -512,7 +580,8 @@ body {
     <div class="tabs">
         <div class="tab active" data-tab="features" onclick="switchTab('features')">By Feature</div>
         <div class="tab" data-tab="calls" onclick="switchTab('calls')">By Call</div>
-        <div class="tab" data-tab="report" onclick="switchTab('report')">Weekly Report</div>
+        <div class="tab" data-tab="product" onclick="switchTab('product')">Product Report</div>
+        <div class="tab" data-tab="marketing" onclick="switchTab('marketing')">Marketing Report</div>
     </div>
     <div class="filter-row" id="filter-row">
         <div class="search-box"><input id="q" placeholder="Search..." oninput="filter(this.value)"></div>
@@ -528,7 +597,24 @@ body {
     </div>
     <div id="features-view"></div>
     <div id="calls-view" style="display:none"></div>
-    <div id="report-view" style="display:none"></div>
+    <div id="product-view" style="display:none"></div>
+    <div id="marketing-view" style="display:none"></div>
+</div>
+
+<!-- Scan modal -->
+<div class="scan-overlay" id="scan-overlay" onclick="if(event.target===this)closeScanModal()">
+    <div class="scan-modal">
+        <div class="scan-modal-hdr">
+            <h2 id="scan-modal-title">Scan for More Calls</h2>
+            <button class="scan-modal-close" onclick="closeScanModal()">&times;</button>
+        </div>
+        <div class="scan-modal-body" id="scan-modal-body">
+        </div>
+        <div class="scan-modal-footer" id="scan-modal-footer" style="display:none">
+            <div class="scan-modal-info" id="scan-modal-info"></div>
+            <button class="scan-process-btn" id="scan-process-btn" onclick="processSelectedCalls()">Process Selected</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -548,7 +634,7 @@ function parseHash() {
             p.slice(8).split(',').filter(Boolean).forEach(id => excludedCalls.add(id));
         } else if (p.startsWith('range=')) {
             activeDateRange = p.slice(6);
-        } else if (['features', 'calls', 'report'].includes(p)) {
+        } else if (['features', 'calls', 'product', 'marketing'].includes(p)) {
             tab = p;
         }
     });
@@ -624,7 +710,8 @@ function toggleExclude(callId) {
     if (card) card.classList.toggle('excluded', excludedCalls.has(callId));
     // Rebuild other views and stats
     buildFeatures();
-    buildReport();
+    buildProductReport();
+    buildMarketingReport();
     updateStats();
 }
 
@@ -693,6 +780,19 @@ function buildFeatureCard(kw, mentions, callMap, companies) {
 }
 
 function buildFeatures() {
+    // Pending analysis banner
+    const pendingCalls = DATA.calls.filter(c => c.pending_analysis);
+    const oldBanner = document.getElementById('pending-banner');
+    if (oldBanner) oldBanner.remove();
+    if (pendingCalls.length > 0) {
+        const banner = document.createElement('div');
+        banner.id = 'pending-banner';
+        banner.style.cssText = 'background:#2a2010;border:1px solid #5a4a20;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;color:#fb923c;font-size:0.88rem;font-weight:500;';
+        banner.textContent = pendingCalls.length + ' new call' + (pendingCalls.length > 1 ? 's' : '') + ' pending feature analysis. Run analysis to update.';
+        const fv = document.getElementById('features-view');
+        fv.parentNode.insertBefore(banner, fv);
+    }
+
     // Group mentions by feature (filtered by exclusions)
     const mentions = activeMentions();
     const featureGroups = {};
@@ -818,8 +918,9 @@ function buildCalls() {
     });
 
     const dateIds = activeCallIds();
+    // Show calls that have mentions OR are pending analysis
     const callList = DATA.calls
-        .filter(c => byCall[c.id] && dateIds.has(c.id))
+        .filter(c => (byCall[c.id] || c.pending_analysis) && dateIds.has(c.id))
         .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
     // Group into weeks
@@ -841,14 +942,19 @@ function buildCalls() {
         '</div>';
 
     week.calls.forEach(c => {
-        const mentions = byCall[c.id].sort((a, b) => (a.ts_sec || 0) - (b.ts_sec || 0));
-        const features = [...new Set(mentions.map(m => m.keyword))];
+        const callMentions = (byCall[c.id] || []).sort((a, b) => (a.ts_sec || 0) - (b.ts_sec || 0));
+        const features = [...new Set(callMentions.map(m => m.keyword))];
+        const isPending = c.pending_analysis && callMentions.length === 0;
 
         let tags = features.map(f => '<span class="feat-tag">' + esc(f) + '</span>').join('');
+        if (isPending) tags = '<span class="feat-tag" style="background:#3a2a10;color:#fb923c;border-color:#5a3a15">Pending Analysis</span>';
         const extAttendees = extractCompany(c.attendees);
 
         let mHTML = '';
-        mentions.forEach(m => { mHTML += mentionHTML(m, true); });
+        callMentions.forEach(m => { mHTML += mentionHTML(m, true); });
+        if (isPending) {
+            mHTML = '<div style="padding:0.75rem 0;color:#fb923c;font-size:0.85rem;font-weight:500">This call has not been analyzed for features yet. Run analysis to extract feature requests.</div>';
+        }
 
         // Action bar (inside expanded content)
         let actionBar = '<div class="action-bar">';
@@ -893,7 +999,8 @@ function buildCalls() {
         const displayTitle = esc(c.title) + (extAttendees ? '<span style="color:#9a9db0;font-weight:400"> &mdash; ' + esc(extAttendees) + '</span>' : '');
 
         const isExcluded = excludedCalls.has(c.id);
-        html += '<div class="card' + (isExcluded ? ' excluded' : '') + '" data-callid="' + esc(c.id) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + mentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '">' +
+        const featureCountLabel = isPending ? 'pending' : callMentions.length + ' feature' + (callMentions.length > 1 ? 's' : '');
+        html += '<div class="card' + (isExcluded ? ' excluded' : '') + (isPending ? ' pending' : '') + '" data-callid="' + esc(c.id) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + callMentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '">' +
             '<div class="card-hdr" onclick="toggleCard(this)">' +
                 '<div class="left"><span class="arrow">&#9654;</span>' +
                     '<div class="name-block">' +
@@ -904,7 +1011,7 @@ function buildCalls() {
                 '<div class="right">' +
                     '<button class="excl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Exclude</button>' +
                     '<button class="incl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Include</button>' +
-                    '<div class="card-date">' + c.date + '<br>' + c.duration + ' min &middot; ' + mentions.length + ' feature' + (mentions.length > 1 ? 's' : '') + '</div>' +
+                    '<div class="card-date">' + c.date + '<br>' + c.duration + ' min &middot; ' + featureCountLabel + '</div>' +
                 '</div>' +
             '</div>' +
             '<div class="mentions">' +
@@ -918,7 +1025,7 @@ function buildCalls() {
     // "Scan for More Calls" button at bottom
     const scanCmd = 'python retrieve_calls.py --days 30 --limit 20 --owner zach.mccall \\\n  --title-keywords demo discovery followup follow-up sales \\\n  --dashboard dashboard.html --output-dir test_output/';
     html += '<div class="scan-row">' +
-        '<button class="scan-btn" onclick="copyScanCmd(this)">' +
+        '<button class="scan-btn" id="scan-trigger-btn" onclick="startScan(this)">' +
             'Scan for More Calls' +
         '</button>' +
     '</div>';
@@ -927,127 +1034,82 @@ function buildCalls() {
     document.getElementById('calls-view').dataset.scanCmd = scanCmd;
 }
 
-// ---- Weekly Report builder ----
-function buildReport() {
+// ---- Shared report helpers ----
+function reportGetCompany(m, callMap) {
+    const spk = m.speaker || '';
+    const paren = spk.match(/\(([^)]+)\)/);
+    if (paren) {
+        const raw = paren[1].split('/')[0].trim();
+        const call = callMap[m.call_id];
+        const title = call ? call.title : '';
+        const chevron = title.match(/^(.+?)\s*<>\s*Teachable/i) || title.match(/^Teachable\s*<>\s*(.+)/i);
+        if (chevron) return chevron[1].trim();
+        if (title.toLowerCase().includes('speravita')) return 'Speravita';
+        if (title.toLowerCase().includes('dot compliance')) return 'Dot Compliance';
+        if (title.toLowerCase().includes('lta') || raw.toLowerCase().includes('lta') ||
+            spk.toLowerCase().includes('hui ching') || spk.toLowerCase().includes('kai shan')) return 'LTA';
+        if (raw === 'Simon Davey') return 'Simon Davey';
+        if (raw === 'Simon' || raw === 'Sabine' || raw === 'Katrina') return 'Simon & Sabine (Coaching)';
+        if (raw === 'Ibrahim' || raw === 'Bryan' || raw === 'Oghenetejiri') return 'Dot Compliance';
+        if (raw === 'Hui Ching' || raw === 'Kai Shan') return 'LTA';
+        return raw;
+    }
+    return '';
+}
+function reportFmtTs(sec) {
+    if (sec == null) return '';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+}
+function reportWeekRange(weekStart) {
+    const end = new Date(weekStart);
+    end.setDate(end.getDate() + 4);
+    return fmtShortDate(weekStart) + ' \u2013 ' + fmtShortDate(end) + ', ' + weekStart.getFullYear();
+}
+function reportToolbar(viewId) {
+    return '<div class="report-toolbar">' +
+        '<button class="report-generate" onclick="generateReports(this)">Generate Report</button>' +
+        '<div class="report-sep"></div>' +
+        '<button class="report-btn" onclick="copyReportHTML(\'' + viewId + '\', this)">Copy Email HTML</button>' +
+        '<button class="report-btn" onclick="copyReportPlain(\'' + viewId + '\', this)">Copy Plain Text</button>' +
+    '</div>';
+}
+
+// ---- Product Report builder (weekly-grouped) ----
+function buildProductReport() {
     const callMap = {};
     DATA.calls.forEach(c => { callMap[c.id] = c; });
     const mentions = activeMentions();
+    const coSummaries = DATA.company_summaries || {};
+    const dateIds = activeCallIds();
 
-    // Extract company name from speaker field: "Customer (Speravita)" → "Speravita"
-    // Or from call title: "Dot Compliance <> Teachable" → "Dot Compliance"
-    function getCompany(m) {
-        // Try speaker field first: "Customer (Company Name)" or "Customer (Name/Name)"
-        const spk = m.speaker || '';
-        const paren = spk.match(/\(([^)]+)\)/);
-        if (paren) {
-            // Take the first name before / as the company identifier
-            const raw = paren[1].split('/')[0].trim();
-            // Map known first names to company names using call title
-            const call = callMap[m.call_id];
-            const title = call ? call.title : '';
-            // If call title has "Company <> Teachable" pattern, use that
-            const chevron = title.match(/^(.+?)\s*<>\s*Teachable/i) || title.match(/^Teachable\s*<>\s*(.+)/i);
-            if (chevron) return chevron[1].trim();
-            // If title has "Followup" and speaker has a company-like name in parens
-            // Check if it looks like a person name (short, single word) vs company
-            // Known mappings from call titles containing the company name
-            if (title.toLowerCase().includes('speravita')) return 'Speravita';
-            if (title.toLowerCase().includes('dot compliance')) return 'Dot Compliance';
-            if (title.toLowerCase().includes('lta') || raw.toLowerCase().includes('lta') ||
-                spk.toLowerCase().includes('hui ching') || spk.toLowerCase().includes('kai shan')) return 'LTA';
-            // For generic "Teachable Followup" titles, derive from speaker context
-            if (raw === 'Simon Davey') return 'Simon Davey';
-            if (raw === 'Simon' || raw === 'Sabine' || raw === 'Katrina') return 'Simon & Sabine (Coaching)';
-            if (raw === 'Ibrahim' || raw === 'Bryan' || raw === 'Oghenetejiri') return 'Dot Compliance';
-            if (raw === 'Hui Ching' || raw === 'Kai Shan') return 'LTA';
-            return raw;
-        }
-        return '';
-    }
+    // Tag each mention with company
+    mentions.forEach(m => { m._co = reportGetCompany(m, callMap); });
 
-    // Format timestamp for display: ts_sec → "mm:ss"
-    function fmtTs(sec) {
-        if (sec == null) return '';
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        return m + ':' + (s < 10 ? '0' : '') + s;
-    }
-
-    // Figure out the week date range from call dates
-    const callsWithFeatures = DATA.calls.filter(c => mentions.some(m => m.call_id === c.id));
-    const dates = callsWithFeatures.map(c => c.date).filter(Boolean).sort();
-    const startDate = dates[0] || '';
-    const endDate = dates[dates.length - 1] || '';
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    function fmtD(ds) {
-        if (!ds) return '?';
-        const p = ds.split('-');
-        return months[parseInt(p[1], 10) - 1] + ' ' + parseInt(p[2], 10);
-    }
-    const dateRange = fmtD(startDate) + ' – ' + fmtD(endDate) + ', ' + (startDate ? startDate.slice(0, 4) : '');
-
-    // Build feature groups by category, with per-mention company + timestamp data
-    // Each feature tracks: [{company, ts, tsDisplay, link}]
-    const featureGroups = {};  // cat → feat → { entries: [{company, ts, link}] }
+    // Group mentions by week
+    const weekMap = new Map(); // weekKey → { start, mentions[], calls[] }
     mentions.forEach(m => {
-        const company = getCompany(m);
-        if (!company) return;  // No company = skip
-        const cat = m.category || 'Other';
-        if (!featureGroups[cat]) featureGroups[cat] = {};
-        if (!featureGroups[cat][m.keyword]) featureGroups[cat][m.keyword] = [];
-        featureGroups[cat][m.keyword].push({
-            company: company,
-            ts: m.ts || '',
-            tsSec: m.ts_sec,
-            tsDisplay: fmtTs(m.ts_sec),
-            link: m.link || '',
-            callId: m.call_id,
-        });
+        const call = callMap[m.call_id];
+        if (!call || !call.date) return;
+        const ws = getWeekStart(call.date);
+        const key = ws.toISOString().slice(0, 10);
+        if (!weekMap.has(key)) weekMap.set(key, { start: ws, mentions: [], callIds: new Set() });
+        weekMap.get(key).mentions.push(m);
+        weekMap.get(key).callIds.add(m.call_id);
     });
+    const weeks = [...weekMap.values()].sort((a, b) => b.start - a.start);
 
-    // Sort categories by total mentions
-    const catEntries = Object.entries(featureGroups).map(([cat, feats]) => {
-        let total = 0;
-        const allCompanies = new Set();
-        Object.values(feats).forEach(entries => {
-            total += entries.length;
-            entries.forEach(e => allCompanies.add(e.company));
-        });
-        return { cat, feats, total, companies: allCompanies };
-    }).sort((a, b) => b.total - a.total);
+    // Overall stats
+    const allCallIds = new Set(mentions.map(m => m.call_id));
+    const allCompanies = new Set(mentions.map(m => m._co).filter(Boolean));
+    const overallRange = weeks.length ? reportWeekRange(weeks[weeks.length - 1].start) + (weeks.length > 1 ? ' \u2013 ' + reportWeekRange(weeks[0].start) : '') : '';
 
-    // Top theme
-    const topTheme = catEntries[0] || { cat: 'N/A', total: 0, companies: new Set() };
-
-    // Build company breakdown
-    const companyMap = {};
-    mentions.forEach(m => {
-        const company = getCompany(m);
-        if (!company) return;
-        if (!companyMap[company]) companyMap[company] = { features: new Set(), calls: new Map() };
-        companyMap[company].features.add(m.keyword);
-        if (!companyMap[company].calls.has(m.call_id)) {
-            const call = callMap[m.call_id];
-            companyMap[company].calls.set(m.call_id, call);
-        }
-    });
-    const companyEntries = Object.entries(companyMap).sort((a, b) => b[1].features.size - a[1].features.size);
-
-    const totalCalls = callsWithFeatures.length;
-    const totalFeatures = mentions.length;
-    const totalProspects = companyEntries.length;
-
-    // ---- Build HTML version ----
-    let h = '';
-    h += '<h1>WEEKLY CALL INTELLIGENCE</h1>';
-    h += '<div class="email-date">Week of ' + esc(dateRange) + '</div>';
-
-    h += '<h2>Summary</h2>';
-    h += '<ul class="summary-list">';
-    h += '<li><strong>' + totalCalls + '</strong> sales calls this week</li>';
-    h += '<li><strong>' + totalFeatures + '</strong> feature requests identified across <strong>' + totalProspects + '</strong> prospects</li>';
-    h += '<li>Top theme: <strong>' + esc(topTheme.cat) + '</strong> (' + topTheme.total + ' mentions, ' + topTheme.companies.size + ' compan' + (topTheme.companies.size === 1 ? 'y' : 'ies') + ')</li>';
-    h += '</ul>';
+    // ---- HTML ----
+    let h = '<h1>WEEKLY SALES INTELLIGENCE \u2014 PRODUCT TEAM</h1>';
+    if (weeks.length === 1) {
+        h += '<div class="email-date">Week of ' + reportWeekRange(weeks[0].start) + '</div>';
+    }
 
     // Feature Recap
     if (DATA.recap) {
@@ -1055,113 +1117,333 @@ function buildReport() {
         h += '<div class="recap-block">' + DATA.recap.replace(/\n/g, '<br>') + '</div>';
     }
 
-    // Customers This Week — one-line summaries with call links
-    const coSummaries = DATA.company_summaries || {};
-    h += '<h2>Customers This Week</h2>';
-    // Sort companies by call date (most recent first)
-    const companiesByDate = companyEntries.slice().sort((a, b) => {
-        const aDate = [...a[1].calls.values()].map(c => c && c.date || '').sort().pop() || '';
-        const bDate = [...b[1].calls.values()].map(c => c && c.date || '').sort().pop() || '';
-        return bDate.localeCompare(aDate);
-    });
-    companiesByDate.forEach(([name, d]) => {
-        const summary = coSummaries[name] || '';
-        let links = [];
-        d.calls.forEach((c, id) => {
-            if (c && c.transcript) {
-                const dateStr = c.date ? c.date.slice(5).replace('-', '/') : '';
-                links.push('<a href="' + esc(c.transcript) + '" target="_blank">Call' + (dateStr ? ' (' + dateStr + ')' : '') + '</a>');
-            }
-        });
-        h += '<div class="co-line">– <strong>' + esc(name) + '</strong>';
-        if (summary) h += ' — ' + esc(summary);
-        if (links.length) h += ' → ' + links.join(' · ');
-        h += '</div>';
-    });
+    // ---- Plain text ----
+    let plain = 'WEEKLY SALES INTELLIGENCE — PRODUCT TEAM\n';
+    if (DATA.recap) plain += '\nFEATURE RECAP\n' + DATA.recap + '\n';
 
-    // Feature Themes
-    h += '<h2>Feature Themes</h2>';
-    catEntries.forEach(ce => {
-        h += '<div class="cat-group">';
-        h += '<div class="cat-title">' + esc(ce.cat) + ' <span class="cat-co">(' + ce.companies.size + ' compan' + (ce.companies.size === 1 ? 'y' : 'ies') + ')</span></div>';
-        Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
-            const byCompany = {};
-            entries.forEach(e => {
-                if (!byCompany[e.company]) byCompany[e.company] = [];
-                byCompany[e.company].push(e);
-            });
-            const parts = Object.entries(byCompany).map(([co, es]) => {
-                const e = es[0];
-                const tsStr = e.tsDisplay || e.ts || '';
-                if (e.link && tsStr) {
-                    return esc(co) + ' (<a href="' + esc(e.link) + '" target="_blank">' + esc(tsStr) + '</a>)';
-                } else if (tsStr) {
-                    return esc(co) + ' (' + esc(tsStr) + ')';
+    // Each week
+    weeks.forEach(week => {
+        const wLabel = weekLabel(week.start);
+        const wRange = reportWeekRange(week.start);
+        const wMentions = week.mentions;
+        const wCallIds = week.callIds;
+
+        // Companies this week
+        const wCoMap = {};
+        wMentions.forEach(m => {
+            const co = m._co;
+            if (!co) return;
+            if (!wCoMap[co]) wCoMap[co] = { features: new Set(), calls: new Map() };
+            wCoMap[co].features.add(m.keyword);
+            if (!wCoMap[co].calls.has(m.call_id)) wCoMap[co].calls.set(m.call_id, callMap[m.call_id]);
+        });
+        const wCompanies = Object.entries(wCoMap).sort((a, b) => b[1].features.size - a[1].features.size);
+
+        // Features by category this week
+        const wCats = {};
+        wMentions.forEach(m => {
+            const co = m._co;
+            if (!co) return;
+            const cat = m.category || 'Other';
+            if (!wCats[cat]) wCats[cat] = {};
+            if (!wCats[cat][m.keyword]) wCats[cat][m.keyword] = [];
+            wCats[cat][m.keyword].push({ company: co, tsDisplay: reportFmtTs(m.ts_sec), link: m.link || '' });
+        });
+        const wCatEntries = Object.entries(wCats).map(([cat, feats]) => {
+            let total = 0;
+            Object.values(feats).forEach(arr => total += arr.length);
+            return { cat, feats, total };
+        }).sort((a, b) => b.total - a.total);
+
+        // HTML
+        h += '<h2>' + esc(wLabel) + '</h2>';
+
+        // Customers
+        h += '<div style="margin-bottom:0.75em"><strong>Customers:</strong> ';
+        const coLines = wCompanies.map(([name, d]) => {
+            const summary = coSummaries[name] || '';
+            let links = [];
+            d.calls.forEach((c) => {
+                if (c && c.transcript) {
+                    const ds = c.date ? c.date.slice(5).replace('-', '/') : '';
+                    links.push('<a href="' + esc(c.transcript) + '" target="_blank">' + ds + '</a>');
                 }
-                return esc(co);
             });
-            h += '<div class="feat-line">– <strong>' + esc(feat) + '</strong> — ' + parts.join(' · ') + '</div>';
+            let s = '<strong>' + esc(name) + '</strong>';
+            if (summary) s += ' \u2014 ' + esc(summary);
+            if (links.length) s += ' (' + links.join(', ') + ')';
+            return s;
         });
-        h += '</div>';
-    });
+        h += coLines.join(' · ') + '</div>';
 
-    // ---- Build plain text version ----
-    let plain = 'WEEKLY CALL INTELLIGENCE\nWeek of ' + dateRange + '\n\n';
-    plain += 'SUMMARY\n';
-    plain += '- ' + totalCalls + ' sales calls, ' + totalFeatures + ' features identified across ' + totalProspects + ' prospects\n';
-    plain += '- Top theme: ' + topTheme.cat + ' (' + topTheme.total + ' mentions, ' + topTheme.companies.size + ' compan' + (topTheme.companies.size === 1 ? 'y' : 'ies') + ')\n\n';
-    if (DATA.recap) plain += 'FEATURE RECAP\n' + DATA.recap + '\n\n';
-    plain += 'CUSTOMERS THIS WEEK\n';
-    companiesByDate.forEach(([name, d]) => {
-        const summary = coSummaries[name] || '';
-        let callStrs = [];
-        d.calls.forEach((c, id) => {
-            if (c) {
-                const dateStr = c.date ? c.date.slice(5).replace('-', '/') : '';
-                callStrs.push('Call' + (dateStr ? ' (' + dateStr + ')' : '') + (c.transcript ? ': ' + c.transcript : ''));
-            }
-        });
-        plain += '- ' + name + (summary ? ' — ' + summary : '') + (callStrs.length ? ' → ' + callStrs.join(' · ') : '') + '\n';
-    });
-    plain += '\nFEATURE THEMES\n\n';
-    catEntries.forEach(ce => {
-        plain += ce.cat + ' (' + ce.companies.size + ' compan' + (ce.companies.size === 1 ? 'y' : 'ies') + ')\n';
-        Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
-            const byCompany = {};
-            entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
-            const parts = Object.entries(byCompany).map(([co, es]) => {
-                const ts = es[0].tsDisplay || es[0].ts || '';
-                return ts ? co + ' (' + ts + ')' : co;
+        // Features
+        h += '<div style="margin-bottom:0.5em"><strong>Features:</strong></div>';
+        wCatEntries.forEach(ce => {
+            h += '<div class="cat-group">';
+            h += '<div class="cat-title">' + esc(ce.cat) + '</div>';
+            Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
+                const byCompany = {};
+                entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
+                const parts = Object.entries(byCompany).map(([co, es]) => {
+                    const e = es[0];
+                    if (e.link && e.tsDisplay) return esc(co) + ' (<a href="' + esc(e.link) + '" target="_blank">' + esc(e.tsDisplay) + '</a>)';
+                    if (e.tsDisplay) return esc(co) + ' (' + esc(e.tsDisplay) + ')';
+                    return esc(co);
+                });
+                h += '<div class="feat-line">\u2013 <strong>' + esc(feat) + '</strong> \u2014 ' + parts.join(' \u00b7 ') + '</div>';
             });
-            plain += '  - ' + feat + ' — ' + parts.join(' · ') + '\n';
+            h += '</div>';
         });
-        plain += '\n';
+
+        // Plain text
+        plain += '\n' + wLabel.toUpperCase() + '\n';
+        plain += 'Customers: ' + wCompanies.map(([n, d]) => n + (coSummaries[n] ? ' — ' + coSummaries[n] : '')).join(' · ') + '\n';
+        plain += 'Features:\n';
+        wCatEntries.forEach(ce => {
+            plain += '  ' + ce.cat + '\n';
+            Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
+                const byCompany = {};
+                entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
+                const parts = Object.entries(byCompany).map(([co, es]) => {
+                    const ts = es[0].tsDisplay || '';
+                    return ts ? co + ' (' + ts + ')' : co;
+                });
+                plain += '    - ' + feat + ' — ' + parts.join(' · ') + '\n';
+            });
+        });
     });
 
     // Render
-    const wrap = document.getElementById('report-view');
-    wrap.innerHTML =
-        '<div class="report-toolbar">' +
-            '<button class="report-generate" onclick="generateReport(this)">Generate Report</button>' +
-            '<div class="report-sep"></div>' +
-            '<button class="report-btn" onclick="copyReportHTML(this)">Copy Email HTML</button>' +
-            '<button class="report-btn" onclick="copyReportPlain(this)">Copy Plain Text</button>' +
-        '</div>' +
-        '<div class="email-card" id="email-card">' + h + '</div>';
+    const wrap = document.getElementById('product-view');
+    wrap.innerHTML = reportToolbar('product-view') +
+        '<div class="email-card" id="product-email">' + h + '</div>';
     wrap.dataset.plainText = plain;
 }
 
-function generateReport(btn) {
-    buildReport();
-    // Flash confirmation on the new button instance
-    const newBtn = document.querySelector('.report-generate');
-    newBtn.textContent = 'Updated!';
-    newBtn.classList.add('done');
-    setTimeout(() => { newBtn.textContent = 'Generate Report'; newBtn.classList.remove('done'); }, 2000);
+// ---- Marketing Report builder ----
+function buildMarketingReport() {
+    const callMap = {};
+    DATA.calls.forEach(c => { callMap[c.id] = c; });
+    const mentions = activeMentions();
+    const mkt = DATA.marketing_report || {};
+    const noData = '<em>No data from this week\u2019s calls.</em>';
+
+    mentions.forEach(m => { m._co = reportGetCompany(m, callMap); });
+
+    const allCallIds = new Set(mentions.map(m => m.call_id));
+    const callsWithFeatures = DATA.calls.filter(c => allCallIds.has(c.id) && !excludedCalls.has(c.id));
+    const dates = callsWithFeatures.map(c => c.date).filter(Boolean).sort();
+    const dateRange = dates.length ? fmtShortDate(new Date(dates[0] + 'T00:00:00')) + ' \u2013 ' + fmtShortDate(new Date(dates[dates.length - 1] + 'T00:00:00')) + ', ' + dates[0].slice(0, 4) : '';
+
+    // Helper: render an array of items or "no data"
+    function renderItems(arr, formatter) {
+        if (!arr || !arr.length) return '<div class="recap-block">' + noData + '</div>';
+        let out = '<div class="recap-block">';
+        arr.forEach(item => { out += formatter(item); });
+        out += '</div>';
+        return out;
+    }
+
+    // Helper: render a quote with attribution
+    function fmtQuote(q) {
+        return '<div style="margin-bottom:0.7em">\u201c' + esc(q.quote || q.text || '') +
+            '\u201d<br><span style="color:#666;font-size:13px">\u2014 ' +
+            esc(q.speaker || '') + (q.call ? ', <em>' + esc(q.call) + '</em>' : '') +
+            '</span></div>';
+    }
+
+    // ---- HTML ----
+    let h = '<h1>MARKETING INTELLIGENCE REPORT</h1>';
+    h += '<div class="email-date">Week of ' + esc(dateRange) + '</div>';
+
+    // PERSONA PROFILES
+    h += '<h2>Persona Profiles</h2>';
+    h += renderItems(mkt.persona_profiles, function(p) {
+        let out = '<div style="margin-bottom:1em;padding-bottom:0.8em;border-bottom:1px solid #e8e8e8">';
+        if (p.name) out += '<div><strong>' + esc(p.name) + '</strong>' + (p.title ? ' \u2014 ' + esc(p.title) : '') + '</div>';
+        if (p.company) out += '<div style="color:#444">' + esc(p.company) + '</div>';
+        if (p.industry) out += '<div style="color:#666;font-size:13px">Industry: ' + esc(p.industry) + '</div>';
+        if (p.role_in_decision) out += '<div style="color:#666;font-size:13px">Decision role: ' + esc(p.role_in_decision) + '</div>';
+        if (p.team && p.team.length) out += '<div style="color:#666;font-size:13px">Team: ' + esc(p.team.join(', ')) + '</div>';
+        out += '</div>';
+        return out;
+    });
+
+    // VOICE OF CUSTOMER
+    h += '<h2>Voice of Customer</h2>';
+    const voc = mkt.voice_of_customer || {};
+    if (voc.problem_descriptions && voc.problem_descriptions.length) {
+        h += '<div style="font-size:13px;font-weight:600;color:#555;margin:0.8rem 0 0.3rem;text-transform:uppercase;letter-spacing:0.04em">How they describe their problem</div>';
+        h += renderItems(voc.problem_descriptions, fmtQuote);
+    }
+    if (voc.terminology && voc.terminology.length) {
+        h += '<div style="font-size:13px;font-weight:600;color:#555;margin:0.8rem 0 0.3rem;text-transform:uppercase;letter-spacing:0.04em">Terminology they use</div>';
+        h += '<div class="recap-block">' + voc.terminology.map(t => '<span style="display:inline-block;background:#e8eef8;border-radius:3px;padding:2px 8px;margin:2px 4px;font-size:13px">' + esc(t) + '</span>').join('') + '</div>';
+    }
+    if (voc.frequent_questions && voc.frequent_questions.length) {
+        h += '<div style="font-size:13px;font-weight:600;color:#555;margin:0.8rem 0 0.3rem;text-transform:uppercase;letter-spacing:0.04em">Most frequent questions asked</div>';
+        h += '<div class="recap-block"><ul style="margin:0;padding:0 0 0 1.2rem">';
+        voc.frequent_questions.forEach(q => { h += '<li>' + esc(q) + '</li>'; });
+        h += '</ul></div>';
+    }
+    if (!voc.problem_descriptions?.length && !voc.terminology?.length && !voc.frequent_questions?.length) {
+        h += '<div class="recap-block">' + noData + '</div>';
+    }
+
+    // PAIN POINTS & CHALLENGES
+    h += '<h2>Pain Points &amp; Challenges</h2>';
+    h += renderItems(mkt.pain_points, function(p) {
+        let out = '<div style="margin-bottom:0.7em">';
+        out += '<strong>' + esc(p.pain) + '</strong>';
+        if (p.company) out += ' \u2014 ' + esc(p.company);
+        if (p.quote) out += '<br><span style="color:#555;font-size:14px">\u201c' + esc(p.quote) + '\u201d</span>';
+        if (p.current_workaround) out += '<br><span style="color:#666;font-size:13px">Current workaround: ' + esc(p.current_workaround) + '</span>';
+        if (p.business_impact) out += '<br><span style="color:#666;font-size:13px">Business impact: ' + esc(p.business_impact) + '</span>';
+        out += '</div>';
+        return out;
+    });
+
+    // OBJECTIONS & CONCERNS
+    h += '<h2>Objections &amp; Concerns</h2>';
+    const obj = mkt.objections || {};
+    if (obj.items && obj.items.length) {
+        h += '<div class="recap-block">';
+        obj.items.forEach(o => {
+            h += '<div style="margin-bottom:0.5em"><strong>' + esc(o.objection) + '</strong>';
+            if (o.company) h += ' \u2014 ' + esc(o.company);
+            if (o.quote) h += '<br><span style="color:#555;font-size:14px">\u201c' + esc(o.quote) + '\u201d</span>';
+            h += '</div>';
+        });
+        h += '</div>';
+    } else { h += '<div class="recap-block">' + noData + '</div>'; }
+    if (obj.competitors_mentioned && obj.competitors_mentioned.length) {
+        h += '<div style="font-size:13px;color:#666;margin-top:0.5rem">Competitors mentioned: <strong>' + obj.competitors_mentioned.map(esc).join(', ') + '</strong></div>';
+    }
+    if (obj.barriers && obj.barriers.length) {
+        h += '<div style="font-size:13px;color:#666;margin-top:0.3rem">Barriers to adoption: ' + obj.barriers.map(esc).join(', ') + '</div>';
+    }
+
+    // BUYING SIGNALS & PRIORITIES
+    h += '<h2>Buying Signals &amp; Priorities</h2>';
+    h += renderItems(mkt.buying_signals, function(s) {
+        let out = '<div style="margin-bottom:0.5em">';
+        if (s.trigger) out += '<div><strong>Trigger:</strong> ' + esc(s.trigger) + (s.company ? ' (' + esc(s.company) + ')' : '') + '</div>';
+        if (s.timeline) out += '<div><strong>Timeline:</strong> ' + esc(s.timeline) + '</div>';
+        if (s.budget_feedback) out += '<div><strong>Budget/pricing:</strong> ' + esc(s.budget_feedback) + '</div>';
+        out += '</div>';
+        return out;
+    });
+
+    // SUCCESS METRICS
+    h += '<h2>Success Metrics</h2>';
+    h += renderItems(mkt.success_metrics, function(s) {
+        let out = '<div style="margin-bottom:0.5em">';
+        if (s.metric) out += '<strong>' + esc(s.metric) + '</strong>';
+        if (s.company) out += ' \u2014 ' + esc(s.company);
+        if (s.quote) out += '<br><span style="color:#555;font-size:14px">\u201c' + esc(s.quote) + '\u201d</span>';
+        out += '</div>';
+        return out;
+    });
+
+    // WEEKLY SUMMARY
+    h += '<h2>Weekly Summary</h2>';
+    if (mkt.weekly_summary) {
+        const ws = mkt.weekly_summary;
+        h += '<div class="recap-block">';
+        h += '<div><strong>' + callsWithFeatures.length + '</strong> prospect calls this week</div>';
+        if (ws.patterns && ws.patterns.length) {
+            h += '<div style="margin-top:0.5em"><strong>Patterns:</strong></div><ul style="margin:0.2em 0 0;padding:0 0 0 1.2rem">';
+            ws.patterns.forEach(p => { h += '<li>' + esc(p) + '</li>'; });
+            h += '</ul>';
+        }
+        if (ws.surprising_insights && ws.surprising_insights.length) {
+            h += '<div style="margin-top:0.5em"><strong>Surprising insights:</strong></div><ul style="margin:0.2em 0 0;padding:0 0 0 1.2rem">';
+            ws.surprising_insights.forEach(s => { h += '<li>' + esc(s) + '</li>'; });
+            h += '</ul>';
+        }
+        h += '</div>';
+    } else {
+        h += '<div class="recap-block"><strong>' + callsWithFeatures.length + '</strong> prospect calls this week.<br>' + noData + '</div>';
+    }
+
+    // ---- Plain text ----
+    let plain = 'MARKETING INTELLIGENCE REPORT\nWeek of ' + dateRange + '\n\n';
+
+    plain += 'PERSONA PROFILES\n';
+    (mkt.persona_profiles || []).forEach(p => {
+        plain += '- ' + (p.name || '?') + (p.title ? ' \u2014 ' + p.title : '') + '\n';
+        if (p.company) plain += '  Company: ' + p.company + '\n';
+        if (p.industry) plain += '  Industry: ' + p.industry + '\n';
+        if (p.role_in_decision) plain += '  Decision role: ' + p.role_in_decision + '\n';
+    });
+    if (!(mkt.persona_profiles || []).length) plain += 'No data from this week\'s calls.\n';
+
+    plain += '\nVOICE OF CUSTOMER\n';
+    if (voc.problem_descriptions?.length) {
+        plain += 'How they describe their problem:\n';
+        voc.problem_descriptions.forEach(q => { plain += '  "' + (q.quote || q.text || '') + '" \u2014 ' + (q.speaker || '') + '\n'; });
+    }
+    if (voc.terminology?.length) plain += 'Terminology: ' + voc.terminology.join(', ') + '\n';
+    if (voc.frequent_questions?.length) {
+        plain += 'Frequent questions:\n';
+        voc.frequent_questions.forEach(q => { plain += '  - ' + q + '\n'; });
+    }
+
+    plain += '\nPAIN POINTS & CHALLENGES\n';
+    (mkt.pain_points || []).forEach(p => {
+        plain += '- ' + p.pain + (p.company ? ' (' + p.company + ')' : '') + '\n';
+        if (p.quote) plain += '  "' + p.quote + '"\n';
+        if (p.current_workaround) plain += '  Workaround: ' + p.current_workaround + '\n';
+    });
+    if (!(mkt.pain_points || []).length) plain += 'No data from this week\'s calls.\n';
+
+    plain += '\nOBJECTIONS & CONCERNS\n';
+    (obj.items || []).forEach(o => {
+        plain += '- ' + o.objection + (o.company ? ' (' + o.company + ')' : '') + '\n';
+        if (o.quote) plain += '  "' + o.quote + '"\n';
+    });
+    if (obj.competitors_mentioned?.length) plain += 'Competitors: ' + obj.competitors_mentioned.join(', ') + '\n';
+    if (!(obj.items || []).length) plain += 'No data from this week\'s calls.\n';
+
+    plain += '\nBUYING SIGNALS & PRIORITIES\n';
+    (mkt.buying_signals || []).forEach(s => {
+        if (s.trigger) plain += '- Trigger: ' + s.trigger + (s.company ? ' (' + s.company + ')' : '') + '\n';
+        if (s.timeline) plain += '  Timeline: ' + s.timeline + '\n';
+        if (s.budget_feedback) plain += '  Budget: ' + s.budget_feedback + '\n';
+    });
+    if (!(mkt.buying_signals || []).length) plain += 'No data from this week\'s calls.\n';
+
+    plain += '\nSUCCESS METRICS\n';
+    (mkt.success_metrics || []).forEach(s => {
+        plain += '- ' + (s.metric || '') + (s.company ? ' (' + s.company + ')' : '') + '\n';
+    });
+    if (!(mkt.success_metrics || []).length) plain += 'No data from this week\'s calls.\n';
+
+    plain += '\nWEEKLY SUMMARY\n';
+    plain += callsWithFeatures.length + ' prospect calls this week\n';
+    if (mkt.weekly_summary) {
+        (mkt.weekly_summary.patterns || []).forEach(p => { plain += '- Pattern: ' + p + '\n'; });
+        (mkt.weekly_summary.surprising_insights || []).forEach(s => { plain += '- Insight: ' + s + '\n'; });
+    }
+
+    // Render
+    const wrap = document.getElementById('marketing-view');
+    wrap.innerHTML = reportToolbar('marketing-view') +
+        '<div class="email-card" id="marketing-email">' + h + '</div>';
+    wrap.dataset.plainText = plain;
 }
 
-function copyReportHTML(btn) {
-    const card = document.getElementById('email-card');
+// ---- Report actions ----
+function generateReports(btn) {
+    buildProductReport();
+    buildMarketingReport();
+    btn.textContent = 'Updated!';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = 'Generate Report'; btn.classList.remove('done'); }, 2000);
+}
+
+function copyReportHTML(viewId, btn) {
+    const card = document.querySelector('#' + viewId + ' .email-card');
     const html = card.innerHTML;
     const blob = new Blob([html], { type: 'text/html' });
     const plainBlob = new Blob([card.innerText], { type: 'text/plain' });
@@ -1173,8 +1455,8 @@ function copyReportHTML(btn) {
     });
 }
 
-function copyReportPlain(btn) {
-    const plain = document.getElementById('report-view').dataset.plainText;
+function copyReportPlain(viewId, btn) {
+    const plain = document.getElementById(viewId).dataset.plainText;
     navigator.clipboard.writeText(plain).then(() => {
         btn.textContent = 'Copied!';
         btn.classList.add('copied');
@@ -1211,7 +1493,8 @@ function selectDate(el) {
     updateHash();
     buildFeatures();
     buildCalls();
-    buildReport();
+    buildProductReport();
+    buildMarketingReport();
     updateStats();
 }
 
@@ -1331,13 +1614,163 @@ function toggleSection(el) {
     el.classList.toggle('open');
 }
 
-function copyScanCmd(btn) {
-    const cmd = document.getElementById('calls-view').dataset.scanCmd;
-    navigator.clipboard.writeText(cmd).then(() => {
-        btn.textContent = 'Command Copied!';
-        btn.classList.add('copied');
-        setTimeout(() => { btn.textContent = 'Scan for More Calls'; btn.classList.remove('copied'); }, 2000);
+// ---- Two-step scan flow ----
+let _scanPreviewCalls = []; // cached from preview response
+
+function closeScanModal() {
+    document.getElementById('scan-overlay').classList.remove('open');
+}
+
+async function startScan(btn) {
+    // Static file mode: fall back to clipboard
+    if (location.protocol === 'file:') {
+        const cmd = document.getElementById('calls-view').dataset.scanCmd;
+        navigator.clipboard.writeText(cmd).then(() => {
+            btn.textContent = 'Command Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'Scan for More Calls'; btn.classList.remove('copied'); }, 2000);
+        });
+        return;
+    }
+
+    // Server mode: open modal, start preview fetch
+    btn.textContent = 'Scanning...';
+    btn.classList.add('scanning');
+    btn.disabled = true;
+
+    const overlay = document.getElementById('scan-overlay');
+    const body = document.getElementById('scan-modal-body');
+    const footer = document.getElementById('scan-modal-footer');
+    const title = document.getElementById('scan-modal-title');
+
+    title.textContent = 'Fetching calls from Fireflies...';
+    body.innerHTML = '<div class="scan-empty" style="padding:3rem"><span class="scanning" style="display:inline-block;animation:scanPulse 1.2s ease-in-out infinite">Scanning...</span></div>';
+    footer.style.display = 'none';
+    overlay.classList.add('open');
+
+    try {
+        const resp = await fetch('/api/scan/preview');
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || 'Preview failed (' + resp.status + ')');
+        }
+        const data = await resp.json();
+        _scanPreviewCalls = data.calls || [];
+
+        if (_scanPreviewCalls.length === 0) {
+            title.textContent = 'No Calls Found';
+            body.innerHTML = '<div class="scan-empty">No matching calls found in the last 14 days.</div>';
+            footer.style.display = 'none';
+        } else {
+            title.textContent = 'Select Calls to Process';
+            renderScanCallList();
+            footer.style.display = 'flex';
+            updateScanFooter();
+        }
+    } catch (err) {
+        title.textContent = 'Scan Failed';
+        body.innerHTML = '<div class="scan-error">' + esc(err.message) + '</div>';
+        footer.style.display = 'none';
+    }
+
+    btn.textContent = 'Scan for More Calls';
+    btn.classList.remove('scanning');
+    btn.disabled = false;
+}
+
+function renderScanCallList() {
+    const body = document.getElementById('scan-modal-body');
+    let html = '';
+    _scanPreviewCalls.forEach((c, i) => {
+        const checked = !c.already_exists ? 'checked' : '';
+        const dupeNote = c.already_exists
+            ? '<div class="scan-call-dupe">Already in dashboard</div>' : '';
+        html += '<div class="scan-call">' +
+            '<input type="checkbox" id="scan-cb-' + i + '" data-call-id="' + esc(c.id) + '" ' + checked +
+            ' onchange="updateScanFooter()">' +
+            '<label class="scan-call-info" for="scan-cb-' + i + '">' +
+                '<div class="scan-call-title">' + esc(c.title) + '</div>' +
+                '<div class="scan-call-meta">' + c.date + ' &middot; ' + c.duration + ' min &middot; ' + esc(c.attendees || c.organizer) + '</div>' +
+                dupeNote +
+            '</label>' +
+        '</div>';
     });
+    body.innerHTML = html;
+}
+
+function updateScanFooter() {
+    const checks = document.querySelectorAll('.scan-call input[type="checkbox"]:checked');
+    const info = document.getElementById('scan-modal-info');
+    const btn = document.getElementById('scan-process-btn');
+    info.textContent = checks.length + ' of ' + _scanPreviewCalls.length + ' selected';
+    btn.disabled = checks.length === 0;
+}
+
+async function processSelectedCalls() {
+    const checks = document.querySelectorAll('.scan-call input[type="checkbox"]:checked');
+    const ids = Array.from(checks).map(cb => cb.dataset.callId);
+
+    if (ids.length === 0) return;
+
+    const btn = document.getElementById('scan-process-btn');
+    const info = document.getElementById('scan-modal-info');
+    btn.textContent = 'Processing...';
+    btn.classList.add('processing');
+    btn.disabled = true;
+    info.textContent = 'Running feature scan on ' + ids.length + ' call' + (ids.length > 1 ? 's' : '') + '...';
+
+    try {
+        const resp = await fetch('/api/scan/process', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ call_ids: ids }),
+        });
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || 'Processing failed (' + resp.status + ')');
+        }
+        const newData = await resp.json();
+
+        // Merge new calls into global DATA (dedup by ID)
+        const existCallIds = new Set(DATA.calls.map(c => c.id));
+        let addedCount = 0;
+        (newData.calls || []).forEach(c => {
+            if (!existCallIds.has(c.id)) {
+                DATA.calls.push(c);
+                existCallIds.add(c.id);
+                addedCount++;
+            }
+        });
+        // Preserve existing mentions unchanged
+        if (newData.mentions) {
+            const existMentionKeys = new Set(DATA.mentions.map(m => m.call_id + '|' + m.keyword + '|' + m.ts));
+            newData.mentions.forEach(m => {
+                const k = m.call_id + '|' + m.keyword + '|' + m.ts;
+                if (!existMentionKeys.has(k)) { DATA.mentions.push(m); existMentionKeys.add(k); }
+            });
+        }
+
+        // Rebuild everything
+        updateStats();
+        buildFeatures();
+        buildCalls();
+        if (typeof buildProductReport === 'function') buildProductReport();
+        if (typeof buildMarketingReport === 'function') buildMarketingReport();
+
+        btn.textContent = 'Done!';
+        btn.classList.remove('processing');
+        info.textContent = addedCount + ' call' + (addedCount > 1 ? 's' : '') + ' added (pending analysis).';
+
+        setTimeout(() => { closeScanModal(); }, 1200);
+    } catch (err) {
+        btn.textContent = 'Failed';
+        btn.classList.remove('processing');
+        info.textContent = err.message;
+        setTimeout(() => {
+            btn.textContent = 'Process Selected';
+            btn.disabled = false;
+        }, 3000);
+    }
 }
 
 function copyNote(btn, callId) {
@@ -1354,11 +1787,13 @@ function copyNote(btn, callId) {
 function switchTab(tab) {
     currentTab = tab;
     updateHash();
+    const isReport = (tab === 'product' || tab === 'marketing');
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.getElementById('features-view').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('calls-view').style.display = tab === 'calls' ? '' : 'none';
-    document.getElementById('report-view').style.display = tab === 'report' ? '' : 'none';
-    document.querySelector('.search-box').style.display = tab === 'report' ? 'none' : '';
+    document.getElementById('product-view').style.display = tab === 'product' ? '' : 'none';
+    document.getElementById('marketing-view').style.display = tab === 'marketing' ? '' : 'none';
+    document.querySelector('.search-box').style.display = isReport ? 'none' : '';
     document.getElementById('co-dd').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('q').value = '';
@@ -1390,10 +1825,15 @@ function updateStats() {
     const m = activeMentions();
     const callIds = new Set(m.map(x => x.call_id));
     const featureNames = new Set(m.map(x => x.keyword));
-    document.getElementById('hdr-stats').innerHTML =
+    const pendingCount = DATA.calls.filter(c => c.pending_analysis).length;
+    let pillsHTML =
         '<span class="hdr-pill"><span class="n">' + m.length + '</span><span class="l">mentions</span></span>' +
         '<span class="hdr-pill"><span class="n">' + callIds.size + '</span><span class="l">calls</span></span>' +
         '<span class="hdr-pill"><span class="n">' + featureNames.size + '</span><span class="l">features</span></span>';
+    if (pendingCount > 0) {
+        pillsHTML += '<span class="hdr-pill" style="border-color:#5a4a20"><span class="n" style="color:#fb923c">' + pendingCount + '</span><span class="l" style="color:#fb923c">pending</span></span>';
+    }
+    document.getElementById('hdr-stats').innerHTML = pillsHTML;
 
     // Tagline: compute date range from visible calls
     const dates = DATA.calls
@@ -1424,7 +1864,8 @@ buildDateDropdown();
 updateStats();
 buildFeatures();
 buildCalls();
-buildReport();
+buildProductReport();
+buildMarketingReport();
 switchTab(initTab || 'features');
 </script>
 </body>
