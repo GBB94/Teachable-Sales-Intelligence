@@ -2,6 +2,21 @@
 Fireflies GraphQL API client with filtering, pagination, and rate-limit awareness.
 """
 
+# ---------------------------------------------------------------------------
+# CACHING LAYER — hook points for future implementation
+# ---------------------------------------------------------------------------
+# Plan: save raw API results to a local JSON cache keyed by query params.
+#   - Cache file: .fireflies_cache/<hash_of_query_params>.json
+#   - Each entry stores: {"fetched_at": <ISO timestamp>, "data": [raw transcripts]}
+#   - On fetch: check cache first. If cache file exists and fetched_at < 7 days
+#     old, return cached data instead of calling API.
+#   - CLI flag: --force bypasses cache (deletes stale entry, fetches fresh).
+#   - Hook points in this file:
+#     1. fetch_raw_transcripts() — check cache before API call, write to cache after
+#     2. get_calls() — pass-through, no changes needed (uses fetch_raw_transcripts)
+#     3. __init__() — accept cache_dir and cache_ttl_days params
+# ---------------------------------------------------------------------------
+
 import requests
 import json
 import time
@@ -20,8 +35,9 @@ class FirefliesRetriever:
 
     MAX_RETRIES = 3
     RETRY_BACKOFF = 1.0       # seconds; doubles each retry
-    REQUEST_DELAY = 0.5       # seconds between paginated batches
+    REQUEST_DELAY = 1.0       # seconds between paginated batches
     RATE_LIMIT_WAIT = 10.0    # default wait when 429 has no Retry-After
+    HARD_CAP_RAW = 500        # absolute max raw calls per run, regardless of limit
 
     # Speakers to exclude from feature request scanning by default.
     DEFAULT_EXCLUDE_DOMAINS: List[str] = ["teachable.com"]
@@ -36,6 +52,10 @@ class FirefliesRetriever:
         }
         if request_delay is not None:
             self.REQUEST_DELAY = request_delay
+
+        # API usage counters — reset at the start of each get_calls() run
+        self.api_calls_made = 0
+        self.raw_transcripts_fetched = 0
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -117,7 +137,11 @@ class FirefliesRetriever:
         variables = {"limit": limit, "skip": skip}
         try:
             data = self._make_request(query, variables)
-            return data.get("data", {}).get("transcripts", [])
+            # Cache hook: write raw results to cache here
+            results = data.get("data", {}).get("transcripts", [])
+            self.api_calls_made += 1
+            self.raw_transcripts_fetched += len(results)
+            return results
         except Exception as e:
             print(f"Error fetching transcripts: {e}")
             return []
@@ -230,10 +254,15 @@ class FirefliesRetriever:
                 print(f"   Transcript keywords: {', '.join(filter_criteria.transcript_keywords)}")
             print()
 
+        # Reset API counters for this run
+        self.api_calls_made = 0
+        self.raw_transcripts_fetched = 0
+
         filtered_calls: List[Call] = []
         current_skip = filter_criteria.skip
         batch_size = 50  # Fireflies API max per request
-        max_raw = filter_criteria.limit * 10
+        soft_cap = filter_criteria.limit * 20
+        max_raw = min(soft_cap, self.HARD_CAP_RAW)
         total_raw = 0
 
         while len(filtered_calls) < filter_criteria.limit:
@@ -275,8 +304,12 @@ class FirefliesRetriever:
             if len(batch) < batch_size:
                 break
             if total_raw >= max_raw:
-                if verbose:
-                    print(f"   Hit safety cap ({max_raw} raw calls). Stopping pagination.")
+                if total_raw >= self.HARD_CAP_RAW:
+                    if verbose:
+                        print(f"   Hit hard safety cap ({self.HARD_CAP_RAW} raw calls). Stopping pagination.")
+                else:
+                    if verbose:
+                        print(f"   Hit safety cap ({max_raw} raw calls, limit*20). Stopping pagination.")
                 break
 
             current_skip += len(batch)
@@ -285,6 +318,7 @@ class FirefliesRetriever:
         if verbose:
             print(f"   Retrieved {total_raw} raw calls, {len(filtered_calls)} match filters")
             print(f"   Returning {len(filtered_calls)} calls")
+            print(f"   API calls made: {self.api_calls_made} ({self.raw_transcripts_fetched} raw transcripts fetched)")
             print()
 
         return filtered_calls

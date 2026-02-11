@@ -61,7 +61,7 @@ Examples:
     )
 
     # Filter options
-    parser.add_argument('--days', type=int, help='Days to look back (default: 30)')
+    parser.add_argument('--days', type=int, help='Days to look back (default: 14)')
     parser.add_argument('--limit', type=int, default=100, help='Max calls to retrieve')
 
     parser.add_argument('--owner', '--owner-email', nargs='+',
@@ -98,6 +98,10 @@ Examples:
                         help='Generate an interactive HTML feature dashboard (implies --feature-requests)')
     parser.add_argument('--output-dir', metavar='DIR', default='',
                         help='Directory for all output files (created if needed)')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Fetch one batch, show filter match rate, estimate API calls needed, then stop')
+    parser.add_argument('--batch-delay', type=float, default=1.0,
+                        help='Delay in seconds between API batches (default: 1.0)')
 
     args = parser.parse_args()
 
@@ -113,7 +117,7 @@ Examples:
         print("  2. Export in shell:     export FIREFLIES_API_KEY='your_key'")
         return 1
 
-    retriever = FirefliesRetriever(api_key)
+    retriever = FirefliesRetriever(api_key, request_delay=args.batch_delay)
 
     # ------------------------------------------------------------------
     # List users mode
@@ -151,9 +155,31 @@ Examples:
         filter_kwargs['max_duration'] = args.max_duration
 
     # ------------------------------------------------------------------
-    # Get calls
+    # Dry run mode
     # ------------------------------------------------------------------
     filter_criteria = CallFilter(**filter_kwargs)
+
+    if args.dry_run:
+        print("DRY RUN: Fetching one batch to estimate API usage...\n")
+        batch = retriever.fetch_raw_transcripts(limit=50, skip=0)
+        if not batch:
+            print("   No transcripts returned from API.")
+            return 0
+        matches = sum(1 for raw in batch if retriever._matches_filter(raw, filter_criteria))
+        match_rate = matches / len(batch) if batch else 0
+        print(f"   Batch size: {len(batch)} raw calls")
+        print(f"   Matches current filters: {matches}/{len(batch)} ({match_rate:.0%})")
+        if match_rate > 0:
+            estimated_batches = int((filter_criteria.limit / match_rate) / 50) + 1
+        else:
+            estimated_batches = "unknown (0% match rate)"
+        print(f"   Estimated API calls to fill limit of {filter_criteria.limit}: {estimated_batches}")
+        print(f"\n   API calls made: {retriever.api_calls_made} ({retriever.raw_transcripts_fetched} raw transcripts fetched)")
+        return 0
+
+    # ------------------------------------------------------------------
+    # Get calls
+    # ------------------------------------------------------------------
     calls = retriever.get_calls(filter_criteria=filter_criteria)
 
     # Display results
@@ -214,6 +240,11 @@ Examples:
             path = _output_path(od, args.dashboard)
             export_feature_dashboard(report, calls, path)
             print(f"\n   Open {path} in your browser to review.\n")
+
+    # ------------------------------------------------------------------
+    # API usage summary
+    # ------------------------------------------------------------------
+    print(f"API calls made: {retriever.api_calls_made} ({retriever.raw_transcripts_fetched} raw transcripts fetched)")
 
     return 0
 
