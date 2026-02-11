@@ -5,7 +5,27 @@ CLI for Fireflies call retrieval, HubSpot note generation, and feature request t
 
 import argparse
 import os
-from fireflies_retriever import FirefliesRetriever, CallFilter
+
+from dotenv import load_dotenv
+
+from client import FirefliesRetriever
+from models import CallFilter
+from exports import (
+    export_to_json,
+    export_to_csv,
+    export_hubspot_notes,
+    export_feature_report,
+    export_feature_report_csv,
+    export_feature_dashboard,
+)
+
+
+def _output_path(output_dir: str, filename: str) -> str:
+    """Prefix filename with output_dir, creating the directory if needed."""
+    if not output_dir:
+        return filename
+    os.makedirs(output_dir, exist_ok=True)
+    return os.path.join(output_dir, filename)
 
 
 def main():
@@ -19,13 +39,9 @@ Examples:
 
   # Get calls owned by specific user(s)
   %(prog)s --owner zach@teachable.com --days 60
-  %(prog)s --owner zach@teachable.com jane@teachable.com --days 60
 
   # Get sales calls with keywords
   %(prog)s --title-keywords demo discovery sales --days 30
-
-  # Complex filter
-  %(prog)s --owner zach@teachable.com --title-keywords demo --min-duration 600 --days 90
 
   # Generate HubSpot-ready notes
   %(prog)s --days 30 --hubspot-notes sales_notes.txt
@@ -33,8 +49,11 @@ Examples:
   # Scan for feature requests
   %(prog)s --days 60 --feature-requests
 
-  # Full pipeline: filter, export, generate notes, scan features
-  %(prog)s --owner zach@teachable.com --days 90 --export q1_calls --hubspot-notes q1_notes.txt --feature-requests
+  # Full pipeline with organized output
+  %(prog)s --owner zach@teachable.com --days 90 \\
+    --export q1_calls --hubspot-notes q1_notes.txt \\
+    --feature-requests --dashboard features.html \\
+    --output-dir output/
 
   # Discover users
   %(prog)s --list-users
@@ -77,15 +96,21 @@ Examples:
                         help='Speaker names to exclude from feature scanning (default: "zach mccall")')
     parser.add_argument('--dashboard', metavar='FILENAME',
                         help='Generate an interactive HTML feature dashboard (implies --feature-requests)')
+    parser.add_argument('--output-dir', metavar='DIR', default='',
+                        help='Directory for all output files (created if needed)')
 
     args = parser.parse_args()
+
+    # Load .env file (if present)
+    load_dotenv()
 
     # Get API key
     api_key = os.getenv('FIREFLIES_API_KEY')
     if not api_key:
-        print("Error: FIREFLIES_API_KEY environment variable not set")
-        print("\nTo fix this:")
-        print("  export FIREFLIES_API_KEY='your_api_key_here'")
+        print("Error: FIREFLIES_API_KEY not set")
+        print("\nTo fix this, either:")
+        print("  1. Create a .env file:  echo 'FIREFLIES_API_KEY=your_key' > .env")
+        print("  2. Export in shell:     export FIREFLIES_API_KEY='your_key'")
         return 1
 
     retriever = FirefliesRetriever(api_key)
@@ -94,7 +119,7 @@ Examples:
     # List users mode
     # ------------------------------------------------------------------
     if args.list_users:
-        print("🔍 Discovering users from recent calls...\n")
+        print("Discovering users from recent calls...\n")
         users = retriever.get_user_list(limit=100)
 
         print(f"Found {len(users)} unique users:\n")
@@ -155,16 +180,19 @@ Examples:
     # ------------------------------------------------------------------
     # Export
     # ------------------------------------------------------------------
+    od = args.output_dir
+
     if args.export and calls:
-        retriever.export_to_json(calls, f"{args.export}.json")
-        retriever.export_to_csv(calls, f"{args.export}.csv")
+        export_to_json(calls, _output_path(od, f"{args.export}.json"))
+        export_to_csv(calls, _output_path(od, f"{args.export}.csv"))
 
     # ------------------------------------------------------------------
     # HubSpot notes
     # ------------------------------------------------------------------
     if args.hubspot_notes and calls:
-        retriever.export_hubspot_notes(calls, args.hubspot_notes)
-        print(f"\n   Open {args.hubspot_notes} and copy/paste notes into HubSpot.\n")
+        path = _output_path(od, args.hubspot_notes)
+        export_hubspot_notes(calls, path)
+        print(f"\n   Open {path} and copy/paste notes into HubSpot.\n")
 
     # ------------------------------------------------------------------
     # Feature requests
@@ -179,12 +207,13 @@ Examples:
         report = retriever.scan_feature_requests(calls, **scan_kwargs)
 
         if args.feature_export:
-            retriever.export_feature_report(report, f"{args.feature_export}.json")
-            retriever.export_feature_report_csv(report, f"{args.feature_export}.csv")
+            export_feature_report(report, _output_path(od, f"{args.feature_export}.json"))
+            export_feature_report_csv(report, _output_path(od, f"{args.feature_export}.csv"))
 
         if args.dashboard:
-            retriever.export_feature_dashboard(report, calls, args.dashboard)
-            print(f"\n   Open {args.dashboard} in your browser to review.\n")
+            path = _output_path(od, args.dashboard)
+            export_feature_dashboard(report, calls, path)
+            print(f"\n   Open {path} in your browser to review.\n")
 
     return 0
 

@@ -5,7 +5,11 @@ Covers filtering, HubSpot notes, and feature request tracking.
 """
 
 import os
-from fireflies_retriever import FirefliesRetriever, CallFilter
+from dotenv import load_dotenv
+
+from client import FirefliesRetriever
+from models import CallFilter
+from exports import export_hubspot_notes, export_feature_report, export_feature_report_csv
 
 
 def print_section(title):
@@ -21,10 +25,10 @@ def print_calls(calls, max_display=5):
 
     for i, call in enumerate(calls[:max_display], 1):
         print(f"{i}. {call.title}")
-        print(f"   📅 {call.date}")
-        print(f"   ⏱️  {call.duration_minutes:.1f} minutes")
-        print(f"   👤 {call.organizer_email or 'Unknown organizer'}")
-        print(f"   👥 {', '.join(call.attendee_names[:3]) or 'No attendees'}")
+        print(f"   {call.date}")
+        print(f"   {call.duration_minutes:.1f} minutes")
+        print(f"   {call.organizer_email or 'Unknown organizer'}")
+        print(f"   {', '.join(call.attendee_names[:3]) or 'No attendees'}")
         print()
 
     if len(calls) > max_display:
@@ -33,11 +37,12 @@ def print_calls(calls, max_display=5):
 
 
 def main():
+    load_dotenv()
     api_key = os.getenv('FIREFLIES_API_KEY')
 
     if not api_key:
-        print("Please set FIREFLIES_API_KEY environment variable")
-        print("\n   export FIREFLIES_API_KEY='your_api_key_here'")
+        print("Please set FIREFLIES_API_KEY (via .env or environment)")
+        print("\n   echo 'FIREFLIES_API_KEY=your_key' > .env")
         return
 
     retriever = FirefliesRetriever(api_key)
@@ -123,7 +128,7 @@ def main():
 
         export = input("Export all HubSpot notes to file? (y/n): ").strip().lower()
         if export == 'y':
-            retriever.export_hubspot_notes(calls, "hubspot_notes.txt")
+            export_hubspot_notes(calls, "hubspot_notes.txt")
             print("\n   Open hubspot_notes.txt and copy/paste into HubSpot.\n")
     else:
         print("   No calls to generate notes for.\n")
@@ -132,7 +137,6 @@ def main():
     print_section("8. Feature Request Scan")
     print("Scanning all retrieved calls for feature request mentions...\n")
 
-    # Re-fetch a broader set for feature scanning
     all_calls = retriever.get_calls(
         filter_criteria=CallFilter(days_back=90, limit=50),
         verbose=True
@@ -143,8 +147,8 @@ def main():
 
         export = input("Export feature request report? (y/n): ").strip().lower()
         if export == 'y':
-            retriever.export_feature_report(report, "feature_requests.json")
-            retriever.export_feature_report_csv(report, "feature_requests.csv")
+            export_feature_report(report, "feature_requests.json")
+            export_feature_report_csv(report, "feature_requests.csv")
             print("\n   Created feature_requests.json and feature_requests.csv\n")
     else:
         print("   No calls to scan.\n")
@@ -156,6 +160,7 @@ def main():
     print("  - --hubspot-notes <file> generates copy/paste-ready call notes")
     print("  - --feature-requests scans transcripts for feature mentions")
     print("  - --feature-export <file> saves the report to JSON + CSV")
+    print("  - --output-dir <dir> puts all output files in one folder")
     print()
 
 
