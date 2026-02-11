@@ -240,6 +240,11 @@ class Call:
 
         if include_action_items and self.summary:
             action_items = self.summary.get('action_items') or []
+            # Fireflies API returns action_items as a string, not a list
+            if isinstance(action_items, str):
+                action_items = [line.strip().strip("*-•").strip()
+                                for line in action_items.split("\n")
+                                if line.strip()]
             if action_items:
                 lines.append("---")
                 lines.append("ACTION ITEMS")
@@ -251,6 +256,9 @@ class Call:
 
         if self.summary:
             keywords = self.summary.get('keywords') or []
+            # Fireflies API may return keywords as a string
+            if isinstance(keywords, str):
+                keywords = [k.strip() for k in keywords.split(",") if k.strip()]
             if keywords:
                 lines.append("---")
                 lines.append("KEY TOPICS")

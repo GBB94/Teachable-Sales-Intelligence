@@ -130,11 +130,21 @@ class FirefliesRetriever:
             for s in sentences
         )
 
-    def _parse_call_date(self, date_str: str) -> Optional[datetime]:
-        if not date_str:
+    def _parse_call_date(self, date_val) -> Optional[datetime]:
+        """Parse a call date — handles both epoch-ms (int/str) and ISO strings."""
+        if not date_val:
             return None
         try:
-            cleaned = date_str.replace("Z", "+00:00")
+            # Fireflies returns epoch milliseconds as int or numeric string
+            ts = float(date_val)
+            if ts > 1e12:  # milliseconds
+                ts = ts / 1000.0
+            return datetime.fromtimestamp(ts, tz=timezone.utc)
+        except (ValueError, TypeError, OSError):
+            pass
+        # Fallback: ISO string
+        try:
+            cleaned = str(date_val).replace("Z", "+00:00")
             dt = datetime.fromisoformat(cleaned)
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone.utc)
@@ -222,7 +232,7 @@ class FirefliesRetriever:
 
         filtered_calls: List[Call] = []
         current_skip = filter_criteria.skip
-        batch_size = 100
+        batch_size = 50  # Fireflies API max per request
         max_raw = filter_criteria.limit * 10
         total_raw = 0
 
@@ -240,10 +250,14 @@ class FirefliesRetriever:
                 if len(filtered_calls) >= filter_criteria.limit:
                     break
                 if self._matches_filter(raw_call, filter_criteria):
+                    # Convert epoch-ms date to ISO string for display
+                    parsed_dt = self._parse_call_date(raw_call.get("date", ""))
+                    date_iso = parsed_dt.isoformat() if parsed_dt else str(raw_call.get("date", ""))
+
                     call = Call(
                         id=raw_call["id"],
                         title=raw_call.get("title", "Untitled"),
-                        date=raw_call.get("date", ""),
+                        date=date_iso,
                         duration=raw_call.get("duration", 0),
                         organizer_email=raw_call.get("organizer_email"),
                         attendees=raw_call.get("meeting_attendees", []),
@@ -314,7 +328,7 @@ class FirefliesRetriever:
                 return True
 
         for attendee in call.attendees:
-            att_name = (attendee.get("displayName") or attendee.get("name", "")).lower()
+            att_name = (attendee.get("displayName") or attendee.get("name") or "").lower()
             att_email = (attendee.get("email") or "").lower()
             if att_name and (att_name in name_lower or name_lower in att_name):
                 for domain in exclude_domains:
