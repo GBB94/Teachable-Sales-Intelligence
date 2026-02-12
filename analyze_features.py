@@ -233,6 +233,21 @@ Do NOT include:
 
 Be thorough. If in doubt, include it. A shallow analysis that misses
 features discussed on the call is worse than a slightly long list.
+
+SPEAKER & COMPANY RULES:
+- Every feature MUST have a "company" field with the PROSPECT company name.
+  Never use "Unknown", "Teachable", or empty string.
+- Infer the company from the call title if not obvious from the speaker.
+  Example: "Teachable <> Dot Compliance Followup" → company is "Dot Compliance"
+  Example: "Teachable <> Speravita: Organizations Review" → company is "Speravita"
+- The "speaker" field should identify who said it: "Ibrahim Haleem Khan (Dot Compliance)"
+- For "rep_highlighted" features (where a Teachable rep pitches something),
+  the company is still the PROSPECT company, not Teachable.
+  Example: Zach demos learning paths to Speravita → company is "Speravita"
+- Internal Teachable employees include: anyone @teachable.com, Zach McCall,
+  Kevin, Jerome, Lennie Zhu. These are reps, not prospects.
+- Only extract features from prospect speakers OR features a rep highlights
+  that the prospect engages with. Do NOT attribute features to Teachable.
 """)
 
     # Load and print categories for the analysis prompt
@@ -293,6 +308,7 @@ Skip segment assignment for INTERNAL calls (set all segment fields to null).
       {
         "feature": "Short Normalized Feature Name",
         "category": "Category Name (from list above)",
+        "company": "Prospect Company Name (NEVER 'Teachable' or 'Unknown')",
         "speaker": "Customer Name (Company)",
         "quote": "most relevant 1-2 sentence verbatim quote",
         "timestamp": "~MM:SS",

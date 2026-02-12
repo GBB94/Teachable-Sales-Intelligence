@@ -874,17 +874,47 @@ function mentionHTML(m, showFeature) {
 }
 
 // ---- Features view (grouped by category) ----
+function isTeachableInternal(name) {
+    if (!name) return true;
+    const low = name.toLowerCase().trim();
+    return low === 'teachable' || low === 'unknown' || low === '';
+}
+
+function companyFromTitle(title) {
+    if (!title) return '';
+    const chevron = title.match(/^(.+?)\s*<>\s*Teachable/i) || title.match(/^Teachable\s*<>\s*(.+)/i);
+    if (chevron) return chevron[1].split(':')[0].trim();
+    return '';
+}
+
+function companyFromAttendees(attendees) {
+    if (!attendees) return '';
+    // Extract company from parenthetical in attendee names, skipping Teachable
+    const parts = attendees.split(',').map(s => s.trim()).filter(Boolean);
+    for (const p of parts) {
+        const paren = p.match(/\(([^)]+)\)/);
+        if (paren) {
+            const co = paren[1].trim();
+            if (!isTeachableInternal(co)) return co;
+        }
+    }
+    return '';
+}
+
 function getCompany(m, callMap) {
-    // Prefer explicit company field from features.json
-    if (m.company) return m.company;
+    // Prefer explicit company field from features.json (if not internal)
+    if (m.company && !isTeachableInternal(m.company)) return m.company;
     // Fall back to reportGetCompany (parses speaker/call_title)
     const co = reportGetCompany(m, callMap);
-    if (co) return co;
-    // Last resort: extract from call_title
+    if (co && !isTeachableInternal(co)) return co;
+    // Try call title
     const call = callMap[m.call_id];
-    if (call && call.title) {
-        const chevron = call.title.match(/^(.+?)\s*<>\s*Teachable/i) || call.title.match(/^Teachable\s*<>\s*(.+)/i);
-        if (chevron) return chevron[1].split(':')[0].trim();
+    if (call) {
+        const fromTitle = companyFromTitle(call.title);
+        if (fromTitle && !isTeachableInternal(fromTitle)) return fromTitle;
+        // Try attendees field
+        const fromAttendees = companyFromAttendees(call.attendees);
+        if (fromAttendees) return fromAttendees;
     }
     return '';
 }
@@ -894,14 +924,19 @@ function buildFeatureCard(kw, mentions, callMap, companies) {
 
     // Group mentions by company
     const coMap = {}; // company -> { contacts: Set, count: number }
+    const INTERNAL_SPEAKERS = ['zach mccall', 'kevin', 'jerome', 'lennie zhu', 'sarah'];
     mentions.forEach(m => {
-        const co = getCompany(m, callMap) || 'Unknown';
+        const co = getCompany(m, callMap);
+        if (!co) return; // Skip mentions with no identifiable prospect company
         if (!coMap[co]) coMap[co] = { contacts: new Set(), count: 0 };
         const spk = m.speaker || '';
-        // Skip internal reps
-        if (spk && !spk.toLowerCase().includes('unknown') &&
-            !spk.toLowerCase().includes('zach mccall')) {
-            coMap[co].contacts.add(spk.replace(/\s*\([^)]*\)/, '').trim());
+        const spkLow = spk.toLowerCase();
+        const spkName = spk.replace(/\s*\([^)]*\)/, '').trim();
+        // Skip internal Teachable reps from contact lists
+        const isInternal = spkLow.includes('teachable') ||
+            INTERNAL_SPEAKERS.some(s => spkLow.includes(s));
+        if (spkName && !isInternal) {
+            coMap[co].contacts.add(spkName);
         }
         coMap[co].count++;
     });
@@ -1195,22 +1230,28 @@ function buildCalls() {
 // ---- Shared report helpers ----
 function reportGetCompany(m, callMap) {
     const spk = m.speaker || '';
+    const spkLow = spk.toLowerCase();
+    const call = callMap[m.call_id];
+    const title = call ? call.title : '';
     const paren = spk.match(/\(([^)]+)\)/);
+
+    // Known speaker → company mappings (works with or without parenthetical)
+    if (spkLow.includes('hui ching') || spkLow.includes('kai shan')) return 'LTA';
+    if (spkLow.includes('simon davey')) return 'Simon Davey';
+    if (spkLow.includes('simon smith') || spkLow.includes('sabine') || spkLow.includes('katrina welch')) return 'Simon & Sabine (Coaching)';
+    if (spkLow.includes('ibrahim') || spkLow.includes('bryan') || spkLow.includes('oghenetejiri')) return 'Dot Compliance';
+
     if (paren) {
         const raw = paren[1].split('/')[0].trim();
-        const call = callMap[m.call_id];
-        const title = call ? call.title : '';
         const chevron = title.match(/^(.+?)\s*<>\s*Teachable/i) || title.match(/^Teachable\s*<>\s*(.+)/i);
         if (chevron) return chevron[1].trim();
         if (title.toLowerCase().includes('speravita')) return 'Speravita';
         if (title.toLowerCase().includes('dot compliance')) return 'Dot Compliance';
-        if (title.toLowerCase().includes('lta') || raw.toLowerCase().includes('lta') ||
-            spk.toLowerCase().includes('hui ching') || spk.toLowerCase().includes('kai shan')) return 'LTA';
-        if (raw === 'Simon Davey') return 'Simon Davey';
-        if (raw === 'Simon' || raw === 'Sabine' || raw === 'Katrina') return 'Simon & Sabine (Coaching)';
-        if (raw === 'Ibrahim' || raw === 'Bryan' || raw === 'Oghenetejiri') return 'Dot Compliance';
-        if (raw === 'Hui Ching' || raw === 'Kai Shan') return 'LTA';
-        return raw;
+        if (title.toLowerCase().includes('lta') || raw.toLowerCase().includes('lta')) return 'LTA';
+        // Never return Teachable or Unknown as a company
+        if (!isTeachableInternal(raw)) return raw;
+        // Fall through: internal speaker, try extracting from title
+        if (title) return companyFromTitle(title);
     }
     return '';
 }
