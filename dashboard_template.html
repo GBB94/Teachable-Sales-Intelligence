@@ -590,6 +590,104 @@ body {
     .mentions { padding: 0 0.75rem 0.75rem 1.2rem; }
     #calls-view .mentions { padding: 0 0.75rem 0.75rem 1.2rem; }
 }
+
+/* ---- Personas tab ---- */
+#personas-view { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* Section 1: Segment overview cards */
+.seg-overview { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.seg-card {
+    flex: 1 1 220px; max-width: 320px; min-width: 200px;
+    background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
+    padding: 1rem 1.2rem; cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+    border-left: 4px solid var(--seg-color, #4a7cff);
+}
+.seg-card:hover { border-color: #2a2d40; transform: translateY(-1px); }
+.seg-card-name { font-size: 1rem; font-weight: 700; color: #f0f1f4; margin-bottom: 0.4rem; }
+.seg-card-stat { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 700; color: #f0f1f4; }
+.seg-card-sub { font-size: 0.82rem; color: #6b7084; margin-top: 0.15rem; }
+.seg-card-feats { margin-top: 0.6rem; padding-top: 0.5rem; border-top: 1px solid #1e2130; }
+.seg-card-feats li {
+    font-size: 0.82rem; color: #9a9db0; list-style: none;
+    padding: 0.1rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.seg-card-feats li::before { content: '\2022'; color: #555a6e; margin-right: 0.4rem; }
+
+/* Section 2: Comparison table */
+.seg-compare-wrap { overflow-x: auto; }
+.seg-compare {
+    width: 100%; border-collapse: collapse;
+    font-size: max(0.85rem, 13px);
+}
+.seg-compare th {
+    text-align: left; padding: 0.5rem 0.75rem; color: #8b8fa3; font-weight: 600;
+    border-bottom: 1px solid #1e2130; white-space: nowrap; font-size: max(0.82rem, 13px);
+}
+.seg-compare th:first-child { min-width: 200px; }
+.seg-compare td {
+    padding: 0.45rem 0.75rem; border-bottom: 1px solid #13151c;
+    color: #d0d3db; text-align: center; min-width: 100px;
+}
+.seg-compare td:first-child { text-align: left; font-weight: 500; color: #f0f1f4; }
+.seg-compare tr:hover td { background: rgba(255,255,255,0.015); }
+.seg-dots { color: #4a7cff; letter-spacing: 2px; font-size: max(1rem, 14px); }
+.seg-show-all {
+    font-size: 0.85rem; font-weight: 500; color: #4a7cff; background: none; border: none;
+    cursor: pointer; padding: 0.5rem 0; font-family: 'DM Sans', sans-serif;
+}
+.seg-show-all:hover { text-decoration: underline; }
+
+/* Section 3: Prospect cards by segment */
+.seg-group { margin-top: 0.5rem; }
+.seg-group-hdr {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.6rem 0.9rem; background: #12141c;
+    border-left: 4px solid var(--seg-color, #4a7cff);
+    border-radius: 4px; cursor: pointer; user-select: none;
+    margin-bottom: 0.5rem;
+}
+.seg-group-hdr .seg-group-arrow {
+    font-size: 0.55rem; color: #555a6e; transition: transform 0.15s; display: inline-block;
+}
+.seg-group:not(.collapsed) .seg-group-arrow { transform: rotate(90deg); }
+.seg-group-name { font-size: max(1rem, 13px); font-weight: 600; color: #d0d3db; }
+.seg-group-count {
+    font-size: max(0.8rem, 13px); color: #555a6e;
+    font-family: 'JetBrains Mono', monospace; margin-left: auto;
+}
+.seg-group-cards { padding: 0 0 0 1rem; }
+.seg-group.collapsed .seg-group-cards { display: none; }
+
+.prospect-card {
+    background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
+    padding: 1rem 1.2rem; margin-bottom: 0.5rem;
+    border-left: 4px solid var(--seg-color, #4a7cff);
+    transition: border-color 0.15s;
+}
+.prospect-card:hover { border-color: #2a2d40; }
+.prospect-co { font-size: 1rem; font-weight: 700; color: #f0f1f4; margin-bottom: 0.3rem; }
+.prospect-contact { font-size: 0.85rem; color: #9a9db0; margin-bottom: 0.15rem; }
+.prospect-call { font-size: 0.85rem; color: #8b8fa3; margin-bottom: 0.4rem; }
+.prospect-call a { color: #4a7cff; text-decoration: none; }
+.prospect-call a:hover { text-decoration: underline; }
+.prospect-feats { margin: 0; padding: 0 0 0 1rem; }
+.prospect-feats li {
+    font-size: 0.85rem; color: #d0d3db; list-style: disc;
+    padding: 0.1rem 0; list-style-color: #555a6e;
+}
+.prospect-feats li a { color: #4a7cff; text-decoration: none; font-size: 0.78rem; margin-left: 0.3rem; }
+.prospect-feats li a:hover { text-decoration: underline; }
+
+.seg-section-title {
+    font-size: 0.82rem; font-weight: 600; color: #6b7084;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 0.75rem; padding-bottom: 0.35rem;
+    border-bottom: 1px solid #1e2130;
+}
+.seg-empty {
+    padding: 2rem; text-align: center; color: #3a3d4e; font-size: 0.9rem;
+}
 </style>
 </head>
 <body>
@@ -604,6 +702,7 @@ body {
     <div class="tabs">
         <div class="tab active" data-tab="features" onclick="switchTab('features')">By Feature</div>
         <div class="tab" data-tab="calls" onclick="switchTab('calls')">By Call</div>
+        <div class="tab" data-tab="personas" onclick="switchTab('personas')">Personas</div>
         <div class="tab" data-tab="product" onclick="switchTab('product')">Product Report</div>
         <div class="tab" data-tab="marketing" onclick="switchTab('marketing')">Marketing Report</div>
     </div>
@@ -626,6 +725,7 @@ body {
     </div>
     <div id="features-view"></div>
     <div id="calls-view" style="display:none"></div>
+    <div id="personas-view" style="display:none"></div>
     <div id="product-view" style="display:none"></div>
     <div id="marketing-view" style="display:none"></div>
 </div>
@@ -663,7 +763,7 @@ function parseHash() {
             p.slice(8).split(',').filter(Boolean).forEach(id => excludedCalls.add(id));
         } else if (p.startsWith('range=')) {
             activeDateRange = p.slice(6);
-        } else if (['features', 'calls', 'product', 'marketing'].includes(p)) {
+        } else if (['features', 'calls', 'personas', 'product', 'marketing'].includes(p)) {
             tab = p;
         }
     });
@@ -1732,6 +1832,7 @@ function selectDate(el) {
     updateHash();
     buildFeatures();
     buildCalls();
+    buildPersonas();
     buildProductReport();
     buildMarketingReport();
     updateStats();
@@ -1884,6 +1985,7 @@ function selectSegment(el) {
     }
     syncSegmentLabel();
     applySegmentFilter();
+    if (currentTab === 'personas') buildPersonas();
 }
 
 function syncSegmentLabel() {
@@ -2133,6 +2235,279 @@ function copyNote(btn, callId) {
     });
 }
 
+// ---- Personas tab ----
+const SEG_COLORS = {
+    'continuing education & credentialing': '#4a9eff',
+    'professional training & development': '#4ade80',
+    'coaches & consultants': '#a78bfa',
+    'industry associations & membership orgs': '#fbbf24',
+    'course creators & digital educators': '#f472b6',
+    'academic & higher education': '#2dd4bf',
+    'corporate education & customer training': '#fb923c',
+    'health, wellness & fitness': '#34d399',
+    'government & public sector education': '#94a3b8'
+};
+
+function segColor(segName) {
+    return SEG_COLORS[(segName || '').toLowerCase()] || '#4a7cff';
+}
+
+function buildPersonas() {
+    const callMap = {};
+    DATA.calls.forEach(c => { callMap[c.id] = c; });
+    const mentions = activeMentions();
+
+    // Check if any segment data exists
+    const hasSegmentData = DATA.calls.some(c => c.segment);
+    if (!hasSegmentData) {
+        document.getElementById('personas-view').innerHTML =
+            '<div class="seg-empty">Segment data not available. Re-run analysis with persona categorization enabled to populate this tab.</div>';
+        return;
+    }
+
+    // Tag mentions with company
+    mentions.forEach(m => { m._co = m._co || getCompany(m, callMap) || reportGetCompany(m, callMap) || ''; });
+
+    // Active date-filtered + non-excluded calls with segments
+    const dateIds = activeCallIds();
+    const activeCalls = DATA.calls.filter(c =>
+        c.segment && !excludedCalls.has(c.id) && dateIds.has(c.id)
+    );
+
+    // Apply segment filter
+    const noSegFilter = activeSegmentFilters.size === 0;
+    const filteredCalls = activeCalls.filter(c =>
+        noSegFilter || activeSegmentFilters.has(c.segment.toLowerCase())
+    );
+
+    if (filteredCalls.length === 0) {
+        document.getElementById('personas-view').innerHTML =
+            '<div class="seg-empty">No calls match the selected filters.</div>';
+        return;
+    }
+
+    // Group calls by segment
+    const segGroups = {};
+    filteredCalls.forEach(c => {
+        const seg = c.segment;
+        if (!segGroups[seg]) segGroups[seg] = { calls: [], companies: new Set(), features: {} };
+        segGroups[seg].calls.push(c);
+    });
+
+    // Cross-ref mentions with calls to get features per segment and per company
+    const filteredCallIds = new Set(filteredCalls.map(c => c.id));
+    const filteredMentions = mentions.filter(m => filteredCallIds.has(m.call_id));
+
+    filteredMentions.forEach(m => {
+        const call = callMap[m.call_id];
+        if (!call || !call.segment) return;
+        const seg = call.segment;
+        if (!segGroups[seg]) return;
+        const co = m._co || 'Unknown';
+        segGroups[seg].companies.add(co);
+        if (!segGroups[seg].features[m.keyword]) segGroups[seg].features[m.keyword] = 0;
+        segGroups[seg].features[m.keyword]++;
+    });
+
+    // Also add companies from calls (even if no feature mentions)
+    filteredCalls.forEach(c => {
+        const seg = c.segment;
+        const callMentions = filteredMentions.filter(m => m.call_id === c.id);
+        const cos = new Set(callMentions.map(m => m._co).filter(Boolean));
+        if (cos.size === 0) {
+            // Fallback: extract from call title
+            const chevron = (c.title || '').match(/^(.+?)\s*<>\s*Teachable/i) || (c.title || '').match(/^Teachable\s*<>\s*(.+)/i);
+            if (chevron) cos.add(chevron[1].split(':')[0].trim());
+        }
+        cos.forEach(co => segGroups[seg].companies.add(co));
+    });
+
+    // Sort segments by call count desc
+    const sortedSegs = Object.entries(segGroups).sort((a, b) => b[1].calls.length - a[1].calls.length);
+
+    let html = '';
+
+    // ========== SECTION 1: Segment Overview Cards ==========
+    html += '<div class="seg-section-title">Segment Overview</div>';
+    html += '<div class="seg-overview">';
+    sortedSegs.forEach(([seg, data]) => {
+        const color = segColor(seg);
+        const topFeats = Object.entries(data.features)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3);
+        let featsHTML = '';
+        if (topFeats.length > 0) {
+            featsHTML = '<ul class="seg-card-feats">';
+            topFeats.forEach(([f]) => { featsHTML += '<li>' + esc(f) + '</li>'; });
+            featsHTML += '</ul>';
+        }
+        html += '<div class="seg-card" style="--seg-color:' + color + '" onclick="scrollToSegGroup(\'' + esc(seg) + '\')">' +
+            '<div class="seg-card-name">' + esc(seg) + '</div>' +
+            '<div class="seg-card-stat">' + data.calls.length + ' call' + (data.calls.length !== 1 ? 's' : '') + '</div>' +
+            '<div class="seg-card-sub">' + data.companies.size + ' compan' + (data.companies.size !== 1 ? 'ies' : 'y') + '</div>' +
+            featsHTML +
+        '</div>';
+    });
+    html += '</div>';
+
+    // ========== SECTION 2: Segment Comparison Table ==========
+    // Collect all features with 2+ total mentions across ALL segments
+    const allFeatureCounts = {};
+    filteredMentions.forEach(m => {
+        const call = callMap[m.call_id];
+        if (!call || !call.segment) return;
+        if (!allFeatureCounts[m.keyword]) allFeatureCounts[m.keyword] = { total: 0, bySegment: {} };
+        allFeatureCounts[m.keyword].total++;
+        if (!allFeatureCounts[m.keyword].bySegment[call.segment]) allFeatureCounts[m.keyword].bySegment[call.segment] = 0;
+        allFeatureCounts[m.keyword].bySegment[call.segment]++;
+    });
+
+    const tableFeatures = Object.entries(allFeatureCounts)
+        .filter(([, v]) => v.total >= 2)
+        .sort((a, b) => b[1].total - a[1].total);
+
+    if (tableFeatures.length > 0 && sortedSegs.length > 1) {
+        html += '<div class="seg-section-title" style="margin-top:1rem">Segment Comparison</div>';
+        html += '<div class="seg-compare-wrap"><table class="seg-compare">';
+        html += '<tr><th>Feature</th>';
+        sortedSegs.forEach(([seg]) => {
+            html += '<th>' + esc(seg.replace(/ & /g, ' &amp; ').split(' ').slice(0, 3).join(' ')) + '</th>';
+        });
+        html += '</tr>';
+
+        const INITIAL_ROWS = 15;
+        tableFeatures.forEach(([feat, data], idx) => {
+            const hidden = idx >= INITIAL_ROWS ? ' style="display:none" class="seg-compare-extra"' : '';
+            html += '<tr' + hidden + '><td>' + esc(feat) + '</td>';
+            sortedSegs.forEach(([seg]) => {
+                const count = data.bySegment[seg] || 0;
+                let dots = '';
+                if (count >= 3) dots = '<span class="seg-dots">\u25CF\u25CF\u25CF</span>';
+                else if (count === 2) dots = '<span class="seg-dots">\u25CF\u25CF</span>';
+                else if (count === 1) dots = '<span class="seg-dots">\u25CF</span>';
+                html += '<td>' + dots + '</td>';
+            });
+            html += '</tr>';
+        });
+        html += '</table>';
+        if (tableFeatures.length > INITIAL_ROWS) {
+            html += '<button class="seg-show-all" onclick="toggleCompareRows(this)">Show all ' + tableFeatures.length + ' features</button>';
+        }
+        html += '</div>';
+    }
+
+    // ========== SECTION 3: Prospect Cards by Segment ==========
+    html += '<div class="seg-section-title" style="margin-top:1rem">Prospects by Segment</div>';
+
+    sortedSegs.forEach(([seg, data], idx) => {
+        const color = segColor(seg);
+        // Group by company
+        const coData = {};
+        data.calls.forEach(c => {
+            const callMentions = filteredMentions.filter(m => m.call_id === c.id);
+            const cos = new Set(callMentions.map(m => m._co).filter(Boolean));
+            if (cos.size === 0) {
+                const chevron = (c.title || '').match(/^(.+?)\s*<>\s*Teachable/i) || (c.title || '').match(/^Teachable\s*<>\s*(.+)/i);
+                if (chevron) cos.add(chevron[1].split(':')[0].trim());
+                else cos.add(c.title || 'Unknown');
+            }
+            cos.forEach(co => {
+                if (!coData[co]) coData[co] = { contacts: [], calls: [], features: [], mentionMap: {} };
+                coData[co].calls.push(c);
+                callMentions.forEach(m => {
+                    if (!coData[co].mentionMap[m.keyword]) {
+                        coData[co].mentionMap[m.keyword] = m;
+                        coData[co].features.push(m);
+                    }
+                });
+            });
+        });
+
+        // Extract contacts from marketing_data
+        Object.entries(coData).forEach(([co, d]) => {
+            d.calls.forEach(c => {
+                if (c.marketing_data && c.marketing_data.contacts) {
+                    c.marketing_data.contacts.forEach(ct => {
+                        if (!d.contacts.find(x => x.name === ct.name)) d.contacts.push(ct);
+                    });
+                }
+            });
+        });
+
+        const coEntries = Object.entries(coData).sort((a, b) => a[0].localeCompare(b[0]));
+        const defaultExpanded = sortedSegs.length <= 3 || idx === 0;
+
+        html += '<div class="seg-group' + (defaultExpanded ? '' : ' collapsed') + '" id="seg-group-' + esc(seg.replace(/[^a-z0-9]/gi, '-').toLowerCase()) + '" style="--seg-color:' + color + '">';
+        html += '<div class="seg-group-hdr" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
+        html += '<span class="seg-group-arrow">&#9654;</span>';
+        html += '<span class="seg-group-name">' + esc(seg) + '</span>';
+        html += '<span class="seg-group-count">' + coEntries.length + ' compan' + (coEntries.length !== 1 ? 'ies' : 'y') + ' &middot; ' + data.calls.length + ' call' + (data.calls.length !== 1 ? 's' : '') + '</span>';
+        html += '</div>';
+        html += '<div class="seg-group-cards">';
+
+        coEntries.forEach(([co, d]) => {
+            html += '<div class="prospect-card" style="--seg-color:' + color + '">';
+            html += '<div class="prospect-co">' + esc(co) + '</div>';
+
+            // Contacts
+            d.contacts.forEach(ct => {
+                html += '<div class="prospect-contact">' + esc(ct.name || '');
+                if (ct.title) html += ', ' + esc(ct.title);
+                html += '</div>';
+            });
+
+            // Calls
+            const sortedCalls = d.calls.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            sortedCalls.forEach(c => {
+                const dateStr = c.date ? c.date.slice(5).replace('-', '/') : '';
+                html += '<div class="prospect-call">';
+                if (c.transcript) {
+                    html += '<a href="' + esc(c.transcript) + '" target="_blank">' + esc(c.title || 'Call') + '</a>';
+                } else {
+                    html += esc(c.title || 'Call');
+                }
+                if (dateStr) html += ' &middot; ' + dateStr;
+                html += '</div>';
+            });
+
+            // Features
+            if (d.features.length > 0) {
+                html += '<ul class="prospect-feats">';
+                d.features.forEach(m => {
+                    html += '<li>' + esc(m.keyword);
+                    if (m.link) html += '<a href="' + esc(m.link) + '" target="_blank">' + esc(m.ts || '') + '</a>';
+                    html += '</li>';
+                });
+                html += '</ul>';
+            } else {
+                html += '<div style="font-size:0.82rem;color:#555a6e;margin-top:0.3rem">No feature requests extracted from this call.</div>';
+            }
+
+            html += '</div>';
+        });
+
+        html += '</div></div>';
+    });
+
+    document.getElementById('personas-view').innerHTML = html;
+}
+
+function scrollToSegGroup(seg) {
+    const id = 'seg-group-' + seg.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    const el = document.getElementById(id);
+    if (el) {
+        el.classList.remove('collapsed');
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function toggleCompareRows(btn) {
+    const rows = document.querySelectorAll('.seg-compare-extra');
+    const showing = rows[0] && rows[0].style.display !== 'none';
+    rows.forEach(r => { r.style.display = showing ? 'none' : ''; });
+    btn.textContent = showing ? 'Show all' : 'Show less';
+}
+
 function switchTab(tab) {
     currentTab = tab;
     updateHash();
@@ -2140,16 +2515,18 @@ function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.getElementById('features-view').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('calls-view').style.display = tab === 'calls' ? '' : 'none';
+    document.getElementById('personas-view').style.display = tab === 'personas' ? '' : 'none';
     document.getElementById('product-view').style.display = tab === 'product' ? '' : 'none';
     document.getElementById('marketing-view').style.display = tab === 'marketing' ? '' : 'none';
-    document.querySelector('.search-box').style.display = isReport ? 'none' : '';
+    document.querySelector('.search-box').style.display = (isReport || tab === 'personas') ? 'none' : '';
     document.getElementById('co-dd').style.display = tab === 'features' ? '' : 'none';
-    document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls') ? '' : 'none';
+    document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls' || tab === 'personas') ? '' : 'none';
     document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('sync-sheets-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('q').value = '';
     closeAllDD();
     filter('');
+    if (tab === 'personas') buildPersonas();
 }
 
 function filter(q) {
@@ -2216,6 +2593,7 @@ buildSegmentDropdown();
 updateStats();
 buildFeatures();
 buildCalls();
+buildPersonas();
 buildProductReport();
 buildMarketingReport();
 switchTab(initTab || 'features');
