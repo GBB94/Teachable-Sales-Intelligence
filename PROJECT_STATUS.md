@@ -33,7 +33,8 @@ Sales intelligence tool for Teachable. Pulls call transcripts from Fireflies, us
 - [x] `--sync-sheets` flag on `analyze_features.py inject`
 - [x] Friday cron sync in `generate_reports.py`
 - [x] Product Report: flat 4-section layout (Summary, Feature Recap, Customers This Week, Feature Themes by category)
-- [x] Marketing Report: persona profiles, voice of customer, pain points, objections, buying signals
+- [x] Marketing Report: 4-section structure (Who We Talked To, What They're Saying, Objections & Competitive, Buying Signals & Timeline)
+- [x] Per-call `marketing_data` extraction prompt (quotes, terminology, objections, competitors, buying signals, timeline)
 - [x] Scan/report separation (scan is fast, reports only on demand or cron)
 - [x] README with setup instructions, confidence docs, workflow reference
 - [x] `CLAUDE.md` for automatic session context loading
@@ -63,6 +64,7 @@ The `sync_to_sheets.py` script is built and ready. Zach needs to:
 - **Exposed API key.** Fireflies key was shown in a chat session. Needs rotation.
 - **Confidence scores not yet populated.** The `confidence` field exists in the schema but current analyzed data doesn't have values. Next re-analysis with the updated prompt will populate them.
 - **Company field sparsely populated.** Many mentions have company extracted from call title only. The `company` field in the analysis prompt should be filled by Claude during next re-analysis.
+- **Marketing data not yet populated.** The `marketing_data` prompt and renderer are built, but existing calls need re-analysis (`analyze_features.py extract` → CC analysis → `inject`) to populate marketing intelligence. Marketing Report tab will show "No data" until then.
 
 ---
 
