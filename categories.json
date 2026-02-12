@@ -1,0 +1,114 @@
+{
+  "categories": [
+    {
+      "name": "Curriculum & Content",
+      "description": "Course creation, content authoring, media, learning paths, and course structure",
+      "examples": [
+        "Learning Paths",
+        "Drip / Timed Content Release",
+        "Multi-language Support",
+        "Voiceover for Courses",
+        "Interactive Video",
+        "Course Sequencing / Completion Gating",
+        "Content Templates"
+      ]
+    },
+    {
+      "name": "Assessments & Quizzes",
+      "description": "Quizzes, tests, question banks, grading, file submissions, and assessment delivery",
+      "examples": [
+        "Question Bank",
+        "Quiz Question Types",
+        "Quiz Import/Export (CSV)",
+        "Automated Assessment Delivery",
+        "File Upload & Grading",
+        "Learner File Upload to Coaches"
+      ]
+    },
+    {
+      "name": "Commerce & Checkout",
+      "description": "Pricing, checkout flow, payment processing, upsells, refunds, and affiliate programs",
+      "examples": [
+        "Custom Checkout Fields",
+        "Guest Checkout",
+        "Affiliate / Referral Program",
+        "Course Upsell / Cross-sell Flow",
+        "Checkout / Sales Page UX",
+        "Refund UX"
+      ]
+    },
+    {
+      "name": "Compliance & Credentialing",
+      "description": "Certificates, continuing education credits, access controls, completion requirements, and regulatory compliance",
+      "examples": [
+        "Certificate Automation",
+        "Certificate Customization",
+        "Continuing Education Credits",
+        "Access Duration / Expiration",
+        "Video Scrub Prevention"
+      ]
+    },
+    {
+      "name": "Reporting & Analytics",
+      "description": "Dashboards, reports, data export, completion tracking, and learner analytics",
+      "examples": [
+        "Reporting Dashboard",
+        "Reporting Data Export (CSV)",
+        "Completion Tracking",
+        "Quiz / Assessment Reporting",
+        "Organization-level Reporting"
+      ]
+    },
+    {
+      "name": "Engagement & Community",
+      "description": "Community features, student interaction, live sessions, scheduling, and gamification",
+      "examples": [
+        "Community Features",
+        "Hybrid Scheduling",
+        "Discussion Forums",
+        "Live Sessions"
+      ]
+    },
+    {
+      "name": "Organizations & Multi-tenancy",
+      "description": "B2B features, organization hierarchy, group management, and multi-tenant administration",
+      "examples": [
+        "Organization Hierarchy / Nesting",
+        "Organization Tags / Categories",
+        "Group Enrollment",
+        "Seat Management"
+      ]
+    },
+    {
+      "name": "Platform & Integrations",
+      "description": "APIs, third-party integrations, SSO, webhooks, and headless/embedded capabilities",
+      "examples": [
+        "Headless / API Access",
+        "Third-party Integration",
+        "SSO / SAML",
+        "Webhook Support",
+        "LMS Integration (SCORM/xAPI)"
+      ]
+    },
+    {
+      "name": "Design & Branding",
+      "description": "White labeling, theming, custom domains, UI customization, and visual design",
+      "examples": [
+        "White Label",
+        "Custom Themes",
+        "Custom Domain",
+        "Brand Customization"
+      ]
+    },
+    {
+      "name": "User Management",
+      "description": "Student profiles, custom fields, onboarding, admin tools, roles, and permissions",
+      "examples": [
+        "Student Custom Fields / Onboarding",
+        "Role-based Access",
+        "Bulk User Import",
+        "User Segmentation"
+      ]
+    }
+  ]
+}

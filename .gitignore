@@ -9,6 +9,7 @@ __pycache__/
 
 # Output files
 *.json
+!categories.json
 *.csv
 *.txt
 !requirements.txt

@@ -220,6 +220,24 @@ Be thorough. If in doubt, include it. A shallow analysis that misses
 features discussed on the call is worse than a slightly long list.
 """)
 
+    # Load and print categories for the analysis prompt
+    categories_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "categories.json")
+    if os.path.exists(categories_path):
+        with open(categories_path, "r") as f:
+            cats = json.load(f)
+        print(f"{'='*70}")
+        print("FEATURE CATEGORIES")
+        print(f"{'─'*70}")
+        print("Assign EXACTLY ONE of these categories to each feature.\n")
+        for cat in cats.get("categories", []):
+            examples = ", ".join(cat.get("examples", [])[:4])
+            print(f"  {cat['name']}")
+            print(f"    {cat['description']}")
+            print(f"    Examples: {examples}")
+            print()
+        print("Choose the single best-fit category. Do NOT use 'Other' — every")
+        print("feature must map to one of the categories above.\n")
+
     print(f"{'='*70}")
     print("OUTPUT FORMAT")
     print(f"{'─'*70}")
@@ -230,6 +248,7 @@ features discussed on the call is worse than a slightly long list.
     "<call_id>": [
       {
         "feature": "Short Normalized Feature Name",
+        "category": "Category Name (from list above)",
         "speaker": "Customer Name (Company)",
         "quote": "most relevant 1-2 sentence verbatim quote",
         "timestamp": "~MM:SS",
@@ -426,7 +445,15 @@ def cmd_inject(args):
         company_summaries = {}
         marketing_report = {}
 
-    # Load categories map (optional)
+    # Load categories list for validation (optional fallback)
+    valid_categories = set()
+    categories_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "categories.json")
+    if os.path.exists(categories_path):
+        with open(categories_path, "r") as f:
+            cats = json.load(f)
+        valid_categories = {c["name"] for c in cats.get("categories", [])}
+
+    # Legacy: load categories map from --categories flag (optional)
     categories_map = {}
     if args.categories:
         with open(args.categories, "r") as f:
@@ -469,13 +496,18 @@ def cmd_inject(args):
 
             keyword_counts[feature_name] = keyword_counts.get(feature_name, 0) + 1
 
+            # Category: prefer inline from analysis, fallback to map, then "Other"
+            category = feat.get("category") or categories_map.get(feature_name, "Other")
+            if valid_categories and category not in valid_categories:
+                category = "Other"
+
             new_mentions.append({
                 "call_id": call_id,
                 "call_title": call.get("title", ""),
                 "call_date": call.get("date", ""),
                 "speaker": speaker,
                 "keyword": feature_name,
-                "category": categories_map.get(feature_name, "Other"),
+                "category": category,
                 "type": feat_type,
                 "text": quote,
                 "ts": timestamp,
@@ -535,6 +567,18 @@ def cmd_inject(args):
     print(f"Updated dashboard: {len(new_mentions)} features across {len(calls_with_features)} calls")
     if pending_remaining:
         print(f"  {pending_remaining} call(s) still pending analysis")
+
+    # Print category distribution
+    cat_counts = {}
+    for m in new_mentions:
+        c = m.get("category", "Other")
+        cat_counts[c] = cat_counts.get(c, 0) + 1
+    print(f"\n  Category distribution:")
+    for cat, count in sorted(cat_counts.items(), key=lambda x: -x[1]):
+        print(f"    {cat}: {count}")
+    other_count = cat_counts.get("Other", 0)
+    if other_count:
+        print(f"\n  WARNING: {other_count} feature(s) categorized as 'Other'")
 
     # Optionally regenerate HubSpot notes
     if args.notes:

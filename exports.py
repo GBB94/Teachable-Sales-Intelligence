@@ -103,6 +103,7 @@ def export_feature_dashboard(
             "call_date": req.call_date[:10] if req.call_date else "",
             "speaker": req.speaker,
             "keyword": req.keyword_matched,
+            "category": getattr(req, "category", "Other"),
             "text": req.surrounding_text[:200].replace("\n", " "),
             "ts": req.timestamp_display,
             "ts_sec": req.timestamp_seconds,
