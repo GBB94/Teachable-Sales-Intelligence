@@ -253,6 +253,35 @@ features discussed on the call is worse than a slightly long list.
         print("Choose the single best-fit category. Do NOT use 'Other' — every")
         print("feature must map to one of the categories above.\n")
 
+    # Load and print segments for persona assignment
+    segments_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "segments.json")
+    if os.path.exists(segments_path):
+        with open(segments_path, "r") as f:
+            segs = json.load(f)
+        print(f"{'='*70}")
+        print("PROSPECT SEGMENT ASSIGNMENT")
+        print(f"{'─'*70}")
+        print("""For each EXTERNAL call, determine what type of business the prospect
+represents. Assign ONE primary segment from the list below. Consider:
+- What is their core business? Why do they sell education?
+- Are their learners required to complete training (compliance/credentialing)?
+- Is this a personal brand or an organizational buyer?
+- Are they training their own customers/employees, or selling education externally?
+""")
+        for seg in segs.get("segments", []):
+            examples = ", ".join(seg.get("examples", [])[:3])
+            signals = ", ".join(seg.get("signals", [])[:4])
+            print(f"  {seg['name']}")
+            print(f"    {seg['description']}")
+            print(f"    Examples: {examples}")
+            print(f"    Signals: {signals}")
+            print()
+        print("""If the prospect clearly doesn't fit any segment, suggest a new one
+(2-3 words max). Use null for internal calls.
+
+Skip segment assignment for INTERNAL calls (set all segment fields to null).
+""")
+
     print(f"{'='*70}")
     print("OUTPUT FORMAT")
     print(f"{'─'*70}")
@@ -277,6 +306,15 @@ features discussed on the call is worse than a slightly long list.
   },
   "marketing_data": {
     "<call_id>": { ... per-call marketing intelligence (see MARKETING section) ... }
+  },
+  "segment_data": {
+    "<call_id>": {
+      "segment": "Exact segment name from list above",
+      "segment_confidence": 0.85,
+      "segment_reasoning": "One sentence explaining why this segment fits",
+      "alternative_segment": "Second-best fit or null",
+      "suggested_new_segment": null
+    }
   },
   "recap": "optional weekly recap paragraph",
   "company_summaries": { "Company": "one-line summary" }
