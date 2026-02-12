@@ -235,6 +235,14 @@ body {
     background: #1a1d35; color: #7c8aff;
     border: 1px solid #252a4a;
 }
+/* Segment pill (for By Call view) */
+.seg-pill {
+    display: inline-block; font-size: max(0.75rem, 12px); font-weight: 500;
+    padding: 0.15rem 0.5rem; border-radius: 8px;
+    background: #1a2520; color: #6bc79a;
+    border: 1px solid #253a30;
+    margin-left: 0.3rem; vertical-align: middle;
+}
 /* Company pill (for By Feature view) */
 .co-pill-wrap {
     position: relative; display: inline-block;
@@ -609,6 +617,10 @@ body {
             <button class="dd-btn" onclick="toggleDD('co-dd')"><span id="co-label">Companies</span><span class="dd-arrow">&#9660;</span></button>
             <div class="dd-panel" id="co-panel"></div>
         </div>
+        <div class="dd-wrap" id="seg-dd" style="display:none">
+            <button class="dd-btn" onclick="toggleDD('seg-dd')"><span id="seg-label">Segments</span><span class="dd-arrow">&#9660;</span></button>
+            <div class="dd-panel" id="seg-panel"></div>
+        </div>
         <button class="expand-btn" id="expand-btn" onclick="toggleExpandAll()" style="display:none">Collapse All</button>
         <button class="scan-btn" id="sync-sheets-btn" onclick="syncToSheets(this)" style="display:none">Sync to Sheets</button>
     </div>
@@ -826,7 +838,8 @@ function buildFeatureCard(kw, mentions, callMap, companies) {
 
     const countLabel = mentions.length === 1 ? '1 mention' : mentions.length + ' mentions';
 
-    return '<div class="card" data-companies="' + esc((companies || []).join(',').toLowerCase()) + '" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + ' ' + esc(Object.keys(coMap).join(' ').toLowerCase()) + '">' +
+    const callIds = [...new Set(mentions.map(m => m.call_id))];
+    return '<div class="card" data-companies="' + esc((companies || []).join(',').toLowerCase()) + '" data-callids="' + esc(callIds.join(',')) + '" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + ' ' + esc(Object.keys(coMap).join(' ').toLowerCase()) + '">' +
         '<div class="card-hdr" onclick="toggleCard(this)">' +
             '<div class="left"><span class="arrow">&#9654;</span>' +
                 '<div class="name-block">' +
@@ -1040,11 +1053,12 @@ function buildCalls() {
 
         sectionsHTML += '</div>';
 
-        const displayTitle = esc(c.title) + (extAttendees ? '<span style="color:#9a9db0;font-weight:400"> &mdash; ' + esc(extAttendees) + '</span>' : '');
+        const segPill = c.segment ? '<span class="seg-pill">' + esc(c.segment) + '</span>' : '';
+        const displayTitle = esc(c.title) + (extAttendees ? '<span style="color:#9a9db0;font-weight:400"> &mdash; ' + esc(extAttendees) + '</span>' : '') + segPill;
 
         const isExcluded = excludedCalls.has(c.id);
         const featureCountLabel = isPending ? 'pending' : callMentions.length + ' feature' + (callMentions.length > 1 ? 's' : '');
-        html += '<div class="card' + (isExcluded ? ' excluded' : '') + (isPending ? ' pending' : '') + '" data-callid="' + esc(c.id) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + callMentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '">' +
+        html += '<div class="card' + (isExcluded ? ' excluded' : '') + (isPending ? ' pending' : '') + '" data-callid="' + esc(c.id) + '" data-segment="' + esc((c.segment || '').toLowerCase()) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + (c.segment || '') + ' ' + callMentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '">' +
             '<div class="card-hdr" onclick="toggleCard(this)">' +
                 '<div class="left"><span class="arrow">&#9654;</span>' +
                     '<div class="name-block">' +
@@ -1662,6 +1676,7 @@ function copyReportPlain(viewId, btn) {
 
 let allExpanded = true;
 let activeCompanyFilters = new Set();
+let activeSegmentFilters = new Set();
 
 // ---- Dropdown logic ----
 const DATE_OPTIONS = [
@@ -1791,6 +1806,92 @@ function applyCompanyFilter() {
         sec.querySelectorAll('.card').forEach(card => {
             const cardCos = (card.dataset.companies || '').split(',').filter(Boolean);
             const vis = noFilter || cardCos.some(c => activeCompanyFilters.has(c));
+            card.style.display = vis ? '' : 'none';
+            if (vis) anyVisible = true;
+        });
+        sec.style.display = anyVisible ? '' : 'none';
+    });
+}
+
+// ---- Segment dropdown ----
+function buildSegmentDropdown() {
+    const segs = new Set();
+    DATA.calls.forEach(c => { if (c.segment) segs.add(c.segment); });
+    if (segs.size === 0) {
+        document.getElementById('seg-dd').style.display = 'none';
+        return;
+    }
+    const sorted = [...segs].sort();
+    const panel = document.getElementById('seg-panel');
+    let html = '<div class="dd-item selected" data-val="__all__" onclick="selectSegment(this)"><span class="dd-check">&#10003;</span>All Segments</div>';
+    html += '<div class="dd-sep"></div>';
+    sorted.forEach(seg => {
+        const sel = activeSegmentFilters.size === 0 || activeSegmentFilters.has(seg.toLowerCase());
+        html += '<div class="dd-item' + (sel && activeSegmentFilters.size > 0 ? ' selected' : '') + '" data-val="' + esc(seg) + '" onclick="selectSegment(this)">' +
+            '<span class="dd-check">&#10003;</span>' + esc(seg) + '</div>';
+    });
+    panel.innerHTML = html;
+    syncSegmentLabel();
+}
+
+function selectSegment(el) {
+    const val = el.dataset.val;
+    if (val === '__all__') {
+        activeSegmentFilters.clear();
+        document.querySelectorAll('#seg-panel .dd-item').forEach(d => {
+            d.classList.toggle('selected', d.dataset.val === '__all__');
+        });
+    } else {
+        document.querySelector('#seg-panel .dd-item[data-val="__all__"]').classList.remove('selected');
+        el.classList.toggle('selected');
+        const seg = val.toLowerCase();
+        if (el.classList.contains('selected')) {
+            activeSegmentFilters.add(seg);
+        } else {
+            activeSegmentFilters.delete(seg);
+        }
+        if (activeSegmentFilters.size === 0) {
+            document.querySelector('#seg-panel .dd-item[data-val="__all__"]').classList.add('selected');
+        }
+    }
+    syncSegmentLabel();
+    applySegmentFilter();
+}
+
+function syncSegmentLabel() {
+    const label = document.getElementById('seg-label');
+    const btn = document.querySelector('#seg-dd .dd-btn');
+    if (activeSegmentFilters.size === 0) {
+        label.textContent = 'Segments';
+        btn.classList.remove('has-filter');
+    } else {
+        label.textContent = activeSegmentFilters.size + ' selected';
+        btn.classList.add('has-filter');
+    }
+}
+
+function applySegmentFilter() {
+    const noFilter = activeSegmentFilters.size === 0;
+    // Filter By Call cards
+    document.querySelectorAll('#calls-view .card').forEach(card => {
+        const seg = card.dataset.segment || '';
+        const vis = noFilter || activeSegmentFilters.has(seg);
+        card.style.display = vis ? '' : 'none';
+    });
+    // Filter By Feature cards: show only features from calls matching segment
+    const matchingCallIds = new Set();
+    if (!noFilter) {
+        DATA.calls.forEach(c => {
+            if (c.segment && activeSegmentFilters.has(c.segment.toLowerCase())) {
+                matchingCallIds.add(c.id);
+            }
+        });
+    }
+    document.querySelectorAll('#features-view .cat-section').forEach(sec => {
+        let anyVisible = false;
+        sec.querySelectorAll('.card').forEach(card => {
+            const cardCallIds = (card.dataset.callids || '').split(',').filter(Boolean);
+            const vis = noFilter || cardCallIds.some(id => matchingCallIds.has(id));
             card.style.display = vis ? '' : 'none';
             if (vis) anyVisible = true;
         });
@@ -2015,6 +2116,7 @@ function switchTab(tab) {
     document.getElementById('marketing-view').style.display = tab === 'marketing' ? '' : 'none';
     document.querySelector('.search-box').style.display = isReport ? 'none' : '';
     document.getElementById('co-dd').style.display = tab === 'features' ? '' : 'none';
+    document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls') ? '' : 'none';
     document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('sync-sheets-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('q').value = '';
@@ -2082,6 +2184,7 @@ function updateStats() {
 // Init — parse hash for exclusions, date range, and tab, then build
 const initTab = parseHash();
 buildDateDropdown();
+buildSegmentDropdown();
 updateStats();
 buildFeatures();
 buildCalls();
