@@ -10,6 +10,7 @@ __pycache__/
 # Output files
 *.json
 !categories.json
+!test_output/features.json
 *.csv
 *.txt
 !requirements.txt
@@ -17,6 +18,7 @@ __pycache__/
 !dashboard_preview.html
 !dashboard_template.html
 !dashboard_latest.html
+!test_output/dashboard.html
 
 # Credentials
 credentials/
