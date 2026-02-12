@@ -10,6 +10,7 @@ __pycache__/
 # Output files
 *.json
 !categories.json
+!segments.json
 !test_output/features.json
 *.csv
 *.txt

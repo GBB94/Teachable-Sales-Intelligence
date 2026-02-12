@@ -1,0 +1,62 @@
+{
+  "segments": [
+    {
+      "id": "ce-credentialing",
+      "name": "Continuing Education & Credentialing",
+      "description": "Organizations delivering mandatory or voluntary professional education tied to licenses, certifications, or regulatory compliance. Learners must complete training to maintain credentials.",
+      "examples": ["nursing CE provider", "CLE company", "DOT compliance training", "insurance licensing", "real estate CE"],
+      "signals": ["CE credits", "CEUs", "CPD", "compliance", "licensing", "accreditation", "certificate automation", "mandatory training", "renewal deadlines"]
+    },
+    {
+      "id": "professional-training",
+      "name": "Professional Training & Development",
+      "description": "Companies selling professional skills training not tied to a specific license. B2B training companies, corporate training providers, and professional skills academies.",
+      "examples": ["leadership training company", "sales training firm", "project management courses", "software skills training"],
+      "signals": ["enterprise", "B2B", "seat-based", "bulk enrollment", "workforce development", "upskilling", "SCORM", "LMS"]
+    },
+    {
+      "id": "coaching",
+      "name": "Coaches & Consultants",
+      "description": "Individuals or small teams selling personal expertise through coaching programs, group sessions, and courses. Brand is typically the person.",
+      "examples": ["life coach", "executive coach", "business coach", "health coach", "career coach"],
+      "signals": ["coaching", "1-on-1", "group program", "high-ticket", "personal brand", "transformation", "accountability"]
+    },
+    {
+      "id": "associations",
+      "name": "Industry Associations & Membership Orgs",
+      "description": "Professional associations and membership organizations providing education as a member benefit. Serve a defined community within a specific industry.",
+      "examples": ["nursing association", "real estate board", "construction trade group", "marketing association"],
+      "signals": ["members", "association", "member benefits", "conference", "chapter", "non-profit", "board of directors"]
+    },
+    {
+      "id": "course-creators",
+      "name": "Course Creators & Digital Educators",
+      "description": "Individuals or small businesses whose primary product is self-paced online courses sold to consumers. Building a scalable content business.",
+      "examples": ["photography courses", "cooking classes", "language learning", "test prep", "hobby education"],
+      "signals": ["self-paced", "digital downloads", "sales funnels", "audience building", "upsells", "content creator"]
+    },
+    {
+      "id": "academic",
+      "name": "Academic & Higher Education",
+      "description": "Universities, colleges, and K-12 institutions using the platform for credit-bearing or non-credit programs within institutional structures.",
+      "examples": ["university extension", "community college", "online degree program", "academic department"],
+      "signals": ["university", "college", "academic credits", "registrar", "faculty", "semester", "institutional accreditation"]
+    },
+    {
+      "id": "corporate-education",
+      "name": "Corporate Education & Customer Training",
+      "description": "Companies building educational content to train customers, partners, or employees on their own products. Education supports their core business, not IS their business.",
+      "examples": ["SaaS customer academy", "product certification", "partner enablement", "internal compliance training"],
+      "signals": ["customer education", "partner training", "onboarding", "product academy", "customer success", "white-label", "SSO"]
+    },
+    {
+      "id": "health-wellness",
+      "name": "Health, Wellness & Fitness",
+      "description": "Health and wellness practitioners selling education to consumers or other practitioners. Built around health/wellness content at scale.",
+      "examples": ["nutritionist", "yoga instructor", "personal trainer", "mental health educator", "therapist"],
+      "signals": ["health", "wellness", "fitness", "nutrition", "therapeutic", "practitioner", "client programs"]
+    }
+  ],
+  "suggested_new_segments": [],
+  "last_updated": "2026-02-12"
+}
