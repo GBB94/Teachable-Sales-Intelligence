@@ -1197,6 +1197,25 @@ function buildProductReport() {
     }
     h += '</ul>';
 
+    // CALLS BY SEGMENT
+    const segMap = {};
+    activeCalls.forEach(c => {
+        const seg = c.segment || 'Unclassified';
+        if (!segMap[seg]) segMap[seg] = [];
+        // Find company name for this call from mentions
+        const callCo = companies.find(([name, d]) => d.calls.has(c.id));
+        segMap[seg].push(callCo ? callCo[0] : (c.title || 'Unknown'));
+    });
+    const segEntries = Object.entries(segMap).sort((a, b) => b[1].length - a[1].length);
+    if (segEntries.length > 0 && segEntries.some(([seg]) => seg !== 'Unclassified')) {
+        h += '<h2>Calls by Segment</h2>';
+        segEntries.forEach(([seg, names]) => {
+            h += '<div class="co-line"><strong>' + esc(seg) + ':</strong> ' +
+                names.length + ' call' + (names.length !== 1 ? 's' : '') +
+                ' (' + esc(names.join(', ')) + ')</div>';
+        });
+    }
+
     // FEATURE RECAP
     h += '<h2>Feature Recap</h2>';
     if (DATA.recap) {
@@ -1247,6 +1266,12 @@ function buildProductReport() {
     plain += '- ' + activeCalls.length + ' sales calls this week\n';
     plain += '- ' + mentions.length + ' feature requests identified across ' + companies.length + ' prospects\n';
     if (topTheme) plain += '- Top theme: ' + topTheme.cat + ' (' + topTheme.total + ' mentions, ' + topTheme.coCount + ' companies)\n';
+    if (segEntries.length > 0 && segEntries.some(([seg]) => seg !== 'Unclassified')) {
+        plain += '\nCALLS BY SEGMENT\n';
+        segEntries.forEach(([seg, names]) => {
+            plain += '- ' + seg + ': ' + names.length + ' call' + (names.length !== 1 ? 's' : '') + ' (' + names.join(', ') + ')\n';
+        });
+    }
     plain += '\nFEATURE RECAP\n' + (DATA.recap || '(Not yet generated)') + '\n';
     plain += '\nCUSTOMERS THIS WEEK\n';
     companies.forEach(([name, d]) => {
