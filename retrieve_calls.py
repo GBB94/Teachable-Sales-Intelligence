@@ -9,7 +9,7 @@ import os
 from dotenv import load_dotenv
 
 from client import FirefliesRetriever
-from models import CallFilter, load_blacklist, BLACKLISTED_FEATURES
+from models import CallFilter, load_blacklist, BLACKLISTED_FEATURES, DEFAULT_SCAN_TITLE_KEYWORDS
 from exports import (
     export_to_json,
     export_to_csv,
@@ -70,7 +70,8 @@ Examples:
                         help='Filter by attendee email(s) (partial match)')
 
     parser.add_argument('--title-keywords', nargs='+',
-                        help='Keywords to find in title (OR logic)')
+                        default=DEFAULT_SCAN_TITLE_KEYWORDS,
+                        help='Keywords to find in title (OR logic, default: %(default)s)')
     parser.add_argument('--transcript-keywords', nargs='+',
                         help='Keywords to find in transcript (OR logic)')
 

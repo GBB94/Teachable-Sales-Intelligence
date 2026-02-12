@@ -25,13 +25,14 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
 from fireflies_retriever import FirefliesRetriever, CallFilter
+from models import DEFAULT_SCAN_TITLE_KEYWORDS
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 SCAN_DAYS = 14
 SCAN_LIMIT = 10
-SCAN_TITLE_KEYWORDS = ['followup', 'follow-up', 'follow up', 'teachable']
+SCAN_TITLE_KEYWORDS = DEFAULT_SCAN_TITLE_KEYWORDS
 SCAN_OWNER = 'zach.mccall'
 SCAN_EXCLUDE_DOMAINS = ['teachable.com']
 PORT = 8080

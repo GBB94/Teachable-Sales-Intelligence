@@ -55,6 +55,16 @@ DEFAULT_FEATURE_KEYWORDS: List[str] = [
 # ---------------------------------------------------------------------------
 BLACKLISTED_FEATURES: List[str] = []
 
+# ---------------------------------------------------------------------------
+# Default title keywords for filtering Fireflies calls during scan.
+# Only calls whose title contains at least one of these (case-insensitive,
+# with hyphen/underscore normalization) will pass through.
+# Shared by server.py and retrieve_calls.py.
+# ---------------------------------------------------------------------------
+DEFAULT_SCAN_TITLE_KEYWORDS: List[str] = [
+    'followup', 'follow-up', 'follow up', 'teachable',
+]
+
 
 def load_blacklist(filepath: str = ".feature_blacklist") -> List[str]:
     """Load blacklisted terms from file, merged with in-code BLACKLISTED_FEATURES."""
