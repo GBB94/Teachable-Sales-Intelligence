@@ -931,7 +931,12 @@
           }
         ],
         "timeline": "May 1st deadline for first online course content \u2014 June cohort training. Follow-up March 2nd."
-      }
+      },
+      "segment": "Continuing Education & Credentialing",
+      "segment_confidence": 0.92,
+      "segment_reasoning": "Test reasoning",
+      "alternative_segment": null,
+      "suggested_new_segment": null
     },
     {
       "id": "01KG8DBQ8MRVVY6R18W0SQ99X7",

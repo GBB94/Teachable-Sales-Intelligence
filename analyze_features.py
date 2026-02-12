@@ -519,6 +519,7 @@ def cmd_inject(args):
         company_summaries = raw.get("company_summaries", {})
         marketing_report = raw.get("marketing_report", {})
         marketing_data_by_call = raw.get("marketing_data", {})
+        segment_data_by_call = raw.get("segment_data", {})
     else:
         features_by_call = raw
         notes_by_call = {}
@@ -526,6 +527,7 @@ def cmd_inject(args):
         company_summaries = {}
         marketing_report = {}
         marketing_data_by_call = {}
+        segment_data_by_call = {}
 
     # Load categories list for validation (optional fallback)
     valid_categories = set()
@@ -664,6 +666,19 @@ def cmd_inject(args):
             call_id = call.get("id", "")
             if call_id in marketing_data_by_call:
                 call["marketing_data"] = marketing_data_by_call[call_id]
+
+    # Store per-call segment data on each call object
+    if segment_data_by_call:
+        for call in calls:
+            call_id = call.get("id", "")
+            if call_id in segment_data_by_call:
+                seg = segment_data_by_call[call_id]
+                if seg:
+                    call["segment"] = seg.get("segment")
+                    call["segment_confidence"] = seg.get("segment_confidence")
+                    call["segment_reasoning"] = seg.get("segment_reasoning")
+                    call["alternative_segment"] = seg.get("alternative_segment")
+                    call["suggested_new_segment"] = seg.get("suggested_new_segment")
 
     # Write updated dashboard
     _write_data_to_html(args.dashboard, data)
