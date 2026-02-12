@@ -371,6 +371,10 @@ each call. This is for the marketing team — a different lens on the same
 transcript data. Only include information EXPLICITLY stated in the call.
 Do NOT fabricate or infer anything.
 
+IMPORTANT: Skip marketing_data for INTERNAL calls (titles containing "sales",
+"win & loss", or similar internal meeting names). Set those to null. Marketing
+data is only for EXTERNAL customer/prospect calls.
+
 Add a "marketing_data" object per call in the top-level JSON output:
 
   "marketing_data": {

@@ -1266,10 +1266,15 @@ function buildMarketingReport() {
     const mentions = activeMentions();
     const noData = '<em>No data from this week\u2019s calls.</em>';
 
-    // Gather active calls (non-excluded, with mentions or marketing_data)
+    // Internal calls (sales meetings, internal reviews) are excluded from marketing report
+    function isInternalCall(c) {
+        const t = (c.title || '').toLowerCase();
+        return /\bsales\b/i.test(t);
+    }
+    // Gather active EXTERNAL calls (non-excluded, non-internal, with mentions or marketing_data)
     const mentionCallIds = new Set(mentions.map(m => m.call_id));
     const activeCalls = DATA.calls.filter(c =>
-        !excludedCalls.has(c.id) && (mentionCallIds.has(c.id) || c.marketing_data)
+        !excludedCalls.has(c.id) && !isInternalCall(c) && (mentionCallIds.has(c.id) || c.marketing_data)
     );
     const dates = activeCalls.map(c => c.date).filter(Boolean).sort();
     const dateRange = dates.length
