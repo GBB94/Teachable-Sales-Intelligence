@@ -64,7 +64,7 @@ The `sync_to_sheets.py` script is built and ready. Zach needs to:
 - **Exposed API key.** Fireflies key was shown in a chat session. Needs rotation.
 - **Confidence scores not yet populated.** The `confidence` field exists in the schema but current analyzed data doesn't have values. Next re-analysis with the updated prompt will populate them.
 - **Company field sparsely populated.** Many mentions have company extracted from call title only. The `company` field in the analysis prompt should be filled by Claude during next re-analysis.
-- **Marketing data not yet populated.** The `marketing_data` prompt and renderer are built, but existing calls need re-analysis (`analyze_features.py extract` → CC analysis → `inject`) to populate marketing intelligence. Marketing Report tab will show "No data" until then.
+- **Inject merge bug fixed (7609d66).** Previously, `inject` replaced ALL mentions instead of merging — wiped existing data when only injecting new calls. Fixed to preserve mentions for calls not in current injection.
 
 ---
 
@@ -122,10 +122,11 @@ call-puller/
 
 ## Current Data
 
-- **12 calls** in dashboard
-- **38 feature mentions** extracted
+- **12 calls** in dashboard (10 analyzed, 1 pending, 2 empty transcripts)
+- **55 feature mentions** across **29 unique features** and **10 analyzed calls**
 - **10 categories**, zero in "Other"
-- Companies: Speravita, Ellyn Satter Institute, Simon & Sabine, LTA, Dot Compliance, Simon Davey
+- **marketing_data** populated on all 10 analyzed calls
+- Companies: Speravita, ESI (Anne Blocker), Simon & Sabine, LTA Singapore, Dot Compliance, Simon Davey, BADM
 - Default scan filters: `owner=zach.mccall`, `keywords=followup/follow-up/follow up/teachable`, `days=14`, `limit=10`
 
 ---
