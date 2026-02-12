@@ -1350,11 +1350,11 @@
         ],
         "timeline": "Q2 2026 launch target. Waiting for Zach to send pricing packages."
       },
-      "segment": "Corporate Education & Customer Training",
-      "segment_confidence": 0.8,
-      "segment_reasoning": "LTA Singapore is a government agency training the public (seniors, wheelchair users) on how to use public transit safely. Government training its constituents is closest to corporate/customer education.",
-      "alternative_segment": null,
-      "suggested_new_segment": "Government & Public Sector Education"
+      "segment": "Government & Public Sector Education",
+      "segment_confidence": 0.92,
+      "segment_reasoning": "LTA Singapore is a government agency training the public (seniors, wheelchair users) on public transit safety as a free public service.",
+      "alternative_segment": "Corporate Education & Customer Training",
+      "suggested_new_segment": null
     },
     {
       "id": "01KGN4PT9YVSHZJE86J8THBX0W",

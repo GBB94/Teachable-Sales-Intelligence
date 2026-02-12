@@ -55,6 +55,13 @@
       "description": "Health and wellness practitioners selling education to consumers or other practitioners. Built around health/wellness content at scale.",
       "examples": ["nutritionist", "yoga instructor", "personal trainer", "mental health educator", "therapist"],
       "signals": ["health", "wellness", "fitness", "nutrition", "therapeutic", "practitioner", "client programs"]
+    },
+    {
+      "id": "government-public",
+      "name": "Government & Public Sector Education",
+      "description": "Government agencies and public sector organizations delivering education or training to citizens, constituents, or the general public. Education is a public service, not a revenue product.",
+      "examples": ["transport authority safety training", "public health education", "civic education programs", "government workforce training"],
+      "signals": ["government", "agency", "public sector", "citizens", "constituents", "public safety", "free training", "government-funded"]
     }
   ],
   "suggested_new_segments": [],
