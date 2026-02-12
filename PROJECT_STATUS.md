@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
 **Last updated:** 2026-02-12
-**Updated by:** Opus 4.6 (session 2)
+**Updated by:** Opus 4.6 (session 3)
 
 ---
 
@@ -9,8 +9,8 @@
 
 Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude to extract features and insights, generates dashboards and reports for product and marketing teams. Feature data syncs to Google Sheets for product team tracking.
 
-**Repo:** https://github.com/GBB94/call-puller (private — pending rename)
-**Local:** `/Users/zachmccall/call-puller/` (pending rename)
+**Repo:** https://github.com/GBB94/Teachable-Sales-Intelligence (private)
+**Local:** `/Users/zachmccall/call-puller/`
 
 ---
 
@@ -20,11 +20,11 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Interactive call approval (select which calls to process)
 - [x] AI feature extraction (Claude reads transcripts, identifies features)
 - [x] Feature normalization (merge duplicate feature names)
-- [x] HTML dashboard with 4 tabs (By Feature, By Call, Product Report, Marketing Report)
+- [x] HTML dashboard with 5 tabs (By Feature, By Call, Personas, Product Report, Marketing Report)
 - [x] HubSpot notes generation (structured sales qualification template)
 - [x] Local Flask server with scan/approve workflow
 - [x] Exclude functionality (gray out calls, persist via URL hash)
-- [x] Client-side filters (date range, company dropdown, search)
+- [x] Client-side filters (date range, company dropdown, segment dropdown, search)
 - [x] AI-driven feature categorization (10 categories in `categories.json`, assigned at analysis time, zero "Other")
 - [x] Canonical `features.json` data file (written by `analyze_features.py inject`)
 - [x] Stable mention IDs (`sha1(call_id|feature_name)[:12]` for upsert)
@@ -32,7 +32,7 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Dashboard "Sync to Sheets" button + `/api/sync-sheets` server endpoint
 - [x] `--sync-sheets` flag on `analyze_features.py inject`
 - [x] Friday cron sync in `generate_reports.py`
-- [x] Product Report: flat 4-section layout (Summary, Feature Recap, Customers This Week, Feature Themes by category)
+- [x] Product Report: flat 4-section layout (Summary, Calls by Segment, Feature Recap, Customers This Week, Feature Themes by category)
 - [x] Marketing Report: 4-section structure (Who We Talked To, What They're Saying, Objections & Competitive, Buying Signals & Timeline)
 - [x] Per-call `marketing_data` extraction prompt (quotes, terminology, objections, competitors, buying signals, timeline)
 - [x] Scan/report separation (scan is fast, reports only on demand or cron)
@@ -43,10 +43,16 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Internal call filter (calls with "sales" in title excluded from Marketing Report + analysis)
 - [x] Title keyword filter fix (CLI now defaults to same keywords as server: teachable/followup)
 - [x] Persona/segment categorization infrastructure (`segments.json`, analysis prompt, inject pipeline, dashboard display)
-- [x] Segment dropdown filter (By Feature + By Call tabs)
+- [x] 9 segments defined (CE & Credentialing, Professional Training, Coaches, Associations, Course Creators, Academic, Corporate Education, Health & Wellness, Government & Public Sector Education)
+- [x] Segment dropdown filter (By Feature, By Call, and Personas tabs)
 - [x] Segment pill on By Call card headers
 - [x] Product Report: Calls by Segment section
 - [x] Marketing Report: Segment shown on company cards in Who We Talked To
+- [x] Personas tab: Segment Overview cards, Segment Comparison table, Prospect Cards by Segment
+- [x] Company attribution bug fixes (Teachable/Unknown no longer appear as company pills)
+- [x] Analysis prompt requires `company` field on every feature, never "Teachable" or "Unknown"
+- [x] Speaker-to-company mapping works without parentheticals (Simon Smith, Sabine Lehner, etc.)
+- [x] Project renamed from "call-puller" to "Teachable Sales Intelligence" in all code references
 
 ## What's In Progress
 
@@ -67,13 +73,16 @@ The `sync_to_sheets.py` script is built and ready. Zach needs to:
 ## Known Issues
 
 - **Empty transcripts.** Some calls have blank `transcript_text`. Use `python3 analyze_features.py refetch-empty test_output/dashboard.html` to re-pull from Fireflies.
-- **Directory confusion.** CC previously worked in a temp dir. All work must happen in the local project directory. The temp dir should not be used.
 - **Exposed API key.** Fireflies key was shown in a chat session. Needs rotation.
 - **Confidence scores not yet populated.** The `confidence` field exists in the schema but current analyzed data doesn't have values. Next re-analysis with the updated prompt will populate them.
-- **Company field sparsely populated.** Many mentions have company extracted from call title only. The `company` field in the analysis prompt should be filled by Claude during next re-analysis.
-- **Inject merge bug fixed (7609d66).** Previously, `inject` replaced ALL mentions instead of merging — wiped existing data when only injecting new calls. Fixed to preserve mentions for calls not in current injection.
-- **Segments not yet populated on most calls.** Only 1 call has a segment assigned (from test injection). Next full re-analysis will assign segments to all calls.
-- **Title keyword filter bug fixed (fdf640e).** CLI `retrieve_calls.py` now defaults to `DEFAULT_SCAN_TITLE_KEYWORDS` from `models.py`, matching the server behavior. Internal calls that lacked matching keywords were entering the pipeline.
+- **Company field empty on existing mentions.** All 44 existing mentions have `company: ""`. The updated analysis prompt now requires it. Next re-analysis will populate. Dashboard fallback logic handles this for now.
+- **2 mentions unresolvable.** Two `rep_highlighted` mentions from Teachable speakers on generic-titled calls have no company attribution (Zach on "Teachable Followup", Jonathan on "Teachable Learning Paths/Quizzes"). Next re-analysis will fix via `company` field.
+- **Segments populated on all 8 analyzed calls.** Previously only 1 had a segment; full re-analysis assigned segments to all.
+
+### Fixed Issues (this session)
+- **Teachable appearing as company pill** — `getCompany()` and `reportGetCompany()` now filter out "Teachable" via `isTeachableInternal()`. Internal speakers fall through to call title / attendees extraction.
+- **Unknown appearing as company pill** — same filter rejects "Unknown". `buildFeatureCard()` skips mentions with no resolvable company instead of labeling them "Unknown".
+- **Speaker mappings required parentheticals** — `reportGetCompany()` known-speaker lookups (Simon Smith, Sabine, etc.) now work without `(Company)` parenthetical in speaker name.
 
 ---
 
@@ -86,12 +95,12 @@ Fireflies API
 retrieve_calls.py (pull + filter + approve)
     |
     v
-analyze_features.py (Claude extracts features + categories)
+analyze_features.py (Claude extracts features + categories + segments)
     |
     v
 features.json  <-- CANONICAL DATA FILE
     |
-    +---> dashboard_template.html (interactive dashboard)
+    +---> dashboard_template.html (interactive dashboard, 5 tabs)
     +---> sync_to_sheets.py (Google Sheets sync)
     +---> generate_reports.py (Friday cron)
 ```
@@ -110,9 +119,9 @@ sales-intelligence/
   models.py                  # Data models, HubSpot note template
   client.py                  # Fireflies API client
   exports.py                 # JSON/CSV/dashboard export functions
-  dashboard_template.html    # HTML template with 4 tabs
+  dashboard_template.html    # HTML template with 5 tabs
   categories.json            # 10 feature category definitions
-  segments.json              # 8 prospect segment definitions
+  segments.json              # 9 prospect segment definitions
   CLAUDE.md                  # Auto-loaded instructions for Claude Code
   README.md                  # Setup instructions, workflow docs
   PROJECT_STATUS.md          # This file — read first, update at session end
@@ -135,9 +144,9 @@ sales-intelligence/
 - **10 calls** in dashboard (8 analyzed, 1 pending, 1 empty transcript; 2 internal calls removed)
 - **44 feature mentions** across **24 unique features** and **8 analyzed calls**
 - **10 categories**, zero in "Other"
-- **8 segments** defined in `segments.json` (CE & Credentialing, Professional Training, Coaches, Associations, Course Creators, Academic, Corporate Education, Health & Wellness)
+- **9 segments** defined in `segments.json` (CE & Credentialing, Professional Training, Coaches, Associations, Course Creators, Academic, Corporate Education, Health & Wellness, Government & Public Sector Education)
+- **All 8 analyzed calls have segments assigned**
 - **marketing_data** populated on 8 external analyzed calls
-- **1 call with segment assigned** (Speravita: CE & Credentialing); rest need re-analysis
 - Companies: Speravita, ESI (Anne Blocker), Simon & Sabine, LTA Singapore, Dot Compliance, Simon Davey, BADM
 - Default scan filters: `owner=zach.mccall`, `keywords=followup/follow-up/follow up/teachable`, `days=14`, `limit=10`
 
@@ -146,7 +155,6 @@ sales-intelligence/
 ## How to Run
 
 ```bash
-cd /Users/zachmccall/call-puller
 pip3 install -r requirements.txt
 
 # Start server
@@ -170,7 +178,7 @@ python3 sync_to_sheets.py            # Sync
 
 1. Read this file first (`PROJECT_STATUS.md`)
 2. Check the "In Progress" section for current work
-3. Work in `/Users/zachmccall/call-puller/` (NEVER use temp directories)
+3. Work in the local project directory (NEVER use temp directories)
 4. Commit after each meaningful change
 5. Update this file at the end of the session with what changed
 
