@@ -235,13 +235,29 @@ body {
     background: #1a1d35; color: #7c8aff;
     border: 1px solid #252a4a;
 }
-/* Requester tag (for By Feature view) */
-.req-tag {
+/* Company pill (for By Feature view) */
+.co-pill-wrap {
+    position: relative; display: inline-block;
+}
+.co-pill {
     display: inline-block; font-size: max(0.85rem, 13px); font-weight: 500;
     padding: 0.2rem 0.6rem; border-radius: 10px;
     background: #1a2a1e; color: #6bc77a;
-    border: 1px solid #254a30;
+    border: 1px solid #254a30; cursor: default;
 }
+.co-pill .co-cnt { color: #4a8a55; font-weight: 400; margin-left: 0.2rem; }
+.co-more {
+    display: inline-block; font-size: max(0.78rem, 12px); color: #555a6e;
+    padding: 0.2rem 0.3rem; cursor: default; position: relative;
+}
+.co-tooltip {
+    display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%); background: #1e2130; color: #c8ccd8;
+    border: 1px solid #2a2d40; border-radius: 6px; padding: 0.4rem 0.6rem;
+    font-size: max(0.78rem, 12px); white-space: nowrap; z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: none;
+}
+.co-pill-wrap:hover .co-tooltip, .co-more:hover .co-tooltip { display: block; }
 
 /* Call card right-side meta (date + duration) */
 .card-date {
@@ -746,33 +762,76 @@ function mentionHTML(m, showFeature) {
 }
 
 // ---- Features view (grouped by category) ----
+function getCompany(m, callMap) {
+    // Prefer explicit company field from features.json
+    if (m.company) return m.company;
+    // Fall back to reportGetCompany (parses speaker/call_title)
+    const co = reportGetCompany(m, callMap);
+    if (co) return co;
+    // Last resort: extract from call_title
+    const call = callMap[m.call_id];
+    if (call && call.title) {
+        const chevron = call.title.match(/^(.+?)\s*<>\s*Teachable/i) || call.title.match(/^Teachable\s*<>\s*(.+)/i);
+        if (chevron) return chevron[1].split(':')[0].trim();
+    }
+    return '';
+}
+
 function buildFeatureCard(kw, mentions, callMap, companies) {
     const mSorted = mentions.sort((a, b) => (b.call_date || '').localeCompare(a.call_date || ''));
 
-    const reqSet = new Set();
+    // Group mentions by company
+    const coMap = {}; // company -> { contacts: Set, count: number }
     mentions.forEach(m => {
-        const call = callMap[m.call_id];
-        if (call && call.attendees) {
-            const ext = extractCompany(call.attendees);
-            if (ext) ext.split(',').map(s => s.trim()).filter(Boolean).forEach(name => reqSet.add(name));
+        const co = getCompany(m, callMap) || 'Unknown';
+        if (!coMap[co]) coMap[co] = { contacts: new Set(), count: 0 };
+        const spk = m.speaker || '';
+        // Skip internal reps
+        if (spk && !spk.toLowerCase().includes('unknown') &&
+            !spk.toLowerCase().includes('zach mccall')) {
+            coMap[co].contacts.add(spk.replace(/\s*\([^)]*\)/, '').trim());
         }
-        if (m.speaker && !m.speaker.toLowerCase().includes('unknown')) {
-            reqSet.add(m.speaker);
-        }
+        coMap[co].count++;
     });
-    const reqTags = [...reqSet].slice(0, 6).map(r => '<span class="req-tag">' + esc(r) + '</span>').join('');
+
+    // Sort by mention count desc, then alphabetical
+    const coEntries = Object.entries(coMap)
+        .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]));
+
+    // Build company pills (cap at 3 visible)
+    const MAX_PILLS = 3;
+    const visible = coEntries.slice(0, MAX_PILLS);
+    const overflow = coEntries.slice(MAX_PILLS);
+
+    let pillsHTML = '';
+    visible.forEach(([co, data]) => {
+        const cntBadge = data.count > 1 ? '<span class="co-cnt">(' + data.count + ')</span>' : '';
+        const contacts = [...data.contacts];
+        const tooltip = contacts.length > 0
+            ? '<span class="co-tooltip">' + contacts.map(c => esc(c)).join(', ') + '</span>'
+            : '';
+        pillsHTML += '<span class="co-pill-wrap"><span class="co-pill">' + esc(co) + cntBadge + '</span>' + tooltip + '</span>';
+    });
+
+    if (overflow.length > 0) {
+        const overflowTip = overflow.map(([co, data]) => {
+            const contacts = [...data.contacts];
+            return contacts.length > 0 ? contacts.join(', ') + ' (' + esc(co) + ')' : esc(co);
+        }).join('; ');
+        pillsHTML += '<span class="co-more">+' + overflow.length + ' more<span class="co-tooltip">' + esc(overflowTip) + '</span></span>';
+    }
 
     let mHTML = '';
     mSorted.forEach(m => { mHTML += mentionHTML(m, false); });
 
     const countLabel = mentions.length === 1 ? '1 mention' : mentions.length + ' mentions';
 
-    return '<div class="card" data-companies="' + esc((companies || []).join(',').toLowerCase()) + '" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + ' ' + esc([...reqSet].join(' ').toLowerCase()) + '">' +
+    return '<div class="card" data-companies="' + esc((companies || []).join(',').toLowerCase()) + '" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + ' ' + esc(Object.keys(coMap).join(' ').toLowerCase()) + '">' +
         '<div class="card-hdr" onclick="toggleCard(this)">' +
             '<div class="left"><span class="arrow">&#9654;</span>' +
                 '<div class="name-block">' +
                     '<div class="name">' + esc(kw) + '</div>' +
-                    (reqTags ? '<div class="hdr-tags">' + reqTags + '</div>' : '') +
+                    (pillsHTML ? '<div class="hdr-tags">' + pillsHTML + '</div>' : '') +
                 '</div>' +
             '</div>' +
             '<div class="right"><span class="cnt-pill">' + countLabel + '</span></div>' +
@@ -805,28 +864,12 @@ function buildFeatures() {
     const callMap = {};
     DATA.calls.forEach(c => { callMap[c.id] = c; });
 
-    // Collect all companies for filter pills (use getCompany from report if available, else speaker)
+    // Collect all companies for filter and tag each mention
     const allCompanies = new Set();
     mentions.forEach(m => {
-        const spk = m.speaker || '';
-        const paren = spk.match(/\(([^)]+)\)/);
-        if (paren) {
-            // Derive company name same logic as report's getCompany
-            const call = callMap[m.call_id];
-            const title = call ? call.title : '';
-            let co = paren[1].split('/')[0].trim();
-            const chevron = title.match(/^(.+?)\s*<>\s*Teachable/i) || title.match(/^Teachable\s*<>\s*(.+)/i);
-            if (chevron) co = chevron[1].trim();
-            else if (title.toLowerCase().includes('speravita')) co = 'Speravita';
-            else if (title.toLowerCase().includes('dot compliance')) co = 'Dot Compliance';
-            else if (title.toLowerCase().includes('lta') || co.toLowerCase().includes('lta') ||
-                     spk.toLowerCase().includes('hui ching') || spk.toLowerCase().includes('kai shan')) co = 'LTA';
-            else if (co === 'Simon Davey') co = 'Simon Davey';
-            else if (['Simon', 'Sabine', 'Katrina'].includes(co)) co = 'Simon & Sabine';
-            else if (['Ibrahim', 'Bryan', 'Oghenetejiri'].includes(co)) co = 'Dot Compliance';
-            else if (['Hui Ching', 'Kai Shan'].includes(co)) co = 'LTA';
-            if (co) allCompanies.add(co);
-            // Tag the mention with company for filtering
+        const co = getCompany(m, callMap);
+        if (co) {
+            allCompanies.add(co);
             m._company = co;
         }
     });
