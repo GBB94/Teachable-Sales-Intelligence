@@ -591,12 +591,23 @@ def cmd_inject(args):
         if call_id in calls_with_features:
             call.pop("pending_analysis", None)
 
-    # Fully rebuild stats from the complete dataset
-    data["mentions"] = new_mentions
+    # Merge: keep existing mentions for calls NOT in the new input, replace for calls that are
+    existing_mentions = data.get("mentions", [])
+    preserved = [m for m in existing_mentions if m.get("call_id") not in features_by_call]
+    all_mentions = preserved + new_mentions
+
+    # Rebuild stats from the complete merged dataset
+    all_call_ids = {m.get("call_id") for m in all_mentions}
+    all_keywords = {}
+    for m in all_mentions:
+        kw = m.get("keyword", "Unknown")
+        all_keywords[kw] = all_keywords.get(kw, 0) + 1
+
+    data["mentions"] = all_mentions
     data["stats"] = {
-        "total_mentions": len(new_mentions),
-        "unique_calls": len(calls_with_features),
-        "unique_features": len(keyword_counts),
+        "total_mentions": len(all_mentions),
+        "unique_calls": len(all_call_ids),
+        "unique_features": len(all_keywords),
         "generated": data.get("stats", {}).get("generated", ""),
     }
     if recap_text:
