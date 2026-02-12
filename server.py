@@ -238,6 +238,24 @@ def scan_process():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/sync-sheets', methods=['POST'])
+def sync_sheets():
+    """Trigger a sheet sync from the dashboard UI."""
+    try:
+        from sync_to_sheets import sync
+        result = sync(output_dir=OUTPUT_DIR)
+        return jsonify({
+            "status": "ok",
+            "rows_added": result["rows_added"],
+            "rows_updated": result["rows_updated"],
+        })
+    except FileNotFoundError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[sync-sheets] Error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------

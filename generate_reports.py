@@ -61,6 +61,14 @@ def main():
     print(f"Flag written to {FLAG_PATH}")
     print(f"Timestamp: {now}")
 
+    # Sync feature data to Google Sheets
+    try:
+        from sync_to_sheets import sync
+        result = sync(output_dir=os.path.dirname(DASHBOARD_PATH))
+        print(f"Sheet sync: {result['rows_added']} added, {result['rows_updated']} updated")
+    except Exception as e:
+        print(f"Sheet sync failed (non-fatal): {e}")
+
 
 if __name__ == "__main__":
     main()

@@ -33,10 +33,10 @@ def get_sheets_service():
     """Authenticate with Google Sheets API using service account credentials."""
     creds_path = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
     if not creds_path or not os.path.exists(creds_path):
-        print("ERROR: Google Sheets credentials not found.")
-        print("Set GOOGLE_SHEETS_CREDENTIALS in .env to the path of your service account JSON.")
-        print("See README for setup instructions.")
-        sys.exit(1)
+        raise RuntimeError(
+            "Google Sheets credentials not found. "
+            "Set GOOGLE_SHEETS_CREDENTIALS in .env to the path of your service account JSON."
+        )
 
     from google.oauth2.service_account import Credentials
     from googleapiclient.discovery import build
@@ -52,8 +52,9 @@ def get_spreadsheet_id():
     """Get the spreadsheet ID from environment."""
     sid = os.getenv("GOOGLE_SHEETS_SPREADSHEET_ID")
     if not sid:
-        print("ERROR: GOOGLE_SHEETS_SPREADSHEET_ID not set in .env")
-        sys.exit(1)
+        raise RuntimeError(
+            "GOOGLE_SHEETS_SPREADSHEET_ID not set in .env"
+        )
     return sid
 
 
@@ -740,19 +741,23 @@ def main():
                         help="Directory containing features.json (default: test_output)")
     args = parser.parse_args()
 
-    if args.setup:
-        print("Setting up spreadsheet...")
-        service = get_sheets_service()
-        spreadsheet_id = get_spreadsheet_id()
-        setup_spreadsheet(service, spreadsheet_id)
-        return
+    try:
+        if args.setup:
+            print("Setting up spreadsheet...")
+            service = get_sheets_service()
+            spreadsheet_id = get_spreadsheet_id()
+            setup_spreadsheet(service, spreadsheet_id)
+            return
 
-    result = sync(
-        output_dir=args.output_dir,
-        force=args.force,
-        dry_run=args.dry_run,
-    )
-    return result
+        result = sync(
+            output_dir=args.output_dir,
+            force=args.force,
+            dry_run=args.dry_run,
+        )
+        return result
+    except RuntimeError as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -614,6 +614,15 @@ def cmd_inject(args):
                 f.write(call.get("hubspot_note", ""))
         print(f"Updated HubSpot notes: {args.notes}")
 
+    # Optionally sync to Google Sheets
+    if args.sync_sheets:
+        try:
+            from sync_to_sheets import sync
+            result = sync(output_dir=output_dir)
+            print(f"Sheet sync: {result['rows_added']} added, {result['rows_updated']} updated")
+        except Exception as e:
+            print(f"Sheet sync failed: {e}")
+
 
 def cmd_normalize(args):
     """Normalize feature names in a features JSON file using a merge map."""
@@ -763,6 +772,8 @@ def main():
     p_inject.add_argument("--notes", help="Path to HubSpot notes file to update")
     p_inject.add_argument("--categories", metavar="FILE",
                           help="JSON file mapping feature names to category names")
+    p_inject.add_argument("--sync-sheets", action="store_true",
+                          help="Sync to Google Sheet after injecting features")
 
     # Refetch empty transcripts
     p_refetch = sub.add_parser("refetch-empty",

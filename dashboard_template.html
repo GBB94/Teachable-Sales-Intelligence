@@ -594,6 +594,7 @@ body {
             <div class="dd-panel" id="co-panel"></div>
         </div>
         <button class="expand-btn" id="expand-btn" onclick="toggleExpandAll()" style="display:none">Collapse All</button>
+        <button class="scan-btn" id="sync-sheets-btn" onclick="syncToSheets(this)" style="display:none">Sync to Sheets</button>
     </div>
     <div id="features-view"></div>
     <div id="calls-view" style="display:none"></div>
@@ -1616,6 +1617,30 @@ function closeScanModal() {
     document.getElementById('scan-overlay').classList.remove('open');
 }
 
+async function syncToSheets(btn) {
+    btn.disabled = true;
+    btn.textContent = 'Syncing...';
+    btn.classList.add('scanning');
+    try {
+        const res = await fetch('/api/sync-sheets', { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'ok') {
+            btn.textContent = 'Synced: ' + data.rows_added + ' added, ' + data.rows_updated + ' updated';
+            btn.classList.remove('scanning');
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'Sync to Sheets'; btn.classList.remove('copied'); btn.disabled = false; }, 3000);
+        } else {
+            btn.textContent = 'Error: ' + (data.message || 'unknown');
+            btn.classList.remove('scanning');
+            setTimeout(() => { btn.textContent = 'Sync to Sheets'; btn.disabled = false; }, 3000);
+        }
+    } catch (e) {
+        btn.textContent = 'Sync failed';
+        btn.classList.remove('scanning');
+        setTimeout(() => { btn.textContent = 'Sync to Sheets'; btn.disabled = false; }, 3000);
+    }
+}
+
 async function startScan(btn) {
     // Static file mode: fall back to clipboard
     if (location.protocol === 'file:') {
@@ -1791,6 +1816,7 @@ function switchTab(tab) {
     document.querySelector('.search-box').style.display = isReport ? 'none' : '';
     document.getElementById('co-dd').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
+    document.getElementById('sync-sheets-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('q').value = '';
     closeAllDD();
     filter('');
