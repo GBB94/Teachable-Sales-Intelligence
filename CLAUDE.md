@@ -1,4 +1,4 @@
-# Call Puller - Claude Code Instructions
+# Teachable Sales Intelligence - Claude Code Instructions
 
 ## Project Reference
 

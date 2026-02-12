@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Local dev server for the Feature Request Dashboard.
+Local dev server for Teachable Sales Intelligence.
 Serves the dashboard and exposes a two-step scan API:
   GET  /api/scan/preview  — fetch calls from Fireflies, return list for approval
   POST /api/scan/process  — add selected calls to dashboard (pending analysis)

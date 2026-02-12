@@ -4,7 +4,7 @@
 Reads the dashboard HTML, checks for pending/unanalyzed calls,
 writes a .reports_due flag file with timestamp and pending call count.
 
-Cron: 0 15 * * 5 cd /path/to/call-puller && python3 generate_reports.py
+Cron: 0 15 * * 5 cd /path/to/sales-intelligence && python3 generate_reports.py
 """
 
 import json

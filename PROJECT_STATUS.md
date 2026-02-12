@@ -7,10 +7,10 @@
 
 ## Quick Summary
 
-Sales intelligence tool for Teachable. Pulls call transcripts from Fireflies, uses Claude to extract features and insights, generates dashboards and reports for product and marketing teams. Feature data syncs to Google Sheets for product team tracking.
+Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude to extract features and insights, generates dashboards and reports for product and marketing teams. Feature data syncs to Google Sheets for product team tracking.
 
-**Repo:** https://github.com/GBB94/call-puller (private)
-**Local:** `/Users/zachmccall/call-puller/`
+**Repo:** https://github.com/GBB94/call-puller (private — pending rename)
+**Local:** `/Users/zachmccall/call-puller/` (pending rename)
 
 ---
 
@@ -67,7 +67,7 @@ The `sync_to_sheets.py` script is built and ready. Zach needs to:
 ## Known Issues
 
 - **Empty transcripts.** Some calls have blank `transcript_text`. Use `python3 analyze_features.py refetch-empty test_output/dashboard.html` to re-pull from Fireflies.
-- **Directory confusion.** CC previously worked in `/private/tmp/call-puller-zip/inner/` (temp dir). All work must happen in `/Users/zachmccall/call-puller/`. The temp dir should not be used.
+- **Directory confusion.** CC previously worked in a temp dir. All work must happen in the local project directory. The temp dir should not be used.
 - **Exposed API key.** Fireflies key was shown in a chat session. Needs rotation.
 - **Confidence scores not yet populated.** The `confidence` field exists in the schema but current analyzed data doesn't have values. Next re-analysis with the updated prompt will populate them.
 - **Company field sparsely populated.** Many mentions have company extracted from call title only. The `company` field in the analysis prompt should be filled by Claude during next re-analysis.
@@ -101,7 +101,7 @@ features.json  <-- CANONICAL DATA FILE
 ## File Map
 
 ```
-call-puller/
+sales-intelligence/
   server.py                  # Flask server (localhost:8080)
   analyze_features.py        # CLI: extract/normalize/inject workflow
   sync_to_sheets.py          # Google Sheets sync (setup, upsert, dry-run)

@@ -1,4 +1,4 @@
-# Call Puller - Sales Intelligence Dashboard
+# Teachable Sales Intelligence
 
 Pulls sales call transcripts from Fireflies, extracts feature requests using Claude, and syncs them to a Google Sheet for the product team.
 
@@ -23,13 +23,13 @@ python3 server.py     # Dashboard at http://localhost:8080
 ### 1. Create Google Cloud Project
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a project called "call-puller"
+2. Create a project called "sales-intelligence"
 3. Enable the **Google Sheets API** and **Google Drive API**
 
 ### 2. Create Service Account
 
 1. APIs & Services > Credentials > Create Credentials > Service Account
-2. Name: `call-puller-sync`
+2. Name: `sales-intelligence-sync`
 3. Go to Keys tab > Add Key > Create New Key > JSON
 4. Save the JSON file to `credentials/sheets_service_account.json`
 
