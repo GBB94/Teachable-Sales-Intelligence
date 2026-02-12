@@ -275,6 +275,9 @@ features discussed on the call is worse than a slightly long list.
   "notes": {
     "<call_id>": "full HubSpot note text (see format below)"
   },
+  "marketing_data": {
+    "<call_id>": { ... per-call marketing intelligence (see MARKETING section) ... }
+  },
   "recap": "optional weekly recap paragraph",
   "company_summaries": { "Company": "one-line summary" }
 }
@@ -361,81 +364,101 @@ Summary, Use Case, Qualification, Risks, Next Steps only.
 Skip empty sections — don't write "Not discussed."
 """)
     print(f"{'='*70}")
-    print("MARKETING REPORT FORMAT")
+    print("MARKETING INTELLIGENCE (per call)")
     print(f"{'─'*70}")
-    print("""In addition to features and notes, generate a marketing_report object.
-This is for the marketing team — a different lens on the same call data.
+    print("""In addition to features and notes, extract MARKETING INTELLIGENCE from
+each call. This is for the marketing team — a different lens on the same
+transcript data. Only include information EXPLICITLY stated in the call.
+Do NOT fabricate or infer anything.
 
-IMPORTANT RULE: Do NOT fabricate or infer any information. Only include
-data that is EXPLICITLY stated in the call transcripts. If a section has
-no data from the calls, leave the array empty — the dashboard will show
-"No data from this week's calls" automatically. All quotes must be
-VERBATIM from transcripts with attribution.
+Add a "marketing_data" object per call in the top-level JSON output:
 
-Add this to the top-level JSON output:
-
-  "marketing_report": {
-    "persona_profiles": [
-      {
-        "name": "Contact Name",
-        "title": "Their Title (only if stated)",
-        "company": "Company name and brief description from transcript context",
-        "industry": "Only if mentioned in the call",
-        "role_in_decision": "champion / influencer / decision-maker (only if clear)",
-        "team": ["Other people mentioned or on the call"]
-      }
-    ],
-    "voice_of_customer": {
-      "problem_descriptions": [
+  "marketing_data": {
+    "<call_id>": {
+      "company": "Company Name",
+      "company_description": "Brief description based on what was said in the call",
+      "industry": "Only if mentioned",
+      "contacts": [
         {
-          "quote": "Exact verbatim quote of how they describe their problem",
+          "name": "First Last",
+          "title": "Job Title (only if stated)",
+          "role_in_decision": "champion / decision-maker / evaluator (only if clear)"
+        }
+      ],
+      "currently_evaluating": ["Feature/capability they are actively evaluating"],
+
+      "quotes": [
+        {
+          "text": "Exact verbatim quote from the prospect",
           "speaker": "Speaker Name",
-          "call": "Call Title"
+          "timestamp": "~MM:SS",
+          "ts_seconds": 123,
+          "theme": "problem_description | workaround | emotional | general"
         }
       ],
-      "terminology": ["specific words/phrases prospects used"],
-      "frequent_questions": ["questions prospects asked on calls"]
-    },
-    "pain_points": [
-      {
-        "pain": "Short pain point description",
-        "company": "Company Name",
-        "quote": "Brief verbatim quote",
-        "current_workaround": "What they said they're currently using (only if stated)",
-        "business_impact": "Only if they stated it"
-      }
-    ],
-    "objections": {
-      "items": [
+
+      "terminology": [
+        {"prospect_term": "centers", "standard_term": "locations"}
+      ],
+
+      "questions_asked": [
         {
-          "objection": "The objection",
-          "company": "Company Name",
-          "quote": "Brief verbatim quote"
+          "question": "Exact question the prospect asked",
+          "speaker": "Speaker Name",
+          "timestamp": "~MM:SS",
+          "ts_seconds": 123
         }
       ],
-      "competitors_mentioned": ["Only names explicitly said in calls"],
-      "barriers": ["Barriers to adoption mentioned (only if stated)"]
-    },
-    "buying_signals": [
-      {
-        "trigger": "What triggered their interest (only if stated)",
-        "company": "Company Name",
-        "timeline": "Only if discussed",
-        "budget_feedback": "Only if discussed"
-      }
-    ],
-    "success_metrics": [
-      {
-        "metric": "How they measure success (only if stated)",
-        "company": "Company Name",
-        "quote": "Verbatim quote if available"
-      }
-    ],
-    "weekly_summary": {
-      "patterns": ["Only patterns clearly visible in the data"],
-      "surprising_insights": ["Anything unexpected from the calls"]
+
+      "objections": [
+        {
+          "objection": "Short description",
+          "quote": "Verbatim quote if available",
+          "speaker": "Speaker Name",
+          "timestamp": "~MM:SS",
+          "ts_seconds": 123
+        }
+      ],
+
+      "competitors_mentioned": [
+        {
+          "name": "Competitor Name",
+          "context": "current platform / considered alternative / etc.",
+          "timestamp": "~MM:SS",
+          "ts_seconds": 123
+        }
+      ],
+
+      "barriers_to_adoption": ["Migration from existing platform", "Need IT approval"],
+
+      "buying_signals": [
+        {
+          "signal": "Requested custom demo for regional directors",
+          "interpretation": "champion building internal buy-in",
+          "timestamp": "~MM:SS",
+          "ts_seconds": 123
+        }
+      ],
+
+      "timeline": "Q3 rollout mentioned" or null
     }
   }
+
+For each call, extract:
+1. CONTACTS: Name, title (only if stated), role in buying decision (only if clear)
+2. COMPANY CONTEXT: Description and industry based only on what was said
+3. VERBATIM QUOTES: Most notable prospect quotes. Focus on problem descriptions,
+   current workarounds, emotional language. Include exact timestamps.
+4. TERMINOLOGY: Words/phrases the prospect uses that differ from Teachable's
+   internal language. This is gold for marketing copy.
+5. QUESTIONS ASKED: Direct questions prospects raised. Include timestamps.
+6. OBJECTIONS: Hesitations, concerns, pushback. Include quotes + timestamps.
+7. COMPETITORS: Products explicitly named. Include context + timestamps.
+8. BUYING SIGNALS: Actions/statements indicating purchase intent. Include timestamps.
+9. TIMELINE: Any mentions of timing, deadlines, urgency.
+10. BARRIERS: Anything that could slow or prevent a deal.
+
+If a field has no data, use an empty array [] or null. Do NOT fabricate.
 """)
 
 
@@ -453,12 +476,14 @@ def cmd_inject(args):
         recap_text = raw.get("recap", "")
         company_summaries = raw.get("company_summaries", {})
         marketing_report = raw.get("marketing_report", {})
+        marketing_data_by_call = raw.get("marketing_data", {})
     else:
         features_by_call = raw
         notes_by_call = {}
         recap_text = ""
         company_summaries = {}
         marketing_report = {}
+        marketing_data_by_call = {}
 
     # Load categories list for validation (optional fallback)
     valid_categories = set()
@@ -580,6 +605,12 @@ def cmd_inject(args):
         data["company_summaries"] = company_summaries
     if marketing_report:
         data["marketing_report"] = marketing_report
+    # Store per-call marketing data on each call object
+    if marketing_data_by_call:
+        for call in calls:
+            call_id = call.get("id", "")
+            if call_id in marketing_data_by_call:
+                call["marketing_data"] = marketing_data_by_call[call_id]
 
     # Write updated dashboard
     _write_data_to_html(args.dashboard, data)

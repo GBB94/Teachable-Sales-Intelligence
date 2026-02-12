@@ -1264,206 +1264,358 @@ function buildMarketingReport() {
     const callMap = {};
     DATA.calls.forEach(c => { callMap[c.id] = c; });
     const mentions = activeMentions();
-    const mkt = DATA.marketing_report || {};
     const noData = '<em>No data from this week\u2019s calls.</em>';
 
-    mentions.forEach(m => { m._co = reportGetCompany(m, callMap); });
+    // Gather active calls (non-excluded, with mentions or marketing_data)
+    const mentionCallIds = new Set(mentions.map(m => m.call_id));
+    const activeCalls = DATA.calls.filter(c =>
+        !excludedCalls.has(c.id) && (mentionCallIds.has(c.id) || c.marketing_data)
+    );
+    const dates = activeCalls.map(c => c.date).filter(Boolean).sort();
+    const dateRange = dates.length
+        ? fmtShortDate(new Date(dates[0] + 'T00:00:00')) + ' \u2013 ' +
+          fmtShortDate(new Date(dates[dates.length - 1] + 'T00:00:00')) + ', ' + dates[0].slice(0, 4)
+        : '';
 
-    const allCallIds = new Set(mentions.map(m => m.call_id));
-    const callsWithFeatures = DATA.calls.filter(c => allCallIds.has(c.id) && !excludedCalls.has(c.id));
-    const dates = callsWithFeatures.map(c => c.date).filter(Boolean).sort();
-    const dateRange = dates.length ? fmtShortDate(new Date(dates[0] + 'T00:00:00')) + ' \u2013 ' + fmtShortDate(new Date(dates[dates.length - 1] + 'T00:00:00')) + ', ' + dates[0].slice(0, 4) : '';
+    // Aggregate per-call marketing_data
+    const allMktData = activeCalls.map(c => ({
+        call: c,
+        md: c.marketing_data || {}
+    })).filter(x => Object.keys(x.md).length > 0);
 
-    // Helper: render an array of items or "no data"
-    function renderItems(arr, formatter) {
-        if (!arr || !arr.length) return '<div class="recap-block">' + noData + '</div>';
-        let out = '<div class="recap-block">';
-        arr.forEach(item => { out += formatter(item); });
-        out += '</div>';
-        return out;
+    // Helper: build a timestamp link
+    function tsLink(call, tsSec, tsDisplay) {
+        if (tsSec != null && call && call.transcript) {
+            const url = call.transcript.split('?')[0] + '?t=' + Math.floor(tsSec);
+            return '<a href="' + esc(url) + '" target="_blank" style="color:#4a7cff;text-decoration:none">' + esc(tsDisplay || reportFmtTs(tsSec)) + '</a>';
+        }
+        if (tsDisplay) return '<span style="color:#8b8fa3">' + esc(tsDisplay) + '</span>';
+        return '';
     }
 
-    // Helper: render a quote with attribution
-    function fmtQuote(q) {
-        return '<div style="margin-bottom:0.7em">\u201c' + esc(q.quote || q.text || '') +
-            '\u201d<br><span style="color:#666;font-size:13px">\u2014 ' +
-            esc(q.speaker || '') + (q.call ? ', <em>' + esc(q.call) + '</em>' : '') +
-            '</span></div>';
+    // Helper: call link
+    function callLink(call) {
+        if (!call) return '';
+        const label = esc(call.title || '') + ' (' + (call.date || '').slice(5) + ')';
+        if (call.transcript) return '<a href="' + esc(call.transcript) + '" target="_blank" style="color:#4a7cff;text-decoration:none">' + label + '</a>';
+        return label;
+    }
+
+    // Sub-section header
+    function subHead(text) {
+        return '<div style="font-size:13px;font-weight:600;color:#888;margin:1rem 0 0.4rem;text-transform:uppercase;letter-spacing:0.04em">' + text + '</div>';
     }
 
     // ---- HTML ----
     let h = '<h1>MARKETING INTELLIGENCE REPORT</h1>';
     h += '<div class="email-date">Week of ' + esc(dateRange) + '</div>';
 
-    // PERSONA PROFILES
-    h += '<h2>Persona Profiles</h2>';
-    h += renderItems(mkt.persona_profiles, function(p) {
-        let out = '<div style="margin-bottom:1em;padding-bottom:0.8em;border-bottom:1px solid #e8e8e8">';
-        if (p.name) out += '<div><strong>' + esc(p.name) + '</strong>' + (p.title ? ' \u2014 ' + esc(p.title) : '') + '</div>';
-        if (p.company) out += '<div style="color:#444">' + esc(p.company) + '</div>';
-        if (p.industry) out += '<div style="color:#666;font-size:13px">Industry: ' + esc(p.industry) + '</div>';
-        if (p.role_in_decision) out += '<div style="color:#666;font-size:13px">Decision role: ' + esc(p.role_in_decision) + '</div>';
-        if (p.team && p.team.length) out += '<div style="color:#666;font-size:13px">Team: ' + esc(p.team.join(', ')) + '</div>';
-        out += '</div>';
-        return out;
-    });
-
-    // VOICE OF CUSTOMER
-    h += '<h2>Voice of Customer</h2>';
-    const voc = mkt.voice_of_customer || {};
-    if (voc.problem_descriptions && voc.problem_descriptions.length) {
-        h += '<div style="font-size:13px;font-weight:600;color:#555;margin:0.8rem 0 0.3rem;text-transform:uppercase;letter-spacing:0.04em">How they describe their problem</div>';
-        h += renderItems(voc.problem_descriptions, fmtQuote);
-    }
-    if (voc.terminology && voc.terminology.length) {
-        h += '<div style="font-size:13px;font-weight:600;color:#555;margin:0.8rem 0 0.3rem;text-transform:uppercase;letter-spacing:0.04em">Terminology they use</div>';
-        h += '<div class="recap-block">' + voc.terminology.map(t => '<span style="display:inline-block;background:#e8eef8;border-radius:3px;padding:2px 8px;margin:2px 4px;font-size:13px">' + esc(t) + '</span>').join('') + '</div>';
-    }
-    if (voc.frequent_questions && voc.frequent_questions.length) {
-        h += '<div style="font-size:13px;font-weight:600;color:#555;margin:0.8rem 0 0.3rem;text-transform:uppercase;letter-spacing:0.04em">Most frequent questions asked</div>';
-        h += '<div class="recap-block"><ul style="margin:0;padding:0 0 0 1.2rem">';
-        voc.frequent_questions.forEach(q => { h += '<li>' + esc(q) + '</li>'; });
-        h += '</ul></div>';
-    }
-    if (!voc.problem_descriptions?.length && !voc.terminology?.length && !voc.frequent_questions?.length) {
+    // ========== SECTION 1: WHO WE TALKED TO ==========
+    h += '<h2>Who We Talked To</h2>';
+    if (!allMktData.length) {
         h += '<div class="recap-block">' + noData + '</div>';
-    }
+    } else {
+        // Group by company (merge multiple calls for same company)
+        const coCards = {};
+        allMktData.forEach(({ call, md }) => {
+            const co = md.company || getCompany({ speaker: '', call_id: call.id, call_title: call.title }, callMap) || 'Unknown';
+            if (!coCards[co]) coCards[co] = { contacts: [], description: '', industry: '', evaluating: [], calls: [], decisionContext: [] };
+            (md.contacts || []).forEach(ct => {
+                const existing = coCards[co].contacts.find(x => x.name === ct.name);
+                if (!existing) coCards[co].contacts.push(ct);
+            });
+            if (md.company_description && !coCards[co].description) coCards[co].description = md.company_description;
+            if (md.industry && !coCards[co].industry) coCards[co].industry = md.industry;
+            (md.currently_evaluating || []).forEach(e => { if (!coCards[co].evaluating.includes(e)) coCards[co].evaluating.push(e); });
+            coCards[co].calls.push(call);
+            (md.contacts || []).forEach(ct => {
+                if (ct.role_in_decision) coCards[co].decisionContext.push(ct.name + ': ' + ct.role_in_decision);
+            });
+        });
 
-    // PAIN POINTS & CHALLENGES
-    h += '<h2>Pain Points &amp; Challenges</h2>';
-    h += renderItems(mkt.pain_points, function(p) {
-        let out = '<div style="margin-bottom:0.7em">';
-        out += '<strong>' + esc(p.pain) + '</strong>';
-        if (p.company) out += ' \u2014 ' + esc(p.company);
-        if (p.quote) out += '<br><span style="color:#555;font-size:14px">\u201c' + esc(p.quote) + '\u201d</span>';
-        if (p.current_workaround) out += '<br><span style="color:#666;font-size:13px">Current workaround: ' + esc(p.current_workaround) + '</span>';
-        if (p.business_impact) out += '<br><span style="color:#666;font-size:13px">Business impact: ' + esc(p.business_impact) + '</span>';
-        out += '</div>';
-        return out;
-    });
-
-    // OBJECTIONS & CONCERNS
-    h += '<h2>Objections &amp; Concerns</h2>';
-    const obj = mkt.objections || {};
-    if (obj.items && obj.items.length) {
-        h += '<div class="recap-block">';
-        obj.items.forEach(o => {
-            h += '<div style="margin-bottom:0.5em"><strong>' + esc(o.objection) + '</strong>';
-            if (o.company) h += ' \u2014 ' + esc(o.company);
-            if (o.quote) h += '<br><span style="color:#555;font-size:14px">\u201c' + esc(o.quote) + '\u201d</span>';
+        Object.entries(coCards).forEach(([co, data]) => {
+            h += '<div style="background:#f8f9fa;border:1px solid #e0e3e8;border-radius:8px;padding:1rem 1.2rem;margin-bottom:0.8rem">';
+            h += '<div style="font-weight:700;font-size:16px;margin-bottom:0.3rem">' + esc(co) + '</div>';
+            data.contacts.forEach(ct => {
+                h += '<div>' + esc(ct.name || '');
+                if (ct.title) h += ', ' + esc(ct.title);
+                h += '</div>';
+            });
+            if (data.description) h += '<div style="color:#555;margin-top:0.3rem">' + esc(data.description) + '</div>';
+            if (data.evaluating.length) h += '<div style="color:#555;font-size:13px;margin-top:0.3rem">Currently evaluating: ' + data.evaluating.map(esc).join(', ') + '</div>';
+            if (data.decisionContext.length) h += '<div style="color:#666;font-size:13px;margin-top:0.2rem">Decision context: ' + data.decisionContext.map(esc).join('; ') + '</div>';
+            data.calls.forEach(c => {
+                h += '<div style="font-size:13px;margin-top:0.3rem">Call: ' + callLink(c) + '</div>';
+            });
             h += '</div>';
         });
-        h += '</div>';
-    } else { h += '<div class="recap-block">' + noData + '</div>'; }
-    if (obj.competitors_mentioned && obj.competitors_mentioned.length) {
-        h += '<div style="font-size:13px;color:#666;margin-top:0.5rem">Competitors mentioned: <strong>' + obj.competitors_mentioned.map(esc).join(', ') + '</strong></div>';
-    }
-    if (obj.barriers && obj.barriers.length) {
-        h += '<div style="font-size:13px;color:#666;margin-top:0.3rem">Barriers to adoption: ' + obj.barriers.map(esc).join(', ') + '</div>';
     }
 
-    // BUYING SIGNALS & PRIORITIES
-    h += '<h2>Buying Signals &amp; Priorities</h2>';
-    h += renderItems(mkt.buying_signals, function(s) {
-        let out = '<div style="margin-bottom:0.5em">';
-        if (s.trigger) out += '<div><strong>Trigger:</strong> ' + esc(s.trigger) + (s.company ? ' (' + esc(s.company) + ')' : '') + '</div>';
-        if (s.timeline) out += '<div><strong>Timeline:</strong> ' + esc(s.timeline) + '</div>';
-        if (s.budget_feedback) out += '<div><strong>Budget/pricing:</strong> ' + esc(s.budget_feedback) + '</div>';
-        out += '</div>';
-        return out;
+    // ========== SECTION 2: WHAT THEY'RE SAYING ==========
+    h += '<h2>What They\u2019re Saying</h2>';
+    const allQuotes = [];
+    const allTerminology = [];
+    const allQuestions = [];
+
+    allMktData.forEach(({ call, md }) => {
+        const co = md.company || 'Unknown';
+        (md.quotes || []).forEach(q => allQuotes.push({ ...q, _co: co, _call: call }));
+        (md.terminology || []).forEach(t => allTerminology.push({ ...t, _co: co }));
+        (md.questions_asked || []).forEach(q => allQuestions.push({ ...q, _co: co, _call: call }));
     });
 
-    // SUCCESS METRICS
-    h += '<h2>Success Metrics</h2>';
-    h += renderItems(mkt.success_metrics, function(s) {
-        let out = '<div style="margin-bottom:0.5em">';
-        if (s.metric) out += '<strong>' + esc(s.metric) + '</strong>';
-        if (s.company) out += ' \u2014 ' + esc(s.company);
-        if (s.quote) out += '<br><span style="color:#555;font-size:14px">\u201c' + esc(s.quote) + '\u201d</span>';
-        out += '</div>';
-        return out;
-    });
+    const hasQuotes = allQuotes.length > 0;
+    const hasTerm = allTerminology.length > 0;
+    const hasQuestions = allQuestions.length > 0;
 
-    // WEEKLY SUMMARY
-    h += '<h2>Weekly Summary</h2>';
-    if (mkt.weekly_summary) {
-        const ws = mkt.weekly_summary;
-        h += '<div class="recap-block">';
-        h += '<div><strong>' + callsWithFeatures.length + '</strong> prospect calls this week</div>';
-        if (ws.patterns && ws.patterns.length) {
-            h += '<div style="margin-top:0.5em"><strong>Patterns:</strong></div><ul style="margin:0.2em 0 0;padding:0 0 0 1.2rem">';
-            ws.patterns.forEach(p => { h += '<li>' + esc(p) + '</li>'; });
-            h += '</ul>';
-        }
-        if (ws.surprising_insights && ws.surprising_insights.length) {
-            h += '<div style="margin-top:0.5em"><strong>Surprising insights:</strong></div><ul style="margin:0.2em 0 0;padding:0 0 0 1.2rem">';
-            ws.surprising_insights.forEach(s => { h += '<li>' + esc(s) + '</li>'; });
-            h += '</ul>';
-        }
-        h += '</div>';
+    if (!hasQuotes && !hasTerm && !hasQuestions) {
+        h += '<div class="recap-block">' + noData + '</div>';
     } else {
-        h += '<div class="recap-block"><strong>' + callsWithFeatures.length + '</strong> prospect calls this week.<br>' + noData + '</div>';
+        // Problem descriptions
+        const problemQuotes = allQuotes.filter(q => q.theme === 'problem_description');
+        const workaroundQuotes = allQuotes.filter(q => q.theme === 'workaround');
+        const otherQuotes = allQuotes.filter(q => q.theme !== 'problem_description' && q.theme !== 'workaround');
+
+        if (problemQuotes.length) {
+            h += subHead('How they describe their problems');
+            h += '<div class="recap-block">';
+            problemQuotes.forEach(q => {
+                h += '<div style="margin-bottom:0.6em;padding-left:0.8rem;border-left:3px solid #4a7cff">';
+                h += '\u201c' + esc(q.text || '') + '\u201d';
+                h += '<br><span style="color:#666;font-size:13px">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
+                if (q.ts_seconds != null) h += ' ' + tsLink(q._call, q.ts_seconds, q.timestamp);
+                h += '</span></div>';
+            });
+            h += '</div>';
+        }
+
+        if (workaroundQuotes.length) {
+            h += subHead('Current workarounds');
+            h += '<div class="recap-block">';
+            workaroundQuotes.forEach(q => {
+                h += '<div style="margin-bottom:0.6em;padding-left:0.8rem;border-left:3px solid #fb923c">';
+                h += '\u201c' + esc(q.text || '') + '\u201d';
+                h += '<br><span style="color:#666;font-size:13px">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
+                if (q.ts_seconds != null) h += ' ' + tsLink(q._call, q.ts_seconds, q.timestamp);
+                h += '</span></div>';
+            });
+            h += '</div>';
+        }
+
+        if (otherQuotes.length) {
+            h += subHead('Notable quotes');
+            h += '<div class="recap-block">';
+            otherQuotes.forEach(q => {
+                h += '<div style="margin-bottom:0.6em;padding-left:0.8rem;border-left:3px solid #6bc77a">';
+                h += '\u201c' + esc(q.text || '') + '\u201d';
+                h += '<br><span style="color:#666;font-size:13px">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
+                if (q.ts_seconds != null) h += ' ' + tsLink(q._call, q.ts_seconds, q.timestamp);
+                h += '</span></div>';
+            });
+            h += '</div>';
+        }
+
+        if (hasTerm) {
+            h += subHead('Language & terminology they use');
+            h += '<div class="recap-block">';
+            allTerminology.forEach(t => {
+                if (typeof t === 'string') {
+                    h += '<div style="margin-bottom:0.3em">\u2022 ' + esc(t) + '</div>';
+                } else {
+                    h += '<div style="margin-bottom:0.3em">\u2022 \u201c' + esc(t.prospect_term || '') + '\u201d not \u201c' + esc(t.standard_term || '') + '\u201d (' + esc(t._co) + ')</div>';
+                }
+            });
+            h += '</div>';
+        }
+
+        if (hasQuestions) {
+            h += subHead('Questions they asked');
+            h += '<div class="recap-block">';
+            allQuestions.forEach(q => {
+                h += '<div style="margin-bottom:0.5em">\u2022 ' + esc(q.question || '');
+                h += ' <span style="color:#666;font-size:13px">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
+                if (q.ts_seconds != null) h += ' ' + tsLink(q._call, q.ts_seconds, q.timestamp);
+                h += '</span></div>';
+            });
+            h += '</div>';
+        }
+    }
+
+    // ========== SECTION 3: OBJECTIONS & COMPETITIVE LANDSCAPE ==========
+    h += '<h2>Objections &amp; Competitive Landscape</h2>';
+    const allObjections = [];
+    const allCompetitors = [];
+    const allBarriers = [];
+
+    allMktData.forEach(({ call, md }) => {
+        const co = md.company || 'Unknown';
+        (md.objections || []).forEach(o => allObjections.push({ ...o, _co: co, _call: call }));
+        (md.competitors_mentioned || []).forEach(c => allCompetitors.push({ ...c, _co: co, _call: call }));
+        (md.barriers_to_adoption || []).forEach(b => {
+            const existing = allBarriers.find(x => x.barrier === b);
+            if (existing) { if (!existing.companies.includes(co)) existing.companies.push(co); }
+            else allBarriers.push({ barrier: b, companies: [co] });
+        });
+    });
+
+    const hasObj = allObjections.length > 0;
+    const hasComp = allCompetitors.length > 0;
+    const hasBarr = allBarriers.length > 0;
+
+    if (!hasObj && !hasComp && !hasBarr) {
+        h += '<div class="recap-block">' + noData + '</div>';
+    } else {
+        if (hasObj) {
+            h += subHead('Hesitations');
+            h += '<div class="recap-block">';
+            allObjections.forEach(o => {
+                h += '<div style="margin-bottom:0.5em">';
+                if (o.quote) {
+                    h += '<div style="padding-left:0.8rem;border-left:3px solid #f472b6">\u201c' + esc(o.quote) + '\u201d';
+                    h += '<br><span style="color:#666;font-size:13px">\u2014 ' + esc(o.speaker || '') + ', ' + esc(o._co);
+                    if (o.ts_seconds != null) h += ' ' + tsLink(o._call, o.ts_seconds, o.timestamp);
+                    h += '</span></div>';
+                } else {
+                    h += esc(o.objection) + ' \u2014 ' + esc(o.speaker || o._co);
+                    if (o.ts_seconds != null) h += ' ' + tsLink(o._call, o.ts_seconds, o.timestamp);
+                }
+                h += '</div>';
+            });
+            h += '</div>';
+        }
+
+        if (hasComp) {
+            h += subHead('Competitors mentioned');
+            h += '<div class="recap-block">';
+            allCompetitors.forEach(c => {
+                h += '<div style="margin-bottom:0.4em">\u2022 <strong>' + esc(c.name || '') + '</strong>';
+                if (c.context) h += ' \u2014 ' + esc(c.context);
+                h += ' (' + esc(c._co) + ')';
+                if (c.ts_seconds != null) h += ' ' + tsLink(c._call, c.ts_seconds, c.timestamp);
+                h += '</div>';
+            });
+            h += '</div>';
+        }
+
+        if (hasBarr) {
+            h += subHead('Barriers to adoption');
+            h += '<div class="recap-block">';
+            allBarriers.forEach(b => {
+                h += '<div style="margin-bottom:0.3em">\u2022 ' + esc(b.barrier) + ' (' + b.companies.map(esc).join(', ') + ')</div>';
+            });
+            h += '</div>';
+        }
+    }
+
+    // ========== SECTION 4: BUYING SIGNALS & TIMELINE ==========
+    h += '<h2>Buying Signals &amp; Timeline</h2>';
+    const allSignals = [];
+    const allTimelines = [];
+
+    allMktData.forEach(({ call, md }) => {
+        const co = md.company || 'Unknown';
+        (md.buying_signals || []).forEach(s => allSignals.push({ ...s, _co: co, _call: call }));
+        allTimelines.push({ company: co, timeline: md.timeline || null, call: call });
+    });
+
+    const hasSignals = allSignals.length > 0;
+    const hasTimelines = allTimelines.some(t => t.timeline);
+
+    if (!hasSignals && !hasTimelines && !activeCalls.length) {
+        h += '<div class="recap-block">' + noData + '</div>';
+    } else {
+        if (hasSignals) {
+            h += subHead('Active signals');
+            h += '<div class="recap-block">';
+            allSignals.forEach(s => {
+                h += '<div style="margin-bottom:0.5em">\u2022 ' + esc(s.signal || '');
+                if (s.interpretation) h += ' \u2014 <em>' + esc(s.interpretation) + '</em>';
+                h += ' (' + esc(s._co) + ')';
+                if (s.ts_seconds != null) h += ' ' + tsLink(s._call, s.ts_seconds, s.timestamp);
+                h += '</div>';
+            });
+            h += '</div>';
+        }
+
+        if (hasTimelines) {
+            h += subHead('Timeline indicators');
+            h += '<div class="recap-block">';
+            allTimelines.forEach(t => {
+                h += '<div style="margin-bottom:0.3em">\u2022 <strong>' + esc(t.company) + ':</strong> ' + (t.timeline ? esc(t.timeline) : '<span style="color:#888">No timeline mentioned</span>') + '</div>';
+            });
+            h += '</div>';
+        }
+
+        // This week's pulse
+        h += subHead('This week\u2019s pulse');
+        h += '<div class="recap-block">';
+        h += '<div>\u2022 <strong>' + activeCalls.length + '</strong> prospect call' + (activeCalls.length !== 1 ? 's' : '') + ' this week</div>';
+
+        // Find strongest signal (company with most signals)
+        const signalsByCompany = {};
+        allSignals.forEach(s => { signalsByCompany[s._co] = (signalsByCompany[s._co] || 0) + 1; });
+        const topSignalCo = Object.entries(signalsByCompany).sort((a, b) => b[1] - a[1])[0];
+        if (topSignalCo) h += '<div>\u2022 Strongest signal: ' + esc(topSignalCo[0]) + '</div>';
+
+        // Category patterns from mentions
+        mentions.forEach(m => { m._co = m._co || getCompany(m, callMap); });
+        const catCounts = {};
+        mentions.forEach(m => {
+            const cat = m.category || 'Other';
+            if (!catCounts[cat]) catCounts[cat] = new Set();
+            catCounts[cat].add(m.call_id);
+        });
+        const topCat = Object.entries(catCounts).sort((a, b) => b[1].size - a[1].size)[0];
+        if (topCat && topCat[1].size > 1) {
+            h += '<div>\u2022 Pattern: <strong>' + esc(topCat[0]) + '</strong> mentioned across ' + topCat[1].size + '/' + activeCalls.length + ' calls</div>';
+        }
+        h += '</div>';
     }
 
     // ---- Plain text ----
     let plain = 'MARKETING INTELLIGENCE REPORT\nWeek of ' + dateRange + '\n\n';
 
-    plain += 'PERSONA PROFILES\n';
-    (mkt.persona_profiles || []).forEach(p => {
-        plain += '- ' + (p.name || '?') + (p.title ? ' \u2014 ' + p.title : '') + '\n';
-        if (p.company) plain += '  Company: ' + p.company + '\n';
-        if (p.industry) plain += '  Industry: ' + p.industry + '\n';
-        if (p.role_in_decision) plain += '  Decision role: ' + p.role_in_decision + '\n';
+    plain += 'WHO WE TALKED TO\n';
+    allMktData.forEach(({ call, md }) => {
+        const co = md.company || 'Unknown';
+        plain += '\n' + co + '\n';
+        (md.contacts || []).forEach(ct => {
+            plain += '  ' + (ct.name || '') + (ct.title ? ', ' + ct.title : '') + '\n';
+        });
+        if (md.company_description) plain += '  ' + md.company_description + '\n';
+        if (md.currently_evaluating?.length) plain += '  Evaluating: ' + md.currently_evaluating.join(', ') + '\n';
+        plain += '  Call: ' + (call.title || '') + ' (' + (call.date || '') + ')\n';
     });
-    if (!(mkt.persona_profiles || []).length) plain += 'No data from this week\'s calls.\n';
+    if (!allMktData.length) plain += 'No data from this week\'s calls.\n';
 
-    plain += '\nVOICE OF CUSTOMER\n';
-    if (voc.problem_descriptions?.length) {
-        plain += 'How they describe their problem:\n';
-        voc.problem_descriptions.forEach(q => { plain += '  "' + (q.quote || q.text || '') + '" \u2014 ' + (q.speaker || '') + '\n'; });
+    plain += '\nWHAT THEY\'RE SAYING\n';
+    allQuotes.forEach(q => {
+        plain += '  "' + (q.text || '') + '"\n';
+        plain += '    -- ' + (q.speaker || '') + ', ' + (q._co || '') + (q.timestamp ? ' (' + q.timestamp + ')' : '') + '\n';
+    });
+    if (hasTerm) {
+        plain += 'Terminology:\n';
+        allTerminology.forEach(t => {
+            if (typeof t === 'string') plain += '  - ' + t + '\n';
+            else plain += '  - "' + (t.prospect_term || '') + '" not "' + (t.standard_term || '') + '" (' + (t._co || '') + ')\n';
+        });
     }
-    if (voc.terminology?.length) plain += 'Terminology: ' + voc.terminology.join(', ') + '\n';
-    if (voc.frequent_questions?.length) {
-        plain += 'Frequent questions:\n';
-        voc.frequent_questions.forEach(q => { plain += '  - ' + q + '\n'; });
+    if (hasQuestions) {
+        plain += 'Questions asked:\n';
+        allQuestions.forEach(q => { plain += '  - ' + (q.question || '') + ' -- ' + (q.speaker || '') + ', ' + (q._co || '') + '\n'; });
     }
 
-    plain += '\nPAIN POINTS & CHALLENGES\n';
-    (mkt.pain_points || []).forEach(p => {
-        plain += '- ' + p.pain + (p.company ? ' (' + p.company + ')' : '') + '\n';
-        if (p.quote) plain += '  "' + p.quote + '"\n';
-        if (p.current_workaround) plain += '  Workaround: ' + p.current_workaround + '\n';
+    plain += '\nOBJECTIONS & COMPETITIVE LANDSCAPE\n';
+    allObjections.forEach(o => {
+        plain += '  - ' + (o.objection || '') + (o.quote ? ' ("' + o.quote + '")' : '') + ' -- ' + (o.speaker || o._co || '') + '\n';
     });
-    if (!(mkt.pain_points || []).length) plain += 'No data from this week\'s calls.\n';
+    allCompetitors.forEach(c => { plain += '  Competitor: ' + (c.name || '') + ' -- ' + (c.context || '') + ' (' + (c._co || '') + ')\n'; });
+    allBarriers.forEach(b => { plain += '  Barrier: ' + b.barrier + ' (' + b.companies.join(', ') + ')\n'; });
 
-    plain += '\nOBJECTIONS & CONCERNS\n';
-    (obj.items || []).forEach(o => {
-        plain += '- ' + o.objection + (o.company ? ' (' + o.company + ')' : '') + '\n';
-        if (o.quote) plain += '  "' + o.quote + '"\n';
-    });
-    if (obj.competitors_mentioned?.length) plain += 'Competitors: ' + obj.competitors_mentioned.join(', ') + '\n';
-    if (!(obj.items || []).length) plain += 'No data from this week\'s calls.\n';
-
-    plain += '\nBUYING SIGNALS & PRIORITIES\n';
-    (mkt.buying_signals || []).forEach(s => {
-        if (s.trigger) plain += '- Trigger: ' + s.trigger + (s.company ? ' (' + s.company + ')' : '') + '\n';
-        if (s.timeline) plain += '  Timeline: ' + s.timeline + '\n';
-        if (s.budget_feedback) plain += '  Budget: ' + s.budget_feedback + '\n';
-    });
-    if (!(mkt.buying_signals || []).length) plain += 'No data from this week\'s calls.\n';
-
-    plain += '\nSUCCESS METRICS\n';
-    (mkt.success_metrics || []).forEach(s => {
-        plain += '- ' + (s.metric || '') + (s.company ? ' (' + s.company + ')' : '') + '\n';
-    });
-    if (!(mkt.success_metrics || []).length) plain += 'No data from this week\'s calls.\n';
-
-    plain += '\nWEEKLY SUMMARY\n';
-    plain += callsWithFeatures.length + ' prospect calls this week\n';
-    if (mkt.weekly_summary) {
-        (mkt.weekly_summary.patterns || []).forEach(p => { plain += '- Pattern: ' + p + '\n'; });
-        (mkt.weekly_summary.surprising_insights || []).forEach(s => { plain += '- Insight: ' + s + '\n'; });
-    }
+    plain += '\nBUYING SIGNALS & TIMELINE\n';
+    allSignals.forEach(s => { plain += '  - ' + (s.signal || '') + (s.interpretation ? ' (' + s.interpretation + ')' : '') + ' -- ' + (s._co || '') + '\n'; });
+    allTimelines.forEach(t => { plain += '  ' + t.company + ': ' + (t.timeline || 'No timeline mentioned') + '\n'; });
+    plain += activeCalls.length + ' prospect calls this week\n';
 
     // Render
     const wrap = document.getElementById('marketing-view');
