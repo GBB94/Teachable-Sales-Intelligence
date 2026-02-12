@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
 **Last updated:** 2026-02-12
-**Updated by:** Opus 4.6
+**Updated by:** Opus 4.6 (session 2)
 
 ---
 
@@ -40,6 +40,13 @@ Sales intelligence tool for Teachable. Pulls call transcripts from Fireflies, us
 - [x] `CLAUDE.md` for automatic session context loading
 - [x] `PROJECT_STATUS.md` for cross-session continuity
 - [x] Company pills on By Feature tab (one pill per company, hover shows contacts, capped at 3 + overflow)
+- [x] Internal call filter (calls with "sales" in title excluded from Marketing Report + analysis)
+- [x] Title keyword filter fix (CLI now defaults to same keywords as server: teachable/followup)
+- [x] Persona/segment categorization infrastructure (`segments.json`, analysis prompt, inject pipeline, dashboard display)
+- [x] Segment dropdown filter (By Feature + By Call tabs)
+- [x] Segment pill on By Call card headers
+- [x] Product Report: Calls by Segment section
+- [x] Marketing Report: Segment shown on company cards in Who We Talked To
 
 ## What's In Progress
 
@@ -65,6 +72,8 @@ The `sync_to_sheets.py` script is built and ready. Zach needs to:
 - **Confidence scores not yet populated.** The `confidence` field exists in the schema but current analyzed data doesn't have values. Next re-analysis with the updated prompt will populate them.
 - **Company field sparsely populated.** Many mentions have company extracted from call title only. The `company` field in the analysis prompt should be filled by Claude during next re-analysis.
 - **Inject merge bug fixed (7609d66).** Previously, `inject` replaced ALL mentions instead of merging — wiped existing data when only injecting new calls. Fixed to preserve mentions for calls not in current injection.
+- **Segments not yet populated on most calls.** Only 1 call has a segment assigned (from test injection). Next full re-analysis will assign segments to all calls.
+- **Title keyword filter bug fixed (fdf640e).** CLI `retrieve_calls.py` now defaults to `DEFAULT_SCAN_TITLE_KEYWORDS` from `models.py`, matching the server behavior. Internal calls that lacked matching keywords were entering the pipeline.
 
 ---
 
@@ -103,6 +112,7 @@ call-puller/
   exports.py                 # JSON/CSV/dashboard export functions
   dashboard_template.html    # HTML template with 4 tabs
   categories.json            # 10 feature category definitions
+  segments.json              # 8 prospect segment definitions
   CLAUDE.md                  # Auto-loaded instructions for Claude Code
   README.md                  # Setup instructions, workflow docs
   PROJECT_STATUS.md          # This file — read first, update at session end
@@ -122,10 +132,12 @@ call-puller/
 
 ## Current Data
 
-- **12 calls** in dashboard (10 analyzed, 1 pending, 2 empty transcripts)
-- **55 feature mentions** across **29 unique features** and **10 analyzed calls**
+- **10 calls** in dashboard (8 analyzed, 1 pending, 1 empty transcript; 2 internal calls removed)
+- **44 feature mentions** across **24 unique features** and **8 analyzed calls**
 - **10 categories**, zero in "Other"
-- **marketing_data** populated on all 10 analyzed calls
+- **8 segments** defined in `segments.json` (CE & Credentialing, Professional Training, Coaches, Associations, Course Creators, Academic, Corporate Education, Health & Wellness)
+- **marketing_data** populated on 8 external analyzed calls
+- **1 call with segment assigned** (Speravita: CE & Credentialing); rest need re-analysis
 - Companies: Speravita, ESI (Anne Blocker), Simon & Sabine, LTA Singapore, Dot Compliance, Simon Davey, BADM
 - Default scan filters: `owner=zach.mccall`, `keywords=followup/follow-up/follow up/teachable`, `days=14`, `limit=10`
 
