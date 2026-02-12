@@ -15,6 +15,7 @@ Usage (inside Claude Code):
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -22,6 +23,20 @@ import sys
 
 
 CANONICAL_NAMES_FILE = ".feature_names"
+
+
+def generate_mention_id(call_id: str, feature_name: str) -> str:
+    """Generate a stable, deterministic ID for a mention."""
+    raw = f"{call_id}|{feature_name}"
+    return hashlib.sha1(raw.encode()).hexdigest()[:12]
+
+
+def write_canonical_json(data: dict, output_dir: str):
+    """Write the canonical features.json that all downstream tools read from."""
+    path = os.path.join(output_dir, "features.json")
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+    print(f"Wrote canonical data to {path}")
 
 
 def _load_canonical_names() -> list:
@@ -501,13 +516,19 @@ def cmd_inject(args):
             if valid_categories and category not in valid_categories:
                 category = "Other"
 
+            mention_id = generate_mention_id(call_id, feature_name)
+
             new_mentions.append({
+                "mention_id": mention_id,
                 "call_id": call_id,
                 "call_title": call.get("title", ""),
                 "call_date": call.get("date", ""),
                 "speaker": speaker,
+                "company": feat.get("company", ""),
+                "contact_title": feat.get("contact_title", ""),
                 "keyword": feature_name,
                 "category": category,
+                "confidence": feat.get("confidence"),
                 "type": feat_type,
                 "text": quote,
                 "ts": timestamp,
@@ -562,6 +583,10 @@ def cmd_inject(args):
 
     # Write updated dashboard
     _write_data_to_html(args.dashboard, data)
+
+    # Write canonical features.json alongside the dashboard
+    output_dir = os.path.dirname(args.dashboard)
+    write_canonical_json(data, output_dir)
 
     pending_remaining = sum(1 for c in calls if c.get("pending_analysis"))
     print(f"Updated dashboard: {len(new_mentions)} features across {len(calls_with_features)} calls")
