@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
-**Last updated:** 2026-02-11
-**Updated by:** Opus 4.6 (end of session)
+**Last updated:** 2026-02-12
+**Updated by:** Opus 4.6
 
 ---
 
@@ -38,6 +38,7 @@ Sales intelligence tool for Teachable. Pulls call transcripts from Fireflies, us
 - [x] README with setup instructions, confidence docs, workflow reference
 - [x] `CLAUDE.md` for automatic session context loading
 - [x] `PROJECT_STATUS.md` for cross-session continuity
+- [x] Company pills on By Feature tab (one pill per company, hover shows contacts, capped at 3 + overflow)
 
 ## What's In Progress
 
