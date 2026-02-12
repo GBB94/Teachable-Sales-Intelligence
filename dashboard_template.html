@@ -1076,140 +1076,135 @@ function reportToolbar(viewId) {
     '</div>';
 }
 
-// ---- Product Report builder (weekly-grouped) ----
+// ---- Product Report builder ----
 function buildProductReport() {
     const callMap = {};
     DATA.calls.forEach(c => { callMap[c.id] = c; });
     const mentions = activeMentions();
     const coSummaries = DATA.company_summaries || {};
-    const dateIds = activeCallIds();
 
     // Tag each mention with company
     mentions.forEach(m => { m._co = reportGetCompany(m, callMap); });
 
-    // Group mentions by week
-    const weekMap = new Map(); // weekKey → { start, mentions[], calls[] }
-    mentions.forEach(m => {
-        const call = callMap[m.call_id];
-        if (!call || !call.date) return;
-        const ws = getWeekStart(call.date);
-        const key = ws.toISOString().slice(0, 10);
-        if (!weekMap.has(key)) weekMap.set(key, { start: ws, mentions: [], callIds: new Set() });
-        weekMap.get(key).mentions.push(m);
-        weekMap.get(key).callIds.add(m.call_id);
-    });
-    const weeks = [...weekMap.values()].sort((a, b) => b.start - a.start);
+    // Date range from active calls
+    const callIdsWithMentions = new Set(mentions.map(m => m.call_id));
+    const activeCalls = DATA.calls.filter(c => callIdsWithMentions.has(c.id) && !excludedCalls.has(c.id));
+    const dates = activeCalls.map(c => c.date).filter(Boolean).sort();
+    const dateRange = dates.length
+        ? fmtShortDate(new Date(dates[0] + 'T00:00:00')) + ' \u2013 ' + fmtShortDate(new Date(dates[dates.length - 1] + 'T00:00:00')) + ', ' + dates[0].slice(0, 4)
+        : '';
 
-    // Overall stats
-    const allCallIds = new Set(mentions.map(m => m.call_id));
-    const allCompanies = new Set(mentions.map(m => m._co).filter(Boolean));
-    const overallRange = weeks.length ? reportWeekRange(weeks[weeks.length - 1].start) + (weeks.length > 1 ? ' \u2013 ' + reportWeekRange(weeks[0].start) : '') : '';
+    // Companies map (across all calls, not per-week)
+    const coMap = {};
+    mentions.forEach(m => {
+        const co = m._co;
+        if (!co) return;
+        if (!coMap[co]) coMap[co] = { features: new Set(), calls: new Map() };
+        coMap[co].features.add(m.keyword);
+        if (!coMap[co].calls.has(m.call_id)) coMap[co].calls.set(m.call_id, callMap[m.call_id]);
+    });
+    const companies = Object.entries(coMap).sort((a, b) => b[1].features.size - a[1].features.size);
+
+    // Features by category (across all calls)
+    const catMap = {};
+    mentions.forEach(m => {
+        const co = m._co;
+        if (!co) return;
+        const cat = m.category || 'Other';
+        if (!catMap[cat]) catMap[cat] = {};
+        if (!catMap[cat][m.keyword]) catMap[cat][m.keyword] = [];
+        catMap[cat][m.keyword].push({ company: co, tsDisplay: reportFmtTs(m.ts_sec), link: m.link || '' });
+    });
+    const catEntries = Object.entries(catMap).map(([cat, feats]) => {
+        let total = 0;
+        const coSet = new Set();
+        Object.values(feats).forEach(arr => { total += arr.length; arr.forEach(e => coSet.add(e.company)); });
+        return { cat, feats, total, coCount: coSet.size };
+    }).sort((a, b) => b.total - a.total);
+
+    // Top theme for summary
+    const topTheme = catEntries.length ? catEntries[0] : null;
 
     // ---- HTML ----
-    let h = '<h1>WEEKLY SALES INTELLIGENCE \u2014 PRODUCT TEAM</h1>';
-    if (weeks.length === 1) {
-        h += '<div class="email-date">Week of ' + reportWeekRange(weeks[0].start) + '</div>';
+    let h = '<h1>PRODUCT INTELLIGENCE REPORT</h1>';
+    h += '<div class="email-date">Week of ' + esc(dateRange) + '</div>';
+
+    // SUMMARY
+    h += '<h2>Summary</h2>';
+    h += '<ul class="summary-list">';
+    h += '<li>' + activeCalls.length + ' sales call' + (activeCalls.length !== 1 ? 's' : '') + ' this week</li>';
+    h += '<li>' + mentions.length + ' feature request' + (mentions.length !== 1 ? 's' : '') + ' identified across ' + companies.length + ' prospect' + (companies.length !== 1 ? 's' : '') + '</li>';
+    if (topTheme) {
+        h += '<li>Top theme: <strong>' + esc(topTheme.cat) + '</strong> (' + topTheme.total + ' mention' + (topTheme.total !== 1 ? 's' : '') + ', ' + topTheme.coCount + ' compan' + (topTheme.coCount !== 1 ? 'ies' : 'y') + ')</li>';
+    }
+    h += '</ul>';
+
+    // FEATURE RECAP
+    h += '<h2>Feature Recap</h2>';
+    if (DATA.recap) {
+        h += '<div class="recap-block">' + DATA.recap.replace(/\n/g, '<br>') + '</div>';
+    } else {
+        h += '<div class="recap-block"><em>Run analysis to generate the feature recap narrative.</em></div>';
     }
 
-    // Feature Recap
-    if (DATA.recap) {
-        h += '<h2>Feature Recap</h2>';
-        h += '<div class="recap-block">' + DATA.recap.replace(/\n/g, '<br>') + '</div>';
-    }
+    // CUSTOMERS THIS WEEK
+    h += '<h2>Customers This Week</h2>';
+    companies.forEach(([name, d]) => {
+        const summary = coSummaries[name] || '';
+        let links = [];
+        d.calls.forEach(c => {
+            if (c && c.transcript) {
+                const ds = c.date ? c.date.slice(5).replace('-', '/') : '';
+                links.push('<a href="' + esc(c.transcript) + '" target="_blank">Call (' + ds + ')</a>');
+            }
+        });
+        h += '<div class="co-line"><strong>' + esc(name) + '</strong>';
+        if (summary) h += ' \u2014 ' + esc(summary);
+        if (links.length) h += ' \u2192 ' + links.join(', ');
+        h += '</div>';
+    });
+
+    // FEATURE THEMES
+    h += '<h2>Feature Themes</h2>';
+    catEntries.forEach(ce => {
+        h += '<div class="cat-group">';
+        h += '<div class="cat-title">' + esc(ce.cat) + ' <span class="cat-co">(' + ce.coCount + ' compan' + (ce.coCount !== 1 ? 'ies' : 'y') + ')</span></div>';
+        Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
+            const byCompany = {};
+            entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
+            const parts = Object.entries(byCompany).map(([co, es]) => {
+                const e = es[0];
+                if (e.link && e.tsDisplay) return esc(co) + ' (<a href="' + esc(e.link) + '" target="_blank">' + esc(e.tsDisplay) + '</a>)';
+                if (e.tsDisplay) return esc(co) + ' (' + esc(e.tsDisplay) + ')';
+                return esc(co);
+            });
+            h += '<div class="feat-line">\u2013 <strong>' + esc(feat) + '</strong> \u2014 ' + parts.join(' \u00b7 ') + '</div>';
+        });
+        h += '</div>';
+    });
 
     // ---- Plain text ----
-    let plain = 'WEEKLY SALES INTELLIGENCE — PRODUCT TEAM\n';
-    if (DATA.recap) plain += '\nFEATURE RECAP\n' + DATA.recap + '\n';
-
-    // Each week
-    weeks.forEach(week => {
-        const wLabel = weekLabel(week.start);
-        const wRange = reportWeekRange(week.start);
-        const wMentions = week.mentions;
-        const wCallIds = week.callIds;
-
-        // Companies this week
-        const wCoMap = {};
-        wMentions.forEach(m => {
-            const co = m._co;
-            if (!co) return;
-            if (!wCoMap[co]) wCoMap[co] = { features: new Set(), calls: new Map() };
-            wCoMap[co].features.add(m.keyword);
-            if (!wCoMap[co].calls.has(m.call_id)) wCoMap[co].calls.set(m.call_id, callMap[m.call_id]);
-        });
-        const wCompanies = Object.entries(wCoMap).sort((a, b) => b[1].features.size - a[1].features.size);
-
-        // Features by category this week
-        const wCats = {};
-        wMentions.forEach(m => {
-            const co = m._co;
-            if (!co) return;
-            const cat = m.category || 'Other';
-            if (!wCats[cat]) wCats[cat] = {};
-            if (!wCats[cat][m.keyword]) wCats[cat][m.keyword] = [];
-            wCats[cat][m.keyword].push({ company: co, tsDisplay: reportFmtTs(m.ts_sec), link: m.link || '' });
-        });
-        const wCatEntries = Object.entries(wCats).map(([cat, feats]) => {
-            let total = 0;
-            Object.values(feats).forEach(arr => total += arr.length);
-            return { cat, feats, total };
-        }).sort((a, b) => b.total - a.total);
-
-        // HTML
-        h += '<h2>' + esc(wLabel) + '</h2>';
-
-        // Customers
-        h += '<div style="margin-bottom:0.75em"><strong>Customers:</strong> ';
-        const coLines = wCompanies.map(([name, d]) => {
-            const summary = coSummaries[name] || '';
-            let links = [];
-            d.calls.forEach((c) => {
-                if (c && c.transcript) {
-                    const ds = c.date ? c.date.slice(5).replace('-', '/') : '';
-                    links.push('<a href="' + esc(c.transcript) + '" target="_blank">' + ds + '</a>');
-                }
+    let plain = 'PRODUCT INTELLIGENCE REPORT\nWeek of ' + dateRange + '\n';
+    plain += '\nSUMMARY\n';
+    plain += '- ' + activeCalls.length + ' sales calls this week\n';
+    plain += '- ' + mentions.length + ' feature requests identified across ' + companies.length + ' prospects\n';
+    if (topTheme) plain += '- Top theme: ' + topTheme.cat + ' (' + topTheme.total + ' mentions, ' + topTheme.coCount + ' companies)\n';
+    plain += '\nFEATURE RECAP\n' + (DATA.recap || '(Not yet generated)') + '\n';
+    plain += '\nCUSTOMERS THIS WEEK\n';
+    companies.forEach(([name, d]) => {
+        plain += '- ' + name + (coSummaries[name] ? ' — ' + coSummaries[name] : '') + '\n';
+    });
+    plain += '\nFEATURE THEMES\n';
+    catEntries.forEach(ce => {
+        plain += ce.cat + ' (' + ce.coCount + ' companies)\n';
+        Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
+            const byCompany = {};
+            entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
+            const parts = Object.entries(byCompany).map(([co, es]) => {
+                const ts = es[0].tsDisplay || '';
+                return ts ? co + ' (' + ts + ')' : co;
             });
-            let s = '<strong>' + esc(name) + '</strong>';
-            if (summary) s += ' \u2014 ' + esc(summary);
-            if (links.length) s += ' (' + links.join(', ') + ')';
-            return s;
-        });
-        h += coLines.join(' · ') + '</div>';
-
-        // Features
-        h += '<div style="margin-bottom:0.5em"><strong>Features:</strong></div>';
-        wCatEntries.forEach(ce => {
-            h += '<div class="cat-group">';
-            h += '<div class="cat-title">' + esc(ce.cat) + '</div>';
-            Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
-                const byCompany = {};
-                entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
-                const parts = Object.entries(byCompany).map(([co, es]) => {
-                    const e = es[0];
-                    if (e.link && e.tsDisplay) return esc(co) + ' (<a href="' + esc(e.link) + '" target="_blank">' + esc(e.tsDisplay) + '</a>)';
-                    if (e.tsDisplay) return esc(co) + ' (' + esc(e.tsDisplay) + ')';
-                    return esc(co);
-                });
-                h += '<div class="feat-line">\u2013 <strong>' + esc(feat) + '</strong> \u2014 ' + parts.join(' \u00b7 ') + '</div>';
-            });
-            h += '</div>';
-        });
-
-        // Plain text
-        plain += '\n' + wLabel.toUpperCase() + '\n';
-        plain += 'Customers: ' + wCompanies.map(([n, d]) => n + (coSummaries[n] ? ' — ' + coSummaries[n] : '')).join(' · ') + '\n';
-        plain += 'Features:\n';
-        wCatEntries.forEach(ce => {
-            plain += '  ' + ce.cat + '\n';
-            Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
-                const byCompany = {};
-                entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
-                const parts = Object.entries(byCompany).map(([co, es]) => {
-                    const ts = es[0].tsDisplay || '';
-                    return ts ? co + ' (' + ts + ')' : co;
-                });
-                plain += '    - ' + feat + ' — ' + parts.join(' · ') + '\n';
-            });
+            plain += '  - ' + feat + ' — ' + parts.join(' · ') + '\n';
         });
     });
 
