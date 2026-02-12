@@ -933,9 +933,9 @@
         "timeline": "May 1st deadline for first online course content \u2014 June cohort training. Follow-up March 2nd."
       },
       "segment": "Continuing Education & Credentialing",
-      "segment_confidence": 0.92,
-      "segment_reasoning": "Test reasoning",
-      "alternative_segment": null,
+      "segment_confidence": 0.88,
+      "segment_reasoning": "Speravita is a nonprofit training pregnancy resource centers with mandatory onboarding across 115 centers and 3 training tracks, with a review process for 'centers of distinction' designation.",
+      "alternative_segment": "Professional Training & Development",
       "suggested_new_segment": null
     },
     {
@@ -1080,7 +1080,12 @@
           }
         ],
         "timeline": "No fixed timeline \u2014 contingent on Zach/Tom providing feasible integration plan. Currently running small cohorts (Department of Defense)."
-      }
+      },
+      "segment": "Professional Training & Development",
+      "segment_confidence": 0.82,
+      "segment_reasoning": "Simon & Sabine run a B2B leadership coaching company delivering cohort-based programs to the Department of Defense, with plans to scale nationally and internationally.",
+      "alternative_segment": "Coaches & Consultants",
+      "suggested_new_segment": null
     },
     {
       "id": "01KG8DBQ8M376ATH254SBQH6X2",
@@ -1198,7 +1203,12 @@
           }
         ],
         "timeline": "Immediate \u2014 ready to receive contract options this week"
-      }
+      },
+      "segment": "Professional Training & Development",
+      "segment_confidence": 0.7,
+      "segment_reasoning": "BADM is a nonprofit with a deep pedagogical background building structured online learning experiences. Call focused on contract negotiation rather than use case details.",
+      "alternative_segment": "Academic & Higher Education",
+      "suggested_new_segment": null
     },
     {
       "id": "01KG5MKT5KW9MM47M96P3DVHJT",
@@ -1339,7 +1349,12 @@
           }
         ],
         "timeline": "Q2 2026 launch target. Waiting for Zach to send pricing packages."
-      }
+      },
+      "segment": "Corporate Education & Customer Training",
+      "segment_confidence": 0.8,
+      "segment_reasoning": "LTA Singapore is a government agency training the public (seniors, wheelchair users) on how to use public transit safely. Government training its constituents is closest to corporate/customer education.",
+      "alternative_segment": null,
+      "suggested_new_segment": "Government & Public Sector Education"
     },
     {
       "id": "01KGN4PT9YVSHZJE86J8THBX0W",
@@ -1495,7 +1510,12 @@
           }
         ],
         "timeline": "Want MVP ASAP \u2014 testing platform hands-on, waiting on Zach's answers from product team before committing."
-      }
+      },
+      "segment": "Continuing Education & Credentialing",
+      "segment_confidence": 0.95,
+      "segment_reasoning": "Dot Compliance delivers mandatory DOT/HAZMAT compliance training for commercial drivers tied to CDL licensing requirements.",
+      "alternative_segment": null,
+      "suggested_new_segment": null
     },
     {
       "id": "01KG0TD79BR1B1FN8TDWRPMPAS",
@@ -1612,7 +1632,12 @@
           }
         ],
         "timeline": "No fixed timeline \u2014 waiting for dev team to document API limitations, then Zach routes to product team for feasibility."
-      }
+      },
+      "segment": "Professional Training & Development",
+      "segment_confidence": 0.85,
+      "segment_reasoning": "Simon Davey runs an Australian corporate training company where 80% is in-person and 20% online, exploring headless/API integration for exam processing.",
+      "alternative_segment": null,
+      "suggested_new_segment": null
     },
     {
       "id": "01KFXJC3VJV91SFF5PRNCY3XBY",
@@ -1825,7 +1850,12 @@
           }
         ],
         "timeline": "MVP ASAP with built-in checkout; WordPress/WooCommerce checkout in parallel; Salesforce integration by July/August"
-      }
+      },
+      "segment": "Continuing Education & Credentialing",
+      "segment_confidence": 0.95,
+      "segment_reasoning": "Dot Compliance followup call discussing certificate validation with serial numbers and expiration dates for recurring annual DOT compliance certifications.",
+      "alternative_segment": null,
+      "suggested_new_segment": null
     },
     {
       "id": "01KH4P5ZAKDS06QNRRA8PWX3ZX",
@@ -1999,7 +2029,12 @@
           }
         ],
         "timeline": "Currently dual-platforming (Teachable + Learn Worlds). Decision depends on Teachable shipping learning paths (Q1), quiz improvements (~April), and certificates (~summer)."
-      }
+      },
+      "segment": "Continuing Education & Credentialing",
+      "segment_confidence": 0.97,
+      "segment_reasoning": "ESI provides CE credit courses for nutritionists/dietitians accredited through the Academy of Nutrition and Dietetics, with accrediting body dictating certificate format.",
+      "alternative_segment": null,
+      "suggested_new_segment": null
     },
     {
       "id": "01KH42KW5MA1PBFY0K8X7RGXKE",
@@ -2017,14 +2052,12 @@
   ],
   "recap": "This week's calls reveal a clear pattern: the continuing education / compliance training ICP is gaining traction across both internal strategy and external prospects. Dot Compliance (compliance training for commercial drivers) progressed from initial hands-on testing to detailed integration planning with all content uploaded. BADM (nonprofit) is ready to sign an Unlimited contract. Speravita (nonprofit pregnancy resource centers) brought Teachable's product team into a deep organizational scoping call with 115 centers and Q2 launch plans. The Singapore Land Transport Authority is moving toward Q2 launch for vulnerable commuter training in Mandarin. Simon & Sabine's Australian coaching program has a clear automation blocker but is willing to commit if the integration architecture is feasible. Anne Blocker / ESI, a long-time customer on two platforms, gave extensive feedback that perfectly aligns with the Learning Experience team's top 3 priorities (learning paths, quizzes, certificates). Internally, the sales council rallied behind targeting CE credential providers, while the win/loss review surfaced recurring blockers: SCORM, cart/bundle checkout, custom checkout fields, and pricing page confusion continue to cost deals.",
   "company_summaries": {
-    "Speravita": "Nonprofit training 115 pregnancy resource centers across 3 learning tracks. Need org nesting, learning paths, and time-limited access. Product team engaged. May 1st content deadline for June cohort.",
-    "Simon & Sabine": "Australian leadership coaching program needing automated 360 assessment delivery (Roche Martin + SciTec) 48 hours before coaching sessions. Hard blocker \u2014 won't sign without feasible automation plan. Zach working with Tom.",
-    "LTA Singapore": "Government agency training vulnerable commuters in Mandarin. Simple use case \u2014 video courses with quiz and e-certificate. Q2 launch, price-sensitive, awaiting packages.",
-    "Dot Compliance": "Compliance training for commercial drivers. Team of 4 testing platform hands-on. Video scrub prevention confirmed working. Need custom checkout fields, cart, API integration. Want MVP ASAP.",
-    "Simon Davey": "Australian training company (80% in-person) needing headless/API frontend. Developers say integration cost is high. Loves platform but needs technical validation.",
-    "ESI (Anne Blocker)": "Long-time customer ($18K revenue, 20% growth) reluctantly dual-platforming with Learn Worlds. Needs quiz improvements, certificate customization, learning paths \u2014 all top 3 priorities for product team.",
-    "BADM": "Nonprofit with deep pedagogical background, ready to sign Unlimited contract with nonprofit and multi-year discounts.",
-    "Arbiter / WA Sports": "Lost deal \u2014 needed embedded headless course delivery without Teachable login for 50+ organizations.",
-    "Pro Trader (CPG)": "Evaluating migration to Teachable payments but missing subscription pause and automated price escalation features."
+    "Speravita": "Nonprofit training 115+ pregnancy resource centers across three staff tracks (executive, medical, patient resources)",
+    "Simon & Sabine": "Australian leadership coaching company delivering 360-assessment programs to Department of Defense, scaling nationally",
+    "BADM": "Educational nonprofit building structured online learning from existing curricula",
+    "LTA Singapore": "Singapore Land Transport Authority training vulnerable commuters on public transit safety",
+    "Dot Compliance": "Compliance training company for commercial transportation (CDL, HAZMAT, DOT regulations)",
+    "Simon Davey": "Australian corporate training company, 80% in-person delivery, exploring headless/API integration",
+    "ESI": "Ellyn Satter Institute providing CE credit courses for nutritionists/dietitians, accredited through Academy of Nutrition and Dietetics"
   }
 }
