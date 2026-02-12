@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
 **Last updated:** 2026-02-11
-**Updated by:** Opus 4.6 (implementation session)
+**Updated by:** Opus 4.6 (end of session)
 
 ---
 
@@ -36,6 +36,8 @@ Sales intelligence tool for Teachable. Pulls call transcripts from Fireflies, us
 - [x] Marketing Report: persona profiles, voice of customer, pain points, objections, buying signals
 - [x] Scan/report separation (scan is fast, reports only on demand or cron)
 - [x] README with setup instructions, confidence docs, workflow reference
+- [x] `CLAUDE.md` for automatic session context loading
+- [x] `PROJECT_STATUS.md` for cross-session continuity
 
 ## What's In Progress
 
@@ -98,8 +100,9 @@ call-puller/
   exports.py                 # JSON/CSV/dashboard export functions
   dashboard_template.html    # HTML template with 4 tabs
   categories.json            # 10 feature category definitions
+  CLAUDE.md                  # Auto-loaded instructions for Claude Code
   README.md                  # Setup instructions, workflow docs
-  PROJECT_STATUS.md          # This file
+  PROJECT_STATUS.md          # This file — read first, update at session end
   requirements.txt           # Python dependencies
   .env                       # API keys (not committed)
   .gitignore                 # Excludes credentials/, *.json (except categories.json), test_output/
