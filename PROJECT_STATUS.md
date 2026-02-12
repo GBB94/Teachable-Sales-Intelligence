@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
 **Last updated:** 2026-02-12
-**Updated by:** Opus 4.6 (session 3)
+**Updated by:** Opus 4.6 (session 4)
 
 ---
 
@@ -53,20 +53,18 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Analysis prompt requires `company` field on every feature, never "Teachable" or "Unknown"
 - [x] Speaker-to-company mapping works without parentheticals (Simon Smith, Sabine Lehner, etc.)
 - [x] Project renamed from "call-puller" to "Teachable Sales Intelligence" in all code references
+- [x] Google Sheets OAuth2 Desktop auth (replaces service account; token cached at `credentials/token.json`)
+- [x] Google Sheets setup, first sync complete (35 prospect-only mentions synced)
+- [x] `analyze_features.py cleanup` command — fixes company fields, removes internal speaker mentions
+- [x] Internal speaker filter: Zach McCall and all Teachable employees excluded from feature data entirely
+- [x] Company inference: empty company fields auto-filled from call title, marketing_data, or attendees
+- [x] Personas tab: full filter bar (segment dropdown, company dropdown, date range, collapse/expand)
+- [x] Personas tab: 3-column masonry layout for prospect cards (CSS columns, responsive breakpoints)
+- [x] Segment dropdown shows all 9 segments with call counts; empty segments shown dimmed with (0)
 
 ## What's In Progress
 
-### 1. Google Cloud Setup (Manual — Zach)
-
-The `sync_to_sheets.py` script is built and ready. Zach needs to:
-
-1. Create Google Cloud project, enable Sheets API + Drive API
-2. Create service account, download JSON credentials to `credentials/sheets_service_account.json`
-3. Create Google Sheet "Sales Intelligence - Feature Requests", share with service account
-4. Add to `.env`: `GOOGLE_SHEETS_CREDENTIALS` and `GOOGLE_SHEETS_SPREADSHEET_ID`
-5. Run: `python3 sync_to_sheets.py --setup` then `--dry-run` then first sync
-
-**Do NOT skip the `--dry-run` test before the first real sync.**
+Nothing currently in progress.
 
 ---
 
@@ -75,14 +73,17 @@ The `sync_to_sheets.py` script is built and ready. Zach needs to:
 - **Empty transcripts.** Some calls have blank `transcript_text`. Use `python3 analyze_features.py refetch-empty test_output/dashboard.html` to re-pull from Fireflies.
 - **Exposed API key.** Fireflies key was shown in a chat session. Needs rotation.
 - **Confidence scores not yet populated.** The `confidence` field exists in the schema but current analyzed data doesn't have values. Next re-analysis with the updated prompt will populate them.
-- **Company field empty on existing mentions.** All 44 existing mentions have `company: ""`. The updated analysis prompt now requires it. Next re-analysis will populate. Dashboard fallback logic handles this for now.
-- **2 mentions unresolvable.** Two `rep_highlighted` mentions from Teachable speakers on generic-titled calls have no company attribution (Zach on "Teachable Followup", Jonathan on "Teachable Learning Paths/Quizzes"). Next re-analysis will fix via `company` field.
-- **Segments populated on all 8 analyzed calls.** Previously only 1 had a segment; full re-analysis assigned segments to all.
+- **Python 3.9 deprecation warnings.** Google auth libraries warn about Python 3.9 EOL. Functional but should upgrade Python eventually.
 
-### Fixed Issues (this session)
-- **Teachable appearing as company pill** — `getCompany()` and `reportGetCompany()` now filter out "Teachable" via `isTeachableInternal()`. Internal speakers fall through to call title / attendees extraction.
-- **Unknown appearing as company pill** — same filter rejects "Unknown". `buildFeatureCard()` skips mentions with no resolvable company instead of labeling them "Unknown".
-- **Speaker mappings required parentheticals** — `reportGetCompany()` known-speaker lookups (Simon Smith, Sabine, etc.) now work without `(Company)` parenthetical in speaker name.
+### Fixed Issues (session 4)
+- **Company fields empty on all 44 mentions** — `cleanup` command infers company from call title, marketing_data, or attendees. All mentions now have companies.
+- **Internal speaker mentions in data** — 9 mentions from Zach/Lennie/Sarah/Jonathan removed. Analysis prompt updated to never extract from internal speakers.
+- **"Teachable" as company in sheet sync** — `build_row()` `<>` fallback now picks non-Teachable side. Also fixed in cleanup.
+- **Sheet setup crash on existing tabs** — `setup_spreadsheet()` rename-before-create fix prevents "Feature Requests already exists" error.
+
+### Fixed Issues (session 3)
+- **Teachable/Unknown as company pills** — filtered via `isTeachableInternal()` in dashboard display.
+- **Speaker mappings required parentheticals** — fixed in `reportGetCompany()`.
 
 ---
 
@@ -130,7 +131,7 @@ sales-intelligence/
   .gitignore                 # Excludes credentials/, *.json (except categories.json), test_output/
   .feature_blacklist         # Excluded feature keywords
   .feature_names             # Canonical feature name cache
-  credentials/               # Google service account JSON (gitignored)
+  credentials/               # OAuth credentials + cached token (gitignored)
   test_output/
     dashboard.html           # Generated dashboard with embedded data
     features.json            # Canonical data artifact
@@ -142,7 +143,7 @@ sales-intelligence/
 ## Current Data
 
 - **10 calls** in dashboard (8 analyzed, 1 pending, 1 empty transcript; 2 internal calls removed)
-- **44 feature mentions** across **24 unique features** and **8 analyzed calls**
+- **35 feature mentions** across **22 unique features** and **8 analyzed calls** (9 internal speaker mentions removed)
 - **10 categories**, zero in "Other"
 - **9 segments** defined in `segments.json` (CE & Credentialing, Professional Training, Coaches, Associations, Course Creators, Academic, Corporate Education, Health & Wellness, Government & Public Sector Education)
 - **All 8 analyzed calls have segments assigned**

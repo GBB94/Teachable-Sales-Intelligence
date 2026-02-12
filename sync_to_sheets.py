@@ -30,21 +30,44 @@ load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 # ---------------------------------------------------------------------------
 
 def get_sheets_service():
-    """Authenticate with Google Sheets API using service account credentials."""
-    creds_path = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
-    if not creds_path or not os.path.exists(creds_path):
-        raise RuntimeError(
-            "Google Sheets credentials not found. "
-            "Set GOOGLE_SHEETS_CREDENTIALS in .env to the path of your service account JSON."
-        )
+    """Authenticate with Google Sheets API using OAuth2 Desktop credentials.
 
-    from google.oauth2.service_account import Credentials
+    First run opens a browser for Google sign-in consent.
+    Subsequent runs use the cached token (auto-refreshed when expired).
+    """
+    SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    creds_path = os.getenv(
+        "GOOGLE_SHEETS_OAUTH_CREDENTIALS",
+        os.path.join(base_dir, "credentials", "oauth_credentials.json"),
+    )
+    token_path = os.path.join(base_dir, "credentials", "token.json")
+
+    from google.auth.transport.requests import Request
+    from google.oauth2.credentials import Credentials
+    from google_auth_oauthlib.flow import InstalledAppFlow
     from googleapiclient.discovery import build
 
-    creds = Credentials.from_service_account_file(
-        creds_path,
-        scopes=["https://www.googleapis.com/auth/spreadsheets"],
-    )
+    creds = None
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            if not os.path.exists(creds_path):
+                raise RuntimeError(
+                    f"OAuth credentials not found at {creds_path}. "
+                    "Download from Google Cloud Console > APIs & Services > Credentials."
+                )
+            flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
+            creds = flow.run_local_server(port=0)
+
+        with open(token_path, "w") as f:
+            f.write(creds.to_json())
+
     return build("sheets", "v4", credentials=creds)
 
 
@@ -112,7 +135,11 @@ def build_row(mention, mention_id, run_id):
         title = mention.get("call_title", "")
         if "<>" in title:
             parts = title.split("<>")
-            company = parts[1].strip().split(":")[0].strip() if len(parts) > 1 else ""
+            for part in parts:
+                candidate = part.strip().split(":")[0].strip()
+                if candidate.lower() not in ("teachable", ""):
+                    company = candidate
+                    break
 
     # Build recording hyperlink formula
     recording_link = ""
@@ -355,17 +382,9 @@ def setup_spreadsheet(service, spreadsheet_id):
 
     requests = []
 
-    # Create missing tabs
-    for tab in tabs_needed:
-        if tab not in existing_sheets:
-            requests.append({
-                "addSheet": {
-                    "properties": {"title": tab}
-                }
-            })
-
-    # Rename default "Sheet1" if it exists and Feature Requests doesn't
-    if "Sheet1" in existing_sheets and "Feature Requests" not in existing_sheets:
+    # Rename default "Sheet1" to "Feature Requests" if possible
+    renaming_sheet1 = "Sheet1" in existing_sheets and "Feature Requests" not in existing_sheets
+    if renaming_sheet1:
         requests.append({
             "updateSheetProperties": {
                 "properties": {
@@ -375,6 +394,17 @@ def setup_spreadsheet(service, spreadsheet_id):
                 "fields": "title",
             }
         })
+
+    # Create missing tabs (skip Feature Requests if we just renamed Sheet1 to it)
+    for tab in tabs_needed:
+        if tab not in existing_sheets:
+            if tab == "Feature Requests" and renaming_sheet1:
+                continue
+            requests.append({
+                "addSheet": {
+                    "properties": {"title": tab}
+                }
+            })
 
     if requests:
         api_call_with_retry(lambda: service.spreadsheets().batchUpdate(

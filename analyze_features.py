@@ -24,6 +24,65 @@ import sys
 
 CANONICAL_NAMES_FILE = ".feature_names"
 
+# Internal Teachable employees — never the "source" of a feature request
+INTERNAL_SPEAKER_NAMES = {
+    'zach mccall', 'kevin', 'jerome', 'lennie zhu', 'sarah dean',
+    'jonathan corvin-blackburn', 'jonathan corvin blackburn',
+}
+
+
+def _is_internal_speaker(speaker: str) -> bool:
+    """Check if a speaker is an internal Teachable employee."""
+    if not speaker:
+        return True
+    low = speaker.lower().strip()
+    if '(teachable)' in low or 'teachable.com' in low:
+        return True
+    name = low.split('(')[0].strip()
+    return name in INTERNAL_SPEAKER_NAMES
+
+
+def _infer_company_from_title(title: str) -> str:
+    """Extract prospect company name from a call title."""
+    if '<>' in title:
+        parts = title.split('<>')
+        for part in parts:
+            cleaned = part.strip().split(':')[0].strip()
+            if cleaned.lower() not in ('teachable', ''):
+                for suffix in (' Followup', ' Follow-up', ' Follow Up'):
+                    if cleaned.endswith(suffix):
+                        cleaned = cleaned[:-len(suffix)].strip()
+                return cleaned
+    return ""
+
+
+def _infer_company_from_call(call: dict) -> str:
+    """Infer the prospect company from all available call data."""
+    # 1. Title extraction (e.g. "Teachable <> BADM" → "BADM")
+    company = _infer_company_from_title(call.get("title", ""))
+    if company:
+        return company
+
+    # 2. marketing_data.company (e.g. "ESI (Eating Smart International)" → "ESI")
+    md = call.get("marketing_data")
+    if md and md.get("company"):
+        raw = md["company"]
+        if '(' in raw:
+            before = raw.split('(')[0].strip()
+            if before:
+                return before
+        return raw
+
+    # 3. Attendees — first non-internal attendee
+    for att in (call.get("attendees") or "").split(","):
+        att = att.strip()
+        if att and not _is_internal_speaker(att):
+            if '(' in att:
+                return att.split('(')[1].rstrip(')')
+            return att
+
+    return ""
+
 
 def generate_mention_id(call_id: str, feature_name: str) -> str:
     """Generate a stable, deterministic ID for a mention."""
@@ -235,19 +294,20 @@ Be thorough. If in doubt, include it. A shallow analysis that misses
 features discussed on the call is worse than a slightly long list.
 
 SPEAKER & COMPANY RULES:
+- ONLY extract features said by PROSPECT speakers. Never extract anything
+  said by a Teachable employee. The sales rep (Zach McCall) is on every call
+  but must NEVER appear in the output — not as a speaker, contact, or source.
+- Internal Teachable employees: anyone @teachable.com, Zach McCall, Kevin,
+  Jerome, Lennie Zhu, Sarah Dean, Jonathan Corvin-Blackburn. Skip anything
+  these speakers say, even if they pitch or demo a feature.
+- If a prospect asks about or responds to something the rep pitches, attribute
+  the feature to the PROSPECT speaker who expressed the need, not to the rep.
 - Every feature MUST have a "company" field with the PROSPECT company name.
   Never use "Unknown", "Teachable", or empty string.
 - Infer the company from the call title if not obvious from the speaker.
   Example: "Teachable <> Dot Compliance Followup" → company is "Dot Compliance"
   Example: "Teachable <> Speravita: Organizations Review" → company is "Speravita"
-- The "speaker" field should identify who said it: "Ibrahim Haleem Khan (Dot Compliance)"
-- For "rep_highlighted" features (where a Teachable rep pitches something),
-  the company is still the PROSPECT company, not Teachable.
-  Example: Zach demos learning paths to Speravita → company is "Speravita"
-- Internal Teachable employees include: anyone @teachable.com, Zach McCall,
-  Kevin, Jerome, Lennie Zhu. These are reps, not prospects.
-- Only extract features from prospect speakers OR features a rep highlights
-  that the prospect engages with. Do NOT attribute features to Teachable.
+- The "speaker" field must always be a PROSPECT name: "Ibrahim Haleem Khan (Dot Compliance)"
 """)
 
     # Load and print categories for the analysis prompt
@@ -313,7 +373,7 @@ Skip segment assignment for INTERNAL calls (set all segment fields to null).
         "quote": "most relevant 1-2 sentence verbatim quote",
         "timestamp": "~MM:SS",
         "ts_seconds": 123,
-        "type": "prospect_request | prospect_interest | rep_highlighted"
+        "type": "prospect_request | prospect_interest"
       }
     ]
   },
@@ -339,7 +399,7 @@ Skip segment assignment for INTERNAL calls (set all segment fields to null).
 Feature type meanings:
   "prospect_request"  — customer explicitly asked for this feature
   "prospect_interest" — customer asked about it or engaged positively
-  "rep_highlighted"   — rep pitched/demoed it and customer showed interest
+Do NOT use "rep_highlighted". Only extract features from prospect speakers.
 """)
     print("HUBSPOT NOTE FORMAT (for the 'notes' field):")
     print(f"{'─'*70}")
@@ -858,6 +918,76 @@ def cmd_refetch_empty(args):
         print("\nNo transcripts were updated.")
 
 
+def cmd_cleanup(args):
+    """Fix company fields and remove invalid internal-speaker mentions."""
+    data = _extract_data_from_html(args.dashboard)
+    calls = data.get("calls", [])
+    mentions = data.get("mentions", [])
+
+    # Build call_id → company mapping
+    call_companies = {}
+    for call in calls:
+        call_companies[call.get("id", "")] = _infer_company_from_call(call)
+
+    cleaned = []
+    removed = 0
+    fixed = 0
+
+    for m in mentions:
+        speaker = m.get("speaker", "")
+        feat_type = m.get("type", "")
+
+        # Drop ALL mentions attributed to internal Teachable speakers.
+        # The sales rep is on every call but is never the source of a feature.
+        if _is_internal_speaker(speaker):
+            removed += 1
+            continue
+
+        # Fill in empty company
+        if not m.get("company") or m["company"].lower() in ("teachable", "unknown"):
+            inferred = call_companies.get(m.get("call_id", ""), "")
+            if inferred:
+                m["company"] = inferred
+                fixed += 1
+
+        cleaned.append(m)
+
+    data["mentions"] = cleaned
+
+    # Rebuild stats
+    all_call_ids = {m.get("call_id") for m in cleaned}
+    all_keywords = {}
+    for m in cleaned:
+        kw = m.get("keyword", "")
+        all_keywords[kw] = all_keywords.get(kw, 0) + 1
+
+    data["stats"] = {
+        "total_mentions": len(cleaned),
+        "unique_calls": len(all_call_ids),
+        "unique_features": len(all_keywords),
+        "generated": data.get("stats", {}).get("generated", ""),
+    }
+
+    # Write updated dashboard + features.json
+    _write_data_to_html(args.dashboard, data)
+    output_dir = os.path.dirname(args.dashboard)
+    write_canonical_json(data, output_dir)
+
+    print(f"Cleanup complete:")
+    print(f"  {fixed} company fields filled in")
+    print(f"  {removed} internal-speaker mentions removed")
+    print(f"  {len(cleaned)} mentions remaining")
+
+    # Show company distribution
+    companies = {}
+    for m in cleaned:
+        c = m.get("company", "(empty)")
+        companies[c] = companies.get(c, 0) + 1
+    print(f"\n  Company distribution:")
+    for c, count in sorted(companies.items(), key=lambda x: -x[1]):
+        print(f"    {c}: {count}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="AI feature analysis helper")
     sub = parser.add_subparsers(dest="command")
@@ -895,6 +1025,11 @@ def main():
                                help="Re-pull transcripts from Fireflies for calls with empty transcript_text")
     p_refetch.add_argument("dashboard", help="Path to dashboard HTML file")
 
+    # Cleanup
+    p_cleanup = sub.add_parser("cleanup",
+                               help="Fix company fields and remove invalid internal-speaker mentions")
+    p_cleanup.add_argument("dashboard", help="Path to dashboard HTML file")
+
     args = parser.parse_args()
     if args.command == "extract":
         cmd_extract(args)
@@ -904,6 +1039,8 @@ def main():
         cmd_inject(args)
     elif args.command == "refetch-empty":
         cmd_refetch_empty(args)
+    elif args.command == "cleanup":
+        cmd_cleanup(args)
     else:
         parser.print_help()
 

@@ -23,36 +23,35 @@ python3 server.py     # Dashboard at http://localhost:8080
 ### 1. Create Google Cloud Project
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a project called "sales-intelligence"
-3. Enable the **Google Sheets API** and **Google Drive API**
+2. Create a project (e.g. "teachable-sales-intelligence")
+3. Enable the **Google Sheets API**
 
-### 2. Create Service Account
+### 2. Create OAuth Desktop Credentials
 
-1. APIs & Services > Credentials > Create Credentials > Service Account
-2. Name: `sales-intelligence-sync`
-3. Go to Keys tab > Add Key > Create New Key > JSON
-4. Save the JSON file to `credentials/sheets_service_account.json`
+1. APIs & Services > Credentials > Create Credentials > **OAuth client ID**
+2. Application type: **Desktop app**
+3. Download the JSON file and save it to `credentials/oauth_credentials.json`
 
-### 3. Create and Share the Sheet
+### 3. Create the Sheet
 
 1. Create a new Google Sheet: "Sales Intelligence - Feature Requests"
-2. Share it with the service account email (from the JSON file) as **Editor**
-3. Copy the spreadsheet ID from the URL
+2. Copy the spreadsheet ID from the URL (the long string between `/d/` and `/edit`)
 
 ### 4. Configure .env
 
 ```
-GOOGLE_SHEETS_CREDENTIALS=credentials/sheets_service_account.json
 GOOGLE_SHEETS_SPREADSHEET_ID=your_spreadsheet_id_here
 ```
 
 ### 5. Initial Setup
 
 ```bash
-python3 sync_to_sheets.py --setup   # Creates tabs, headers, formatting
+python3 sync_to_sheets.py --setup   # Opens browser for Google sign-in on first run
 python3 sync_to_sheets.py --dry-run # Preview what would sync
 python3 sync_to_sheets.py           # First sync
 ```
+
+On the first run, a browser window will open for Google sign-in. After authorizing, the token is cached at `credentials/token.json` and subsequent runs won't need the browser.
 
 ## Sync Commands
 

@@ -656,27 +656,29 @@ body {
     font-size: max(0.8rem, 13px); color: #555a6e;
     font-family: 'JetBrains Mono', monospace; margin-left: auto;
 }
-.seg-group-cards { padding: 0 0 0 1rem; }
+.seg-group-cards { padding: 0 0 0 1rem; column-count: 3; column-gap: 16px; }
+@media (max-width: 1200px) { .seg-group-cards { column-count: 2; } }
+@media (max-width: 800px) { .seg-group-cards { column-count: 1; } }
 .seg-group.collapsed .seg-group-cards { display: none; }
 
 .prospect-card {
     background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
-    padding: 1rem 1.2rem; margin-bottom: 0.5rem;
+    padding: 1rem 1.2rem; margin-bottom: 12px; break-inside: avoid;
     border-left: 4px solid var(--seg-color, #4a7cff);
     transition: border-color 0.15s;
 }
 .prospect-card:hover { border-color: #2a2d40; }
-.prospect-co { font-size: 1rem; font-weight: 700; color: #f0f1f4; margin-bottom: 0.3rem; }
-.prospect-contact { font-size: 0.85rem; color: #9a9db0; margin-bottom: 0.15rem; }
-.prospect-call { font-size: 0.85rem; color: #8b8fa3; margin-bottom: 0.4rem; }
+.prospect-co { font-size: 18px; font-weight: 700; color: #f0f1f4; margin-bottom: 0.3rem; }
+.prospect-contact { font-size: 15px; color: #9a9db0; line-height: 1.25; margin-bottom: 0.1rem; }
+.prospect-call { font-size: 15px; color: #8b8fa3; margin-bottom: 0.4rem; }
 .prospect-call a { color: #4a7cff; text-decoration: none; }
 .prospect-call a:hover { text-decoration: underline; }
 .prospect-feats { margin: 0; padding: 0 0 0 1rem; }
 .prospect-feats li {
-    font-size: 0.85rem; color: #d0d3db; list-style: disc;
+    font-size: 15px; color: #d0d3db; list-style: disc;
     padding: 0.1rem 0; list-style-color: #555a6e;
 }
-.prospect-feats li a { color: #4a7cff; text-decoration: none; font-size: 0.78rem; margin-left: 0.3rem; }
+.prospect-feats li a { color: #4a7cff; text-decoration: none; font-size: 14px; margin-left: 0.3rem; }
 .prospect-feats li a:hover { text-decoration: underline; }
 
 .seg-section-title {
@@ -1923,6 +1925,7 @@ function selectCompany(el) {
     }
     syncCompanyLabel();
     applyCompanyFilter();
+    if (currentTab === 'personas') buildPersonas();
 }
 
 function syncCompanyLabel() {
@@ -1966,6 +1969,9 @@ function toggleExpandAll() {
     document.querySelectorAll('#features-view .cat-section').forEach(s => {
         s.classList.toggle('collapsed', !allExpanded);
     });
+    document.querySelectorAll('#personas-view .seg-group').forEach(s => {
+        s.classList.toggle('collapsed', !allExpanded);
+    });
     document.getElementById('expand-btn').textContent = allExpanded ? 'Collapse All' : 'Expand All';
 }
 
@@ -1984,21 +1990,42 @@ function applyCompanyFilter() {
 }
 
 // ---- Segment dropdown ----
+// All defined segments (from segments.json) — always show in dropdown
+const ALL_SEGMENT_NAMES = [
+    'Continuing Education & Credentialing',
+    'Professional Training & Development',
+    'Coaches & Consultants',
+    'Industry Associations & Membership Orgs',
+    'Course Creators & Digital Educators',
+    'Academic & Higher Education',
+    'Corporate Education & Customer Training',
+    'Health, Wellness & Fitness',
+    'Government & Public Sector Education'
+];
+
 function buildSegmentDropdown() {
-    const segs = new Set();
-    DATA.calls.forEach(c => { if (c.segment) segs.add(c.segment); });
-    if (segs.size === 0) {
-        document.getElementById('seg-dd').style.display = 'none';
-        return;
-    }
-    const sorted = [...segs].sort();
+    // Count calls per segment
+    const segCounts = {};
+    DATA.calls.forEach(c => { if (c.segment) segCounts[c.segment] = (segCounts[c.segment] || 0) + 1; });
+
     const panel = document.getElementById('seg-panel');
     let html = '<div class="dd-item selected" data-val="__all__" onclick="selectSegment(this)"><span class="dd-check">&#10003;</span>All Segments</div>';
     html += '<div class="dd-sep"></div>';
-    sorted.forEach(seg => {
+    ALL_SEGMENT_NAMES.forEach(seg => {
+        const count = segCounts[seg] || 0;
         const sel = activeSegmentFilters.size === 0 || activeSegmentFilters.has(seg.toLowerCase());
-        html += '<div class="dd-item' + (sel && activeSegmentFilters.size > 0 ? ' selected' : '') + '" data-val="' + esc(seg) + '" onclick="selectSegment(this)">' +
-            '<span class="dd-check">&#10003;</span>' + esc(seg) + '</div>';
+        const dimmed = count === 0 ? ' style="opacity:0.4"' : '';
+        html += '<div class="dd-item' + (sel && activeSegmentFilters.size > 0 ? ' selected' : '') + '" data-val="' + esc(seg) + '" onclick="selectSegment(this)"' + dimmed + '>' +
+            '<span class="dd-check">&#10003;</span>' + esc(seg) + ' <span style="color:#555a6e;font-size:0.85em">(' + count + ')</span></div>';
+    });
+    // Also include any segments from data not in the canonical list
+    Object.keys(segCounts).forEach(seg => {
+        if (!ALL_SEGMENT_NAMES.includes(seg)) {
+            const count = segCounts[seg];
+            const sel = activeSegmentFilters.has(seg.toLowerCase());
+            html += '<div class="dd-item' + (sel ? ' selected' : '') + '" data-val="' + esc(seg) + '" onclick="selectSegment(this)">' +
+                '<span class="dd-check">&#10003;</span>' + esc(seg) + ' <span style="color:#555a6e;font-size:0.85em">(' + count + ')</span></div>';
+        }
     });
     panel.innerHTML = html;
     syncSegmentLabel();
@@ -2337,7 +2364,13 @@ function buildPersonas() {
 
     // Cross-ref mentions with calls to get features per segment and per company
     const filteredCallIds = new Set(filteredCalls.map(c => c.id));
-    const filteredMentions = mentions.filter(m => filteredCallIds.has(m.call_id));
+    let filteredMentions = mentions.filter(m => filteredCallIds.has(m.call_id));
+
+    // Apply company filter
+    const noCoFilter = activeCompanyFilters.size === 0;
+    if (!noCoFilter) {
+        filteredMentions = filteredMentions.filter(m => activeCompanyFilters.has((m._co || '').toLowerCase()));
+    }
 
     filteredMentions.forEach(m => {
         const call = callMap[m.call_id];
@@ -2355,12 +2388,16 @@ function buildPersonas() {
         const seg = c.segment;
         const callMentions = filteredMentions.filter(m => m.call_id === c.id);
         const cos = new Set(callMentions.map(m => m._co).filter(Boolean));
-        if (cos.size === 0) {
-            // Fallback: extract from call title
+        if (cos.size === 0 && noCoFilter) {
+            // Fallback: extract from call title (only when no company filter active)
             const chevron = (c.title || '').match(/^(.+?)\s*<>\s*Teachable/i) || (c.title || '').match(/^Teachable\s*<>\s*(.+)/i);
             if (chevron) cos.add(chevron[1].split(':')[0].trim());
         }
-        cos.forEach(co => segGroups[seg].companies.add(co));
+        cos.forEach(co => {
+            if (noCoFilter || activeCompanyFilters.has(co.toLowerCase())) {
+                segGroups[seg].companies.add(co);
+            }
+        });
     });
 
     // Sort segments by call count desc
@@ -2475,8 +2512,12 @@ function buildPersonas() {
             });
         });
 
-        const coEntries = Object.entries(coData).sort((a, b) => a[0].localeCompare(b[0]));
-        const defaultExpanded = sortedSegs.length <= 3 || idx === 0;
+        // Apply company filter to prospect cards
+        const coEntries = Object.entries(coData)
+            .filter(([co]) => noCoFilter || activeCompanyFilters.has(co.toLowerCase()))
+            .sort((a, b) => a[0].localeCompare(b[0]));
+        if (coEntries.length === 0) return; // Skip segment if no companies match
+        const defaultExpanded = allExpanded || sortedSegs.length <= 3 || idx === 0;
 
         html += '<div class="seg-group' + (defaultExpanded ? '' : ' collapsed') + '" id="seg-group-' + esc(seg.replace(/[^a-z0-9]/gi, '-').toLowerCase()) + '" style="--seg-color:' + color + '">';
         html += '<div class="seg-group-hdr" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
@@ -2560,9 +2601,9 @@ function switchTab(tab) {
     document.getElementById('product-view').style.display = tab === 'product' ? '' : 'none';
     document.getElementById('marketing-view').style.display = tab === 'marketing' ? '' : 'none';
     document.querySelector('.search-box').style.display = (isReport || tab === 'personas') ? 'none' : '';
-    document.getElementById('co-dd').style.display = tab === 'features' ? '' : 'none';
+    document.getElementById('co-dd').style.display = (tab === 'features' || tab === 'personas') ? '' : 'none';
     document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls' || tab === 'personas') ? '' : 'none';
-    document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
+    document.getElementById('expand-btn').style.display = (tab === 'features' || tab === 'personas') ? '' : 'none';
     document.getElementById('sync-sheets-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('q').value = '';
     closeAllDD();
