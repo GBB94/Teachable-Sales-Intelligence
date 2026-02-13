@@ -629,6 +629,9 @@ body {
 /* ---- Personas tab ---- */
 #personas-view { display: flex; flex-direction: column; gap: 1.5rem; }
 
+/* ---- Competitors tab ---- */
+#competitors-view { display: flex; flex-direction: column; gap: 1.5rem; }
+
 /* Section 1: Segment overview cards */
 .seg-overview { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 .seg-card {
@@ -907,7 +910,6 @@ body {
             <div class="dd-panel" id="comp-type-panel"></div>
         </div>
         <button class="expand-btn" id="expand-btn" onclick="toggleExpandAll()" style="display:none">Collapse All</button>
-        <button class="expand-btn" id="comp-expand-btn" onclick="toggleCompExpandAll()" style="display:none">Expand All</button>
         <button class="scan-btn" id="sync-sheets-btn" onclick="syncToSheets(this)" style="display:none">Sync to Sheets</button>
         <div style="flex:1"></div>
         <button class="scan-btn" id="analyze-btn" onclick="showAnalyzeModal()" style="display:none">Run Analysis</button>
@@ -3041,13 +3043,13 @@ function syncCompTypeLabel() {
     }
 }
 
-function toggleCompExpandAll() {
+function toggleCompExpandAll(btn) {
     compAllExpanded = !compAllExpanded;
     compExpandUserSet = true;
     document.querySelectorAll('.comp-detail-card').forEach(card => {
         card.classList.toggle('collapsed', !compAllExpanded);
     });
-    document.getElementById('comp-expand-btn').textContent = compAllExpanded ? 'Collapse All' : 'Expand All';
+    if (btn) btn.textContent = compAllExpanded ? 'Collapse All' : 'Expand All';
 }
 
 function toggleCompCard(el) {
@@ -3246,7 +3248,11 @@ function buildCompetitors() {
     }
 
     // ========== DETAIL CARDS ==========
-    html += '<div class="seg-section-title" style="margin-top:1rem">Competitor Details</div>';
+    html += '<div>';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">' +
+        '<div class="seg-section-title" style="margin:0;border:0;padding:0">Competitor Details</div>' +
+        '<button class="expand-btn" onclick="toggleCompExpandAll(this)">' + (compAllExpanded ? 'Collapse All' : 'Expand All') + '</button>' +
+        '</div>';
     sortedComps.forEach(([name, data], idx) => {
         const meta = compMeta[name] || {};
         const isCanonical = !!meta.type;
@@ -3307,6 +3313,7 @@ function buildCompetitors() {
 
     // ========== EXCLUDED SECTION ==========
     html += buildExcludedSection(byCompExcluded, sortedComps.length);
+    html += '</div>'; // close detail cards wrapper
 
     document.getElementById('competitors-view').innerHTML = html;
 
@@ -3406,7 +3413,6 @@ function switchTab(tab) {
     document.getElementById('comp-filter-dd').style.display = tab === 'competitors' ? '' : 'none';
     document.getElementById('comp-type-dd').style.display = tab === 'competitors' ? '' : 'none';
     document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
-    document.getElementById('comp-expand-btn').style.display = tab === 'competitors' ? '' : 'none';
     document.getElementById('sync-sheets-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('analyze-btn').style.display = tab === 'calls' ? '' : 'none';
     document.getElementById('q').value = '';
