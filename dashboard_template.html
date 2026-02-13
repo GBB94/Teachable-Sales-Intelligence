@@ -983,7 +983,7 @@ function parseHash() {
             p.slice(8).split(',').filter(Boolean).forEach(id => excludedCalls.add(id));
         } else if (p.startsWith('range=')) {
             activeDateRange = p.slice(6);
-        } else if (['features', 'calls', 'personas', 'product', 'marketing'].includes(p)) {
+        } else if (['features', 'calls', 'personas', 'competitors', 'product', 'marketing'].includes(p)) {
             tab = p;
         }
     });
@@ -3153,6 +3153,11 @@ function buildCompetitors() {
             _compMetaStrip[c.name.toLowerCase().replace(/[\s\-()]/g, '')] = entry;
         });
     }
+    // Fallback descriptions for competitors not in competitors.json
+    const _unknownCompDesc = {
+        'fiducare': 'Financial compliance and fiduciary management platform.',
+        'wap': 'Unable to identify. Consider dismissing if not a real competitor.'
+    };
     function getCompMeta(name) {
         if (compMeta[name]) return compMeta[name];
         if (_compMetaLower[name.toLowerCase()]) return _compMetaLower[name.toLowerCase()];
@@ -3165,7 +3170,10 @@ function buildCompetitors() {
             if (_compMetaLower[inner]) return _compMetaLower[inner];
             if (_compMetaStrip[inner.replace(/[\s\-()]/g, '')]) return _compMetaStrip[inner.replace(/[\s\-()]/g, '')];
         }
-        return {};
+        // Fallback for known unknowns
+        const lk = name.toLowerCase();
+        if (_unknownCompDesc[lk]) return { short_description: _unknownCompDesc[lk] };
+        return { short_description: 'Description not available.' };
     }
 
     // Group by competitor (separate active vs excluded)
