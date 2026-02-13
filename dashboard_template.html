@@ -749,42 +749,6 @@ body {
 }
 
 /* Competitors tab */
-.comp-mix-bar {
-    display: flex; width: 100%; height: 32px; border-radius: 6px;
-    overflow: hidden; background: #1e2130; gap: 2px;
-}
-.comp-mix-seg {
-    height: 100%; display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem; font-weight: 600; color: #fff; white-space: nowrap;
-    overflow: hidden; position: relative; cursor: default;
-    width: 0; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.comp-mix-seg:first-child { border-radius: 6px 0 0 6px; }
-.comp-mix-seg:last-child { border-radius: 0 6px 6px 0; }
-.comp-mix-seg:only-child { border-radius: 6px; }
-.comp-mix-seg span { padding: 0 6px; text-overflow: ellipsis; overflow: hidden; }
-.comp-freq-wrap { overflow-x: auto; margin-bottom: 1.5rem; }
-.comp-freq-bar {
-    display: flex; align-items: flex-end; gap: 6px;
-    height: 140px; padding: 0 0.5rem;
-}
-.comp-freq-col {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    flex: 1 1 60px; min-width: 48px;
-}
-.comp-freq-bar-inner {
-    width: 100%; border-radius: 4px 4px 0 0;
-    background: #4a7cff; min-height: 4px;
-    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.comp-freq-count {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
-    font-weight: 600; color: #f0f1f4;
-}
-.comp-freq-label {
-    font-size: 0.72rem; color: #8b8fa3; text-align: center;
-    max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
 .comp-detail-card {
     background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
     padding: 1.25rem 1.5rem; margin-bottom: 0.75rem;
@@ -819,26 +783,9 @@ body {
 .comp-mention-type.compared_to { background: #251a2e; color: #c4b5fd; }
 .comp-mention-context { font-size: 0.88rem; color: #9a9db0; line-height: 1.4; }
 .comp-mention-ts { font-size: 0.78rem; color: #555a6e; }
-.comp-section-title {
-    font-size: 0.82rem; font-weight: 600; color: #6b7084;
-    text-transform: uppercase; letter-spacing: 0.04em;
-    margin-bottom: 0.75rem; padding-bottom: 0.35rem;
-    border-bottom: 1px solid #1e2130;
-}
 .comp-empty {
     padding: 2rem; text-align: center; color: #3a3d4e; font-size: 0.9rem;
 }
-.comp-type-filter {
-    display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem;
-}
-.comp-type-chip {
-    font-size: 0.78rem; font-weight: 500; padding: 0.3rem 0.7rem;
-    border-radius: 20px; cursor: pointer; user-select: none;
-    background: #14161e; border: 1px solid #2a2d40; color: #8b8fa3;
-    transition: all 0.15s;
-}
-.comp-type-chip:hover { border-color: #3a3f5c; color: #c8cad2; }
-.comp-type-chip.active { background: #1a1d2e; border-color: #4a7cff; color: #f0f1f4; }
 .comp-detail-card { position: relative; }
 .comp-detail-card.comp-unrecognized { opacity: 0.7; }
 .comp-detail-card.comp-unrecognized .comp-detail-name { font-style: italic; }
@@ -3248,17 +3195,39 @@ function buildCompetitors() {
     // Assign stable per-competitor colors (sorted order = color assignment order)
     sortedComps.forEach(([name]) => compColor(name));
 
+    // ========== COMPETITOR OVERVIEW CARDS ==========
+    html += '<div class="seg-section-title">Competitor Overview</div>';
+    html += '<div class="seg-overview">';
+    sortedComps.forEach(([name, data]) => {
+        const meta = compMeta[name] || {};
+        const color = compColor(name);
+        const diffParts = (meta.differentiator || '').split(/\.\s+/).filter(Boolean).slice(0, 3);
+        let featsHTML = '';
+        if (diffParts.length > 0) {
+            featsHTML = '<ul class="seg-card-feats">';
+            diffParts.forEach(d => { featsHTML += '<li>' + esc(d.replace(/\.$/, '')) + '</li>'; });
+            featsHTML += '</ul>';
+        }
+        html += '<div class="seg-card" style="--seg-color:' + color + '">' +
+            '<div class="seg-card-name">' + esc(name) + '</div>' +
+            '<div class="seg-card-stat">' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + '</div>' +
+            '<div class="seg-card-sub">from ' + data.companies.size + ' compan' + (data.companies.size !== 1 ? 'ies' : 'y') + '</div>' +
+            featsHTML +
+        '</div>';
+    });
+    html += '</div>';
+
     // ========== COMPETITOR MIX BAR ==========
     if (sortedComps.length > 0) {
-        html += '<div class="comp-section-title">Competitor Mix</div>';
         html += '<div class="seg-mix">';
-        html += '<div class="comp-mix-bar">';
+        html += '<div class="seg-section-title">Competitor Mix</div>';
+        html += '<div class="seg-mix-bar">';
         sortedComps.forEach(([name, data]) => {
             const pct = activeMentionCount > 0 ? (data.mentions.length / activeMentionCount * 100) : 0;
             const color = compColor(name);
             const shortName = name.split(' ').slice(0, 2).join(' ');
-            const label = pct >= 14 ? (shortName + ' ' + Math.round(pct) + '%') : (pct >= 7 ? Math.round(pct) + '%' : '');
-            html += '<div class="comp-mix-seg" data-pct="' + pct.toFixed(1) + '" style="background:' + color + '" title="' + esc(name) + ': ' + Math.round(pct) + '% (' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + ')">';
+            const label = pct >= 12 ? (shortName + ' ' + Math.round(pct) + '%') : (pct >= 6 ? Math.round(pct) + '%' : '');
+            html += '<div class="seg-mix-seg" data-pct="' + pct.toFixed(1) + '" style="background:' + color + '" title="' + esc(name) + ': ' + Math.round(pct) + '% (' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + ')">';
             html += '<span>' + esc(label) + '</span>';
             html += '</div>';
         });
@@ -3276,25 +3245,8 @@ function buildCompetitors() {
         html += '</div>';
     }
 
-    // ========== FREQUENCY BAR ==========
-    if (sortedComps.length > 1) {
-        html += '<div class="comp-section-title" style="margin-top:1rem">Mention Frequency</div>';
-        html += '<div class="comp-freq-wrap"><div class="comp-freq-bar">';
-        const maxCount = sortedComps[0][1].mentions.length;
-        sortedComps.forEach(([name, data]) => {
-            const pct = maxCount > 0 ? (data.mentions.length / maxCount * 100) : 0;
-            const color = compColor(name);
-            html += '<div class="comp-freq-col">' +
-                '<div class="comp-freq-count">' + data.mentions.length + '</div>' +
-                '<div class="comp-freq-bar-inner" style="height:' + Math.max(pct, 5) + '%;background:' + color + '"></div>' +
-                '<div class="comp-freq-label" title="' + esc(name) + '">' + esc(name.split(' ')[0]) + '</div>' +
-            '</div>';
-        });
-        html += '</div></div>';
-    }
-
     // ========== DETAIL CARDS ==========
-    html += '<div class="comp-section-title" style="margin-top:1rem">Competitor Details</div>';
+    html += '<div class="seg-section-title" style="margin-top:1rem">Competitor Details</div>';
     sortedComps.forEach(([name, data], idx) => {
         const meta = compMeta[name] || {};
         const isCanonical = !!meta.type;
@@ -3358,9 +3310,9 @@ function buildCompetitors() {
 
     document.getElementById('competitors-view').innerHTML = html;
 
-    // Animate mix bar widths
+    // Animate mix bar widths (uses same seg-mix-seg class as Personas tab)
     requestAnimationFrame(() => {
-        document.querySelectorAll('.comp-mix-seg').forEach(el => {
+        document.querySelectorAll('#competitors-view .seg-mix-seg').forEach(el => {
             el.style.width = el.dataset.pct + '%';
         });
     });
