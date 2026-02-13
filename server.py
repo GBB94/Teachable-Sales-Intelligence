@@ -33,7 +33,7 @@ from models import DEFAULT_SCAN_TITLE_KEYWORDS
 SCAN_DAYS = 14
 SCAN_LIMIT = 10
 SCAN_TITLE_KEYWORDS = DEFAULT_SCAN_TITLE_KEYWORDS
-SCAN_OWNER = 'zach.mccall'
+SCAN_OWNERS = ['zach.mccall', 'jerome.olaloye', 'kevin.codde']
 SCAN_EXCLUDE_DOMAINS = ['teachable.com']
 PORT = 8080
 
@@ -167,10 +167,10 @@ def scan_preview():
             days_back=SCAN_DAYS,
             limit=SCAN_LIMIT,
             title_keywords=SCAN_TITLE_KEYWORDS,
-            owner_emails=[SCAN_OWNER],
+            owner_emails=SCAN_OWNERS,
         )
 
-        print(f"[preview] Fetching calls (days_back={SCAN_DAYS}, limit={SCAN_LIMIT}, owner={SCAN_OWNER})...")
+        print(f"[preview] Fetching calls (days_back={SCAN_DAYS}, limit={SCAN_LIMIT}, owners={SCAN_OWNERS})...")
         calls = retriever.get_calls(filter_criteria=filt, verbose=True)
         print(f"[preview] Found {len(calls)} calls")
 
