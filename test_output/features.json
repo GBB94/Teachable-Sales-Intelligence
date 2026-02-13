@@ -3408,5 +3408,6 @@
     "diy": "DIY/self-hosted solutions",
     "adjacent": "Adjacent tools sometimes used for courses",
     "marketplace": "Course marketplaces (different model but prospects mention them)"
-  }
+  },
+  "excluded_competitors": []
 }

@@ -239,6 +239,46 @@ def scan_process():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/exclude-competitor', methods=['POST'])
+def exclude_competitor():
+    """Add or remove a competitor from the exclusion list."""
+    body = request.get_json(force=True)
+    name = body.get("name", "").strip()
+    action = body.get("action", "exclude")  # "exclude" or "restore"
+
+    if not name:
+        return jsonify({"error": "Missing competitor name"}), 400
+
+    try:
+        data = _load_existing_data()
+        excluded = data.get("excluded_competitors", [])
+
+        if action == "exclude":
+            if name not in excluded:
+                excluded.append(name)
+        elif action == "restore":
+            excluded = [n for n in excluded if n != name]
+
+        data["excluded_competitors"] = excluded
+        _save_dashboard(data)
+
+        # Also update features.json
+        features_path = os.path.join(OUTPUT_DIR, 'features.json')
+        if os.path.exists(features_path):
+            with open(features_path, 'r') as f:
+                fdata = json.load(f)
+            fdata["excluded_competitors"] = excluded
+            with open(features_path, 'w') as f:
+                json.dump(fdata, f, indent=2)
+
+        print(f"[exclude-competitor] {action}: {name} (total excluded: {len(excluded)})")
+        return jsonify({"status": "ok", "excluded_competitors": excluded})
+
+    except Exception as e:
+        print(f"[exclude-competitor] Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/sync-sheets', methods=['POST'])
 def sync_sheets():
     """Trigger a sheet sync from the dashboard UI."""

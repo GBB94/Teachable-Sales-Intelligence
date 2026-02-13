@@ -834,6 +834,42 @@ body {
 }
 .comp-type-chip:hover { border-color: #3a3f5c; color: #c8cad2; }
 .comp-type-chip.active { background: #1a1d2e; border-color: #4a7cff; color: #f0f1f4; }
+.comp-dismiss {
+    position: absolute; top: 0.6rem; right: 0.6rem;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: transparent; border: 1px solid #2a2d40;
+    color: #555a6e; font-size: 14px; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; opacity: 0;
+}
+.comp-detail-card { position: relative; }
+.comp-detail-card:hover .comp-dismiss { opacity: 1; }
+.comp-dismiss:hover { background: #2a1a1a; border-color: #f87171; color: #f87171; }
+.comp-excluded-section {
+    margin-top: 1.5rem; padding-top: 1rem;
+    border-top: 1px solid #1e2130;
+}
+.comp-excluded-toggle {
+    font-size: 0.82rem; color: #555a6e; cursor: pointer;
+    background: none; border: none; font-family: 'DM Sans', sans-serif;
+    padding: 0; transition: color 0.15s;
+}
+.comp-excluded-toggle:hover { color: #8b8fa3; }
+.comp-excluded-list {
+    margin-top: 0.5rem; display: none;
+}
+.comp-excluded-list.open { display: block; }
+.comp-excluded-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.4rem 0.75rem; font-size: 0.85rem; color: #6b7084;
+    border-bottom: 1px solid #13151c;
+}
+.comp-excluded-item:last-child { border-bottom: none; }
+.comp-restore-btn {
+    font-size: 0.78rem; color: #4a7cff; background: none; border: none;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 0.15rem 0.4rem;
+}
+.comp-restore-btn:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -924,6 +960,7 @@ function checkActionPassword() {
 
 let currentTab = 'features';
 let excludedCalls = new Set();
+let excludedCompetitors = new Set((DATA.excluded_competitors || []).map(n => n.toLowerCase()));
 let activeDateRange = 'all';
 
 // Parse hash: #calls&exclude=id1,id2 or #features&exclude=id1,id2
@@ -2958,6 +2995,14 @@ function buildCompetitors() {
         return;
     }
 
+    if (sortedComps.length === 0 && Object.keys(byCompExcluded).length > 0) {
+        // All mentions are excluded — show excluded section only
+        let html = '<div class="comp-empty">All competitor mentions are excluded.</div>';
+        html += buildExcludedSection(byCompExcluded);
+        document.getElementById('competitors-view').innerHTML = html;
+        return;
+    }
+
     // Build competitor lookup from competitors.json data embedded in DATA (or fallback)
     const compMeta = {};
     if (DATA.competitors) {
@@ -2966,22 +3011,26 @@ function buildCompetitors() {
         });
     }
 
-    // Group by competitor
+    // Group by competitor (separate active vs excluded)
     const byComp = {};
+    const byCompExcluded = {};
     allMentions.forEach(cm => {
         const name = cm.competitor;
-        if (!byComp[name]) byComp[name] = { mentions: [], types: new Set(), companies: new Set() };
-        byComp[name].mentions.push(cm);
-        byComp[name].types.add(cm.mention_type);
-        if (cm.company) byComp[name].companies.add(cm.company);
+        const isExcluded = excludedCompetitors.has(name.toLowerCase());
+        const target = isExcluded ? byCompExcluded : byComp;
+        if (!target[name]) target[name] = { mentions: [], types: new Set(), companies: new Set() };
+        target[name].mentions.push(cm);
+        target[name].types.add(cm.mention_type);
+        if (cm.company) target[name].companies.add(cm.company);
     });
 
     // Sort competitors by mention count desc
     const sortedComps = Object.entries(byComp).sort((a, b) => b[1].mentions.length - a[1].mentions.length);
+    const activeMentionCount = sortedComps.reduce((sum, [, d]) => sum + d.mentions.length, 0);
 
-    // Group by mention type for overview
+    // Group by mention type for overview (only active, non-excluded)
     const byType = {};
-    allMentions.forEach(cm => {
+    allMentions.filter(cm => !excludedCompetitors.has(cm.competitor.toLowerCase())).forEach(cm => {
         if (!byType[cm.mention_type]) byType[cm.mention_type] = 0;
         byType[cm.mention_type]++;
     });
@@ -2995,7 +3044,7 @@ function buildCompetitors() {
     // Total mentions card
     html += '<div class="comp-card" style="--comp-color:#4a7cff">' +
         '<div class="comp-card-name">Total Mentions</div>' +
-        '<div class="comp-card-stat">' + allMentions.length + '</div>' +
+        '<div class="comp-card-stat">' + activeMentionCount + '</div>' +
         '<div class="comp-card-sub">' + sortedComps.length + ' competitor' + (sortedComps.length !== 1 ? 's' : '') +
         ' across ' + activeCalls.length + ' call' + (activeCalls.length !== 1 ? 's' : '') + '</div>' +
     '</div>';
@@ -3072,7 +3121,8 @@ function buildCompetitors() {
         const color = COMP_COLORS[type] || '#4a7cff';
         const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
 
-        html += '<div class="comp-detail-card" data-comp-type="' + esc(type) + '" style="--comp-color:' + color + '">';
+        html += '<div class="comp-detail-card" data-comp-type="' + esc(type) + '" data-comp-name="' + esc(name) + '" style="--comp-color:' + color + '">';
+        html += '<button class="comp-dismiss" onclick="dismissCompetitor(\'' + esc(name).replace(/'/g, "\\'") + '\')" title="Exclude this competitor">&times;</button>';
         html += '<div class="comp-detail-hdr">';
         html += '<div class="comp-detail-name">' + esc(name) + '</div>';
         html += '<div class="comp-detail-type">' + esc(typeLabel) + '</div>';
@@ -3103,7 +3153,76 @@ function buildCompetitors() {
         html += '</div>';
     });
 
+    // ========== EXCLUDED SECTION ==========
+    html += buildExcludedSection(byCompExcluded);
+
     document.getElementById('competitors-view').innerHTML = html;
+}
+
+function buildExcludedSection(byCompExcluded) {
+    const excludedNames = Object.keys(byCompExcluded).sort();
+    if (excludedNames.length === 0) return '';
+    let html = '<div class="comp-excluded-section">';
+    html += '<button class="comp-excluded-toggle" onclick="toggleExcludedList()">Excluded (' + excludedNames.length + ')</button>';
+    html += '<div class="comp-excluded-list" id="comp-excluded-list">';
+    excludedNames.forEach(name => {
+        const count = byCompExcluded[name].mentions.length;
+        html += '<div class="comp-excluded-item">';
+        html += '<span>' + esc(name) + ' <span style="color:#3a3d4e">(' + count + ' mention' + (count !== 1 ? 's' : '') + ')</span></span>';
+        html += '<button class="comp-restore-btn" onclick="restoreCompetitor(\'' + esc(name).replace(/'/g, "\\'") + '\')">Restore</button>';
+        html += '</div>';
+    });
+    html += '</div></div>';
+    return html;
+}
+
+function toggleExcludedList() {
+    const list = document.getElementById('comp-excluded-list');
+    if (list) list.classList.toggle('open');
+}
+
+async function dismissCompetitor(name) {
+    if (!checkActionPassword()) return;
+    try {
+        const res = await fetch('/api/exclude-competitor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, action: 'exclude' })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+            excludedCompetitors = new Set((data.excluded_competitors || []).map(n => n.toLowerCase()));
+            buildCompetitors();
+        } else {
+            alert('Error: ' + (data.error || 'unknown'));
+        }
+    } catch (e) {
+        // Static file mode — persist in-memory only
+        excludedCompetitors.add(name.toLowerCase());
+        buildCompetitors();
+    }
+}
+
+async function restoreCompetitor(name) {
+    if (!checkActionPassword()) return;
+    try {
+        const res = await fetch('/api/exclude-competitor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, action: 'restore' })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+            excludedCompetitors = new Set((data.excluded_competitors || []).map(n => n.toLowerCase()));
+            buildCompetitors();
+        } else {
+            alert('Error: ' + (data.error || 'unknown'));
+        }
+    } catch (e) {
+        // Static file mode — restore in-memory only
+        excludedCompetitors.delete(name.toLowerCase());
+        buildCompetitors();
+    }
 }
 
 function filterCompType(type, chip) {
