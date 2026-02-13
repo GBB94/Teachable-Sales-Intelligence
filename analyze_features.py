@@ -15,6 +15,7 @@ Usage (inside Claude Code):
 """
 
 import argparse
+from difflib import get_close_matches
 import hashlib
 import json
 import os
@@ -311,51 +312,58 @@ SPEAKER & COMPANY RULES:
 - The "speaker" field must always be a PROSPECT name: "Ibrahim Haleem Khan (Dot Compliance)"
 """)
 
-    # Load and print categories for the analysis prompt
-    categories_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "categories.json")
+    # Load canonical category and segment names from JSON files
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    categories_path = os.path.join(base_dir, "categories.json")
+    segments_path = os.path.join(base_dir, "segments.json")
+
+    cat_names = []
     if os.path.exists(categories_path):
         with open(categories_path, "r") as f:
             cats = json.load(f)
-        print(f"{'='*70}")
-        print("FEATURE CATEGORIES")
-        print(f"{'─'*70}")
-        print("Assign EXACTLY ONE of these categories to each feature.\n")
-        for cat in cats.get("categories", []):
-            examples = ", ".join(cat.get("examples", [])[:4])
-            print(f"  {cat['name']}")
-            print(f"    {cat['description']}")
-            print(f"    Examples: {examples}")
-            print()
-        print("Choose the single best-fit category. Do NOT use 'Other' — every")
-        print("feature must map to one of the categories above.\n")
+        cat_names = [c["name"] for c in cats.get("categories", [])]
 
-    # Load and print segments for persona assignment
-    segments_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "segments.json")
+    seg_names = []
     if os.path.exists(segments_path):
         with open(segments_path, "r") as f:
             segs = json.load(f)
-        print(f"{'='*70}")
-        print("PROSPECT SEGMENT ASSIGNMENT")
-        print(f"{'─'*70}")
-        print("""For each EXTERNAL call, determine what type of business the prospect
-represents. Assign ONE primary segment from the list below. Consider:
-- What is their core business? Why do they sell education?
-- Are their learners required to complete training (compliance/credentialing)?
-- Is this a personal brand or an organizational buyer?
-- Are they training their own customers/employees, or selling education externally?
-""")
-        for seg in segs.get("segments", []):
-            examples = ", ".join(seg.get("examples", [])[:3])
-            signals = ", ".join(seg.get("signals", [])[:4])
-            print(f"  {seg['name']}")
-            print(f"    {seg['description']}")
-            print(f"    Examples: {examples}")
-            print(f"    Signals: {signals}")
-            print()
-        print("""If the prospect clearly doesn't fit any segment, suggest a new one
-(2-3 words max). Use null for internal calls.
+        seg_names = [s["name"] for s in segs.get("segments", [])]
 
-Skip segment assignment for INTERNAL calls (set all segment fields to null).
+    # Print exact canonical names as numbered lists
+    print(f"{'='*70}")
+    print("FEATURE CATEGORIES (use these EXACT names, no variations):")
+    print(f"{'─'*70}")
+    for i, name in enumerate(cat_names, 1):
+        cat_obj = cats["categories"][i - 1]
+        examples = ", ".join(cat_obj.get("examples", [])[:4])
+        print(f"  {i}. {name}")
+        print(f"     {cat_obj['description']}")
+        print(f"     e.g. {examples}")
+    print()
+
+    print(f"{'='*70}")
+    print("PERSONA SEGMENTS (use these EXACT names, no variations):")
+    print(f"{'─'*70}")
+    for i, name in enumerate(seg_names, 1):
+        seg_obj = segs["segments"][i - 1]
+        examples = ", ".join(seg_obj.get("examples", [])[:3])
+        signals = ", ".join(seg_obj.get("signals", [])[:4])
+        print(f"  {i}. {name}")
+        print(f"     {seg_obj['description']}")
+        print(f"     e.g. {examples} | signals: {signals}")
+    print()
+
+    print(f"{'='*70}")
+    print("CRITICAL RULES")
+    print(f"{'─'*70}")
+    print("""- You MUST use category and segment names EXACTLY as listed above.
+- Do NOT create new categories. Do NOT abbreviate. Do NOT rephrase.
+- If a feature does not clearly fit any category, set category to "NEEDS_REVIEW".
+- If a prospect does not clearly fit any segment, set segment to "NEEDS_REVIEW".
+  Also set "suggested_category" or "suggested_new_segment" to what you would have named it.
+- "NEEDS_REVIEW" items will be flagged for manual assignment.
+- NEVER use "Other" as a category or segment name.
+- For INTERNAL calls, set all segment fields to null.
 """)
 
     print(f"{'='*70}")
@@ -368,7 +376,8 @@ Skip segment assignment for INTERNAL calls (set all segment fields to null).
     "<call_id>": [
       {
         "feature": "Short Normalized Feature Name",
-        "category": "Category Name (from list above)",
+        "category": "EXACT Category Name from list above (or NEEDS_REVIEW)",
+        "suggested_category": "only if NEEDS_REVIEW — what you would have named it",
         "company": "Prospect Company Name (NEVER 'Teachable' or 'Unknown')",
         "speaker": "Customer Name (Company)",
         "quote": "most relevant 1-2 sentence verbatim quote",
@@ -386,11 +395,11 @@ Skip segment assignment for INTERNAL calls (set all segment fields to null).
   },
   "segment_data": {
     "<call_id>": {
-      "segment": "Exact segment name from list above",
+      "segment": "EXACT segment name from list above (or NEEDS_REVIEW)",
       "segment_confidence": 0.85,
       "segment_reasoning": "One sentence explaining why this segment fits",
       "alternative_segment": "Second-best fit or null",
-      "suggested_new_segment": null
+      "suggested_new_segment": "only if NEEDS_REVIEW — what you would have named it, else null"
     }
   },
   "recap": "optional weekly recap paragraph",
@@ -668,8 +677,10 @@ def cmd_inject(args):
 
             # Category: prefer inline from analysis, fallback to map
             category = feat.get("category") or categories_map.get(feature_name, "Other")
-            if valid_categories and category not in valid_categories:
-                category_errors.append(f"  ERROR: \"{feature_name}\" has invalid category \"{category}\" (call {call_id[:12]})")
+            if valid_categories and category not in valid_categories and category != "NEEDS_REVIEW":
+                suggestion = _suggest_match(category, valid_categories)
+                hint = f' (did you mean "{suggestion}"?)' if suggestion else ""
+                category_errors.append(f"  ERROR: \"{feature_name}\" has invalid category \"{category}\"{hint} (call {call_id[:12]})")
                 category = "Other"
 
             mention_id = generate_mention_id(call_id, feature_name)
@@ -721,7 +732,7 @@ def cmd_inject(args):
         for err in category_errors:
             print(err)
         print(f"\n  Valid categories: {sorted(valid_categories)}")
-        print("  Fix the analysis JSON and re-run inject.")
+        print("  Tip: run `python3 analyze_features.py validate <file> --fix` to auto-correct.")
         sys.exit(1)
 
     # Clear pending_analysis flag on all calls that now have features
@@ -771,8 +782,10 @@ def cmd_inject(args):
                 seg = segment_data_by_call[call_id]
                 if seg:
                     segment_name = seg.get("segment")
-                    if valid_segments and segment_name and segment_name not in valid_segments:
-                        segment_errors.append(f"  ERROR: Call {call_id[:12]} has invalid segment \"{segment_name}\"")
+                    if valid_segments and segment_name and segment_name != "NEEDS_REVIEW" and segment_name not in valid_segments:
+                        suggestion = _suggest_match(segment_name, valid_segments)
+                        hint = f' (did you mean "{suggestion}"?)' if suggestion else ""
+                        segment_errors.append(f"  ERROR: Call {call_id[:12]} has invalid segment \"{segment_name}\"{hint}")
                         continue
                     call["segment"] = segment_name
                     call["segment_confidence"] = seg.get("segment_confidence")
@@ -785,7 +798,7 @@ def cmd_inject(args):
         for err in segment_errors:
             print(err)
         print(f"\n  Valid segments: {sorted(valid_segments)}")
-        print("  Fix the analysis JSON and re-run inject.")
+        print("  Tip: run `python3 analyze_features.py validate <file> --fix` to auto-correct.")
         sys.exit(1)
 
     # Write updated dashboard
@@ -811,6 +824,81 @@ def cmd_inject(args):
     other_count = cat_counts.get("Other", 0)
     if other_count:
         print(f"\n  WARNING: {other_count} feature(s) categorized as 'Other'")
+
+    # NEEDS_REVIEW summary
+    nr_cats = [m for m in all_mentions if m.get("category") == "NEEDS_REVIEW"]
+    nr_segs = [c for c in calls if c.get("segment") == "NEEDS_REVIEW"]
+    if nr_cats or nr_segs:
+        print(f"\n  NEEDS REVIEW: {len(nr_cats)} feature(s), {len(nr_segs)} segment(s)")
+        if nr_cats:
+            for m in nr_cats:
+                print(f"    - Feature \"{m.get('keyword')}\" (call {m.get('call_id', '')[:12]})")
+        if nr_segs:
+            for c in nr_segs:
+                print(f"    - Segment for \"{c.get('title', '')}\" (call {c.get('id', '')[:12]})")
+
+    # Track suggested new categories/segments from NEEDS_REVIEW items
+    from datetime import date
+    today = date.today().isoformat()
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Collect suggested categories from raw features
+    suggested_cats = {}
+    for call_id, feats in features_by_call.items():
+        for feat in feats:
+            sc = feat.get("suggested_category")
+            if sc and feat.get("category") == "NEEDS_REVIEW":
+                if sc not in suggested_cats:
+                    suggested_cats[sc] = {"name": sc, "first_seen": today, "count": 0, "examples": []}
+                suggested_cats[sc]["count"] += 1
+                fn = feat.get("feature", "")
+                if fn and fn not in suggested_cats[sc]["examples"]:
+                    suggested_cats[sc]["examples"].append(fn)
+
+    if suggested_cats:
+        cat_path = os.path.join(base_dir, "categories.json")
+        if os.path.exists(cat_path):
+            with open(cat_path, "r") as f:
+                cat_data = json.load(f)
+            existing = {s["name"]: s for s in cat_data.get("suggested_new_categories", [])}
+            for name, info in suggested_cats.items():
+                if name in existing:
+                    existing[name]["count"] += info["count"]
+                    for ex in info["examples"]:
+                        if ex not in existing[name]["examples"]:
+                            existing[name]["examples"].append(ex)
+                else:
+                    existing[name] = info
+            cat_data["suggested_new_categories"] = list(existing.values())
+            with open(cat_path, "w") as f:
+                json.dump(cat_data, f, indent=2)
+            print(f"\n  Updated categories.json with {len(suggested_cats)} suggested new categor{'y' if len(suggested_cats) == 1 else 'ies'}")
+
+    # Collect suggested new segments
+    suggested_segs = {}
+    for call_id, seg in segment_data_by_call.items():
+        if seg and seg.get("segment") == "NEEDS_REVIEW":
+            sn = seg.get("suggested_new_segment")
+            if sn:
+                if sn not in suggested_segs:
+                    suggested_segs[sn] = {"name": sn, "first_seen": today, "count": 0}
+                suggested_segs[sn]["count"] += 1
+
+    if suggested_segs:
+        seg_path = os.path.join(base_dir, "segments.json")
+        if os.path.exists(seg_path):
+            with open(seg_path, "r") as f:
+                seg_data = json.load(f)
+            existing = {s["name"]: s for s in seg_data.get("suggested_new_segments", [])}
+            for name, info in suggested_segs.items():
+                if name in existing:
+                    existing[name]["count"] += info["count"]
+                else:
+                    existing[name] = info
+            seg_data["suggested_new_segments"] = list(existing.values())
+            with open(seg_path, "w") as f:
+                json.dump(seg_data, f, indent=2)
+            print(f"  Updated segments.json with {len(suggested_segs)} suggested new segment(s)")
 
     # Optionally regenerate HubSpot notes
     if args.notes:
@@ -950,6 +1038,179 @@ def cmd_refetch_empty(args):
         print("\nNo transcripts were updated.")
 
 
+def _load_valid_names():
+    """Load canonical category and segment names from JSON files."""
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    valid_categories = set()
+    valid_segments = set()
+
+    categories_path = os.path.join(base_dir, "categories.json")
+    if os.path.exists(categories_path):
+        with open(categories_path, "r") as f:
+            cats = json.load(f)
+        valid_categories = {c["name"] for c in cats.get("categories", [])}
+
+    segments_path = os.path.join(base_dir, "segments.json")
+    if os.path.exists(segments_path):
+        with open(segments_path, "r") as f:
+            segs = json.load(f)
+        valid_segments = {s["name"] for s in segs.get("segments", [])}
+
+    return valid_categories, valid_segments
+
+
+def _suggest_match(invalid_name, valid_names, cutoff=0.6):
+    """Suggest the closest canonical name using fuzzy matching."""
+    matches = get_close_matches(invalid_name, sorted(valid_names), n=1, cutoff=cutoff)
+    return matches[0] if matches else None
+
+
+def validate_analysis(data, valid_categories, valid_segments):
+    """Validate an analysis JSON dict against canonical lists.
+
+    Returns list of error dicts with keys: type, call_id, value, feature (if category),
+    suggestion (closest match or None).
+    """
+    errors = []
+
+    # Check feature categories
+    for call_id, features in data.get("features", {}).items():
+        for feat in features:
+            category = feat.get("category", "")
+            if category and category != "NEEDS_REVIEW" and category not in valid_categories:
+                errors.append({
+                    "type": "invalid_category",
+                    "call_id": call_id,
+                    "feature": feat.get("feature", "?"),
+                    "value": category,
+                    "suggestion": _suggest_match(category, valid_categories),
+                })
+
+    # Check segments
+    for call_id, seg in data.get("segment_data", {}).items():
+        if not seg:
+            continue
+        segment = seg.get("segment", "")
+        if segment and segment != "NEEDS_REVIEW" and segment not in valid_segments:
+            errors.append({
+                "type": "invalid_segment",
+                "call_id": call_id,
+                "feature": None,
+                "value": segment,
+                "suggestion": _suggest_match(segment, valid_segments),
+            })
+
+    return errors
+
+
+def cmd_validate(args):
+    """Validate an analysis JSON against canonical category/segment lists."""
+    with open(args.analysis_json, "r") as f:
+        data = json.load(f)
+
+    valid_categories, valid_segments = _load_valid_names()
+
+    if not valid_categories:
+        print("WARNING: categories.json not found, skipping category validation")
+    if not valid_segments:
+        print("WARNING: segments.json not found, skipping segment validation")
+
+    errors = validate_analysis(data, valid_categories, valid_segments)
+
+    if not errors:
+        # Count items
+        feat_count = sum(len(v) for v in data.get("features", {}).values())
+        seg_count = len(data.get("segment_data", {}))
+        needs_review_cats = sum(
+            1 for feats in data.get("features", {}).values()
+            for f in feats if f.get("category") == "NEEDS_REVIEW"
+        )
+        needs_review_segs = sum(
+            1 for s in data.get("segment_data", {}).values()
+            if s and s.get("segment") == "NEEDS_REVIEW"
+        )
+        print(f"VALID: {feat_count} features, {seg_count} segments — all canonical.")
+        if needs_review_cats or needs_review_segs:
+            print(f"  {needs_review_cats} feature(s) and {needs_review_segs} segment(s) marked NEEDS_REVIEW")
+        sys.exit(0)
+
+    # Print errors
+    print(f"VALIDATION FAILED: {len(errors)} error(s)\n")
+    for err in errors:
+        if err["type"] == "invalid_category":
+            print(f'  [{err["call_id"][:12]}] Feature "{err["feature"]}" has invalid category "{err["value"]}"')
+        else:
+            print(f'  [{err["call_id"][:12]}] Invalid segment "{err["value"]}"')
+        if err["suggestion"]:
+            print(f'    Did you mean: "{err["suggestion"]}"?')
+        else:
+            print(f'    No close match found. Use "NEEDS_REVIEW" if it doesn\'t fit.')
+
+    if args.fix:
+        _apply_fixes(data, errors, args.analysis_json)
+    else:
+        print(f"\n  Run with --fix to auto-correct obvious mismatches.")
+        sys.exit(1)
+
+
+def _apply_fixes(data, errors, output_path):
+    """Auto-correct analysis JSON based on validation errors (Step 3).
+
+    Uses a 0.6 cutoff for auto-fix — with only 10 categories and 9 segments,
+    any match above 0.6 is unambiguously the right canonical name.
+    """
+    FIX_CUTOFF = 0.6
+    auto_fixed = 0
+    needs_review = 0
+    valid_categories, valid_segments = _load_valid_names()
+
+    for err in errors:
+        if err["type"] == "invalid_category":
+            # Find the feature in the data and fix it
+            for feat in data.get("features", {}).get(err["call_id"], []):
+                if feat.get("category") == err["value"] and feat.get("feature") == err["feature"]:
+                    suggestion = _suggest_match(err["value"], valid_categories, cutoff=FIX_CUTOFF)
+                    if suggestion:
+                        feat["category"] = suggestion
+                        auto_fixed += 1
+                        print(f'  AUTO-FIX: "{err["value"]}" -> "{suggestion}" ({err["feature"]})')
+                    else:
+                        feat["suggested_category"] = feat.get("suggested_category") or err["value"]
+                        feat["category"] = "NEEDS_REVIEW"
+                        needs_review += 1
+                        print(f'  NEEDS_REVIEW: "{err["value"]}" ({err["feature"]})')
+                    break
+        elif err["type"] == "invalid_segment":
+            seg = data.get("segment_data", {}).get(err["call_id"])
+            if seg and seg.get("segment") == err["value"]:
+                suggestion = _suggest_match(err["value"], valid_segments, cutoff=FIX_CUTOFF)
+                if suggestion:
+                    seg["segment"] = suggestion
+                    auto_fixed += 1
+                    print(f'  AUTO-FIX: "{err["value"]}" -> "{suggestion}" (segment)')
+                else:
+                    seg["suggested_new_segment"] = seg.get("suggested_new_segment") or err["value"]
+                    seg["segment"] = "NEEDS_REVIEW"
+                    needs_review += 1
+                    print(f'  NEEDS_REVIEW: "{err["value"]}" (segment)')
+
+    with open(output_path, "w") as f:
+        json.dump(data, f, indent=2)
+
+    print(f"\nFixed: {auto_fixed} auto-corrected, {needs_review} set to NEEDS_REVIEW")
+    print(f"Saved: {output_path}")
+
+    # Re-validate to confirm
+    valid_categories, valid_segments = _load_valid_names()
+    remaining = validate_analysis(data, valid_categories, valid_segments)
+    if remaining:
+        print(f"\nWARNING: {len(remaining)} error(s) remain after fix")
+        sys.exit(1)
+    else:
+        print("All values now valid.")
+        sys.exit(0)
+
+
 def cmd_cleanup(args):
     """Fix company fields and remove invalid internal-speaker mentions."""
     data = _extract_data_from_html(args.dashboard)
@@ -1052,6 +1313,13 @@ def main():
     p_inject.add_argument("--sync-sheets", action="store_true",
                           help="Sync to Google Sheet after injecting features")
 
+    # Validate
+    p_validate = sub.add_parser("validate",
+                                help="Validate analysis JSON against canonical categories/segments")
+    p_validate.add_argument("analysis_json", help="Path to analysis JSON file")
+    p_validate.add_argument("--fix", action="store_true",
+                            help="Auto-correct obvious mismatches (>0.85 fuzzy), set rest to NEEDS_REVIEW")
+
     # Refetch empty transcripts
     p_refetch = sub.add_parser("refetch-empty",
                                help="Re-pull transcripts from Fireflies for calls with empty transcript_text")
@@ -1069,6 +1337,8 @@ def main():
         cmd_normalize(args)
     elif args.command == "inject":
         cmd_inject(args)
+    elif args.command == "validate":
+        cmd_validate(args)
     elif args.command == "refetch-empty":
         cmd_refetch_empty(args)
     elif args.command == "cleanup":

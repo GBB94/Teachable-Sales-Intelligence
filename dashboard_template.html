@@ -122,6 +122,21 @@ body {
     display: flex; flex-direction: column; gap: 0;
 }
 
+/* NEEDS_REVIEW banner */
+.nr-banner {
+    background: #2a2518; border: 1px solid #5c4a1e; border-radius: 8px;
+    padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex;
+    align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #f0c040;
+}
+.nr-banner-icon { font-size: 1.1rem; }
+.nr-banner-count { font-weight: 600; }
+/* NEEDS_REVIEW category section — yellow accent */
+.cat-section.needs-review { --cat-color: #f0c040; }
+.cat-section.needs-review .cat-hdr { color: #f0c040; }
+/* NEEDS_REVIEW persona section */
+.seg-section-nr { border-left: 3px solid #f0c040; padding-left: 1rem; margin-top: 1.5rem; }
+.seg-section-nr .seg-hdr { color: #f0c040; }
+
 /* Category accent colors */
 .cat-section { --cat-color: #4a7cff; }
 .cat-section[data-idx="0"] { --cat-color: #4a7cff; }
@@ -721,6 +736,10 @@ body {
         </div>
         <div class="hdr-stats" id="hdr-stats"></div>
     </div>
+    <div class="nr-banner" id="nr-banner" style="display:none">
+        <span class="nr-banner-icon">&#9888;</span>
+        <span><span class="nr-banner-count" id="nr-count">0</span> items need manual categorization</span>
+    </div>
     <div class="tabs">
         <div class="tab active" data-tab="features" onclick="switchTab('features')">By Feature</div>
         <div class="tab" data-tab="calls" onclick="switchTab('calls')">By Call</div>
@@ -1077,13 +1096,18 @@ function buildFeatures() {
         categories[cat].totalMentions += data.mentions.length;
     });
 
-    // Sort categories by total mentions descending
-    const sortedCats = Object.entries(categories).sort((a, b) => b[1].totalMentions - a[1].totalMentions);
+    // Sort categories by total mentions descending, NEEDS_REVIEW always last
+    const sortedCats = Object.entries(categories).sort((a, b) => {
+        if (a[0] === 'NEEDS_REVIEW') return 1;
+        if (b[0] === 'NEEDS_REVIEW') return -1;
+        return b[1].totalMentions - a[1].totalMentions;
+    });
 
     let html = '';
     sortedCats.forEach(([catName, catData], idx) => {
         catData.features.sort((a, b) => b.mentions.length - a.mentions.length);
 
+        const isNR = catName === 'NEEDS_REVIEW';
         const featCount = catData.features.length;
         const mentionCount = catData.totalMentions;
         const statsText = featCount + ' feature' + (featCount > 1 ? 's' : '') +
@@ -1099,10 +1123,15 @@ function buildFeatures() {
             cardsHTML += buildFeatureCard(f.keyword, f.mentions, callMap, [...cardCompanies]);
         });
 
-        html += '<div class="cat-section" data-idx="' + (idx % 8) + '" data-cat="' + esc(catName.toLowerCase()) + '" data-companies="' + esc([...catCompanies].join(',').toLowerCase()) + '">' +
+        const displayName = isNR ? 'Needs Review' : catName;
+        const nrClass = isNR ? ' needs-review' : '';
+        const nrIcon = isNR ? '<span style="color:#f0c040;margin-right:4px">&#9888;</span>' : '';
+
+        html += '<div class="cat-section' + nrClass + '" data-idx="' + (isNR ? 'nr' : idx % 8) + '" data-cat="' + esc(catName.toLowerCase()) + '" data-companies="' + esc([...catCompanies].join(',').toLowerCase()) + '">' +
             '<div class="cat-hdr" onclick="toggleCat(this)">' +
                 '<span class="cat-arrow">&#9654;</span>' +
-                '<span class="cat-name">' + esc(catName) + '</span>' +
+                nrIcon +
+                '<span class="cat-name">' + esc(displayName) + '</span>' +
                 '<span class="cat-count">' + statsText + '</span>' +
             '</div>' +
             '<div class="cat-cards">' + cardsHTML + '</div>' +
@@ -2388,7 +2417,8 @@ const SEG_COLORS = {
     'academic & higher education': '#2dd4bf',
     'corporate education & customer training': '#fb923c',
     'health, wellness & fitness': '#34d399',
-    'government & public sector education': '#94a3b8'
+    'government & public sector education': '#94a3b8',
+    'needs_review': '#f0c040'
 };
 
 function segColor(segName) {
@@ -2475,8 +2505,12 @@ function buildPersonas() {
         });
     });
 
-    // Sort segments by call count desc
-    const sortedSegs = Object.entries(segGroups).sort((a, b) => b[1].calls.length - a[1].calls.length);
+    // Sort segments by call count desc, NEEDS_REVIEW always last
+    const sortedSegs = Object.entries(segGroups).sort((a, b) => {
+        if (a[0] === 'NEEDS_REVIEW') return 1;
+        if (b[0] === 'NEEDS_REVIEW') return -1;
+        return b[1].calls.length - a[1].calls.length;
+    });
 
     let html = '';
 
@@ -2484,7 +2518,9 @@ function buildPersonas() {
     html += '<div class="seg-section-title">Segment Overview</div>';
     html += '<div class="seg-overview">';
     sortedSegs.forEach(([seg, data]) => {
+        const isNR = seg === 'NEEDS_REVIEW';
         const color = segColor(seg);
+        const displaySeg = isNR ? 'Unclassified' : seg;
         const topFeats = Object.entries(data.features)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 3);
@@ -2494,8 +2530,9 @@ function buildPersonas() {
             topFeats.forEach(([f]) => { featsHTML += '<li>' + esc(f) + '</li>'; });
             featsHTML += '</ul>';
         }
+        const nrIcon = isNR ? '<span style="margin-right:4px">&#9888;</span>' : '';
         html += '<div class="seg-card" style="--seg-color:' + color + '" onclick="scrollToSegGroup(\'' + esc(seg) + '\')">' +
-            '<div class="seg-card-name">' + esc(seg) + '</div>' +
+            '<div class="seg-card-name">' + nrIcon + esc(displaySeg) + '</div>' +
             '<div class="seg-card-stat">' + data.calls.length + ' call' + (data.calls.length !== 1 ? 's' : '') + '</div>' +
             '<div class="seg-card-sub">' + data.companies.size + ' compan' + (data.companies.size !== 1 ? 'ies' : 'y') + '</div>' +
             featsHTML +
@@ -2524,7 +2561,8 @@ function buildPersonas() {
         html += '<div class="seg-compare-wrap"><table class="seg-compare">';
         html += '<tr><th>Feature</th>';
         sortedSegs.forEach(([seg]) => {
-            html += '<th>' + esc(seg.split(' ').slice(0, 3).join(' ')) + '</th>';
+            const label = seg === 'NEEDS_REVIEW' ? 'Unclassified' : seg.split(' ').slice(0, 3).join(' ');
+            html += '<th>' + esc(label) + '</th>';
         });
         html += '</tr>';
 
@@ -2597,10 +2635,14 @@ function buildPersonas() {
         if (coEntries.length === 0) return; // Skip segment if no companies match
         const defaultExpanded = allExpanded || sortedSegs.length <= 3 || idx === 0;
 
-        html += '<div class="seg-group' + (defaultExpanded ? '' : ' collapsed') + '" id="seg-group-' + esc(seg.replace(/[^a-z0-9]/gi, '-').toLowerCase()) + '" style="--seg-color:' + color + '">';
+        const isNR = seg === 'NEEDS_REVIEW';
+        const displaySeg = isNR ? 'Unclassified' : seg;
+        const nrClass = isNR ? ' seg-section-nr' : '';
+        html += '<div class="seg-group' + (defaultExpanded ? '' : ' collapsed') + nrClass + '" id="seg-group-' + esc(seg.replace(/[^a-z0-9]/gi, '-').toLowerCase()) + '" style="--seg-color:' + color + '">';
         html += '<div class="seg-group-hdr" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
         html += '<span class="seg-group-arrow">&#9654;</span>';
-        html += '<span class="seg-group-name">' + esc(seg) + '</span>';
+        html += (isNR ? '<span style="color:#f0c040;margin-right:4px">&#9888;</span>' : '');
+        html += '<span class="seg-group-name">' + esc(displaySeg) + '</span>';
         html += '<span class="seg-group-count">' + coEntries.length + ' compan' + (coEntries.length !== 1 ? 'ies' : 'y') + ' &middot; ' + data.calls.length + ' call' + (data.calls.length !== 1 ? 's' : '') + '</span>';
         html += '</div>';
         html += '<div class="seg-group-cards">';
@@ -2717,6 +2759,19 @@ function filter(q) {
     }
 }
 
+function updateNeedsReviewBanner() {
+    const nrFeatures = DATA.mentions.filter(m => m.category === 'NEEDS_REVIEW').length;
+    const nrSegments = DATA.calls.filter(c => c.segment === 'NEEDS_REVIEW').length;
+    const total = nrFeatures + nrSegments;
+    const banner = document.getElementById('nr-banner');
+    if (total > 0) {
+        document.getElementById('nr-count').textContent = total;
+        banner.style.display = '';
+    } else {
+        banner.style.display = 'none';
+    }
+}
+
 function updateStats() {
     const m = activeMentions();
     const callIds = new Set(m.map(x => x.call_id));
@@ -2758,6 +2813,7 @@ function updateStats() {
 const initTab = parseHash();
 buildDateDropdown();
 buildSegmentDropdown();
+updateNeedsReviewBanner();
 updateStats();
 buildFeatures();
 buildCalls();
