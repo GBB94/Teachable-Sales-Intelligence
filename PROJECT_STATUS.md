@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
 **Last updated:** 2026-02-13
-**Updated by:** Opus 4.6 (session 5)
+**Updated by:** Opus 4.6 (session 6)
 
 ---
 
@@ -65,6 +65,16 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Dashboard renamed from `dashboard.html` to `index.html` across all references
 - [x] Password gate on Scan and Generate Report buttons (JS prompt, prevents accidental pipeline triggers)
 - [x] Local Flask server + Netlify both serve `test_output/index.html` — inject once, both stay in sync
+- [x] Multi-owner scan: Jerome Olaloye and Kevin Codde added as scan owners (`SCAN_OWNERS` list in `server.py`)
+- [x] Owner filter checks both `organizer_email` and `meeting_attendees` (fixes missing calls where prospect organized the invite)
+- [x] Jerome and Kevin added to internal speakers lists across all 3 files (analyze_features.py, dashboard_template.html, client.py)
+- [x] "Run Analysis" button on By Call tab — password-protected modal showing CLI command with copy-to-clipboard
+- [x] 4 new calls analyzed: Red Rover, Transcend Analytics, Biblical Counseling Org, New York Epoxy (41 new features)
+- [x] Three-layer categorization safeguards:
+  - Layer 1 — Extract prompt prints exact numbered canonical names from categories.json/segments.json with CRITICAL RULES
+  - Layer 2 — `analyze_features.py validate` subcommand with fuzzy matching (`--fix` for auto-correction)
+  - Layer 3 — NEEDS_REVIEW escalation: inject accepts it, dashboard shows yellow flags, suggested_new_categories tracked in categories.json
+- [x] Segment mix bar on Personas tab (horizontal stacked bar showing % of calls per segment, animated, with legend)
 
 ## What's In Progress
 
@@ -117,7 +127,7 @@ features.json  <-- CANONICAL DATA FILE
 ```
 sales-intelligence/
   server.py                  # Flask server (localhost:8080)
-  analyze_features.py        # CLI: extract/normalize/inject workflow
+  analyze_features.py        # CLI: extract/normalize/inject/validate workflow
   sync_to_sheets.py          # Google Sheets sync (setup, upsert, dry-run)
   generate_reports.py        # Friday cron: flag reports + sync sheets
   retrieve_calls.py          # CLI: pull calls from Fireflies
@@ -137,7 +147,7 @@ sales-intelligence/
   .feature_names             # Canonical feature name cache
   credentials/               # OAuth credentials + cached token (gitignored)
   test_output/
-    dashboard.html           # Generated dashboard with embedded data
+    index.html               # Generated dashboard with embedded data (served by Flask + Netlify)
     features.json            # Canonical data artifact
     notes.txt                # Generated HubSpot notes
 ```
@@ -146,14 +156,14 @@ sales-intelligence/
 
 ## Current Data
 
-- **10 calls** in dashboard (8 analyzed, 1 pending, 1 empty transcript; 2 internal calls removed)
-- **35 feature mentions** across **22 unique features** and **8 analyzed calls** (9 internal speaker mentions removed)
-- **10 categories**, zero in "Other"
-- **9 segments** defined in `segments.json` (CE & Credentialing, Professional Training, Coaches, Associations, Course Creators, Academic, Corporate Education, Health & Wellness, Government & Public Sector Education)
-- **All 8 analyzed calls have segments assigned**
-- **marketing_data** populated on 8 external analyzed calls
-- Companies: Speravita, ESI (Anne Blocker), Simon & Sabine, LTA Singapore, Dot Compliance, Simon Davey, BADM
-- Default scan filters: `owner=zach.mccall`, `keywords=followup/follow-up/follow up/teachable`, `days=14`, `limit=10`
+- **15 calls** in dashboard (12 analyzed, 2 pending/empty, 1 unanalyzed)
+- **76 feature mentions** across **38 unique features** and **12 analyzed calls**
+- **10 categories**, zero in "Other" — validated at inject time
+- **9 segments** defined in `segments.json` — validated at inject time
+- **All 12 analyzed calls have segments assigned**
+- **marketing_data** populated on 12 external analyzed calls
+- Companies: Speravita, ESI, Simon & Sabine, LTA Singapore, Dot Compliance, Simon Davey, BADM, Red Rover, Transcend Analytics, Biblical Counseling Org, New York Epoxy
+- Default scan filters: `owners=[zach.mccall, jerome.olaloye, kevin.codde]`, `keywords=followup/follow-up/follow up/teachable`, `days=14`, `limit=10`
 
 ---
 
@@ -168,6 +178,8 @@ python3 server.py  # Opens localhost:8080
 # Analyze calls
 python3 analyze_features.py extract test_output/index.html
 # ... Claude analyzes transcripts, outputs features JSON ...
+python3 analyze_features.py validate features_output.json        # Check categories/segments
+python3 analyze_features.py validate features_output.json --fix  # Auto-correct mismatches
 python3 analyze_features.py inject test_output/index.html features_output.json
 
 # Sync to Google Sheets
