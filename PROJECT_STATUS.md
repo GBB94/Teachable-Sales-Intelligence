@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
-**Last updated:** 2026-02-12
-**Updated by:** Opus 4.6 (session 4)
+**Last updated:** 2026-02-13
+**Updated by:** Opus 4.6 (session 5)
 
 ---
 
@@ -61,6 +61,10 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Personas tab: full filter bar (segment dropdown, company dropdown, date range, collapse/expand)
 - [x] Personas tab: 3-column masonry layout for prospect cards (CSS columns, responsive breakpoints)
 - [x] Segment dropdown shows all 9 segments with call counts; empty segments shown dimmed with (0)
+- [x] Netlify deployment: `test_output/` as publish dir, `netlify.toml` + `_headers` with Basic-Auth
+- [x] Dashboard renamed from `dashboard.html` to `index.html` across all references
+- [x] Password gate on Scan and Generate Report buttons (JS prompt, prevents accidental pipeline triggers)
+- [x] Local Flask server + Netlify both serve `test_output/index.html` — inject once, both stay in sync
 
 ## What's In Progress
 
