@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
 **Last updated:** 2026-02-13
-**Updated by:** Opus 4.6 (session 6)
+**Updated by:** Opus 4.6 (session 7)
 
 ---
 
@@ -20,7 +20,7 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Interactive call approval (select which calls to process)
 - [x] AI feature extraction (Claude reads transcripts, identifies features)
 - [x] Feature normalization (merge duplicate feature names)
-- [x] HTML dashboard with 5 tabs (By Feature, By Call, Personas, Product Report, Marketing Report)
+- [x] HTML dashboard with 6 tabs (By Feature, By Call, Personas, Competitors, Product Report, Marketing Report)
 - [x] HubSpot notes generation (structured sales qualification template)
 - [x] Local Flask server with scan/approve workflow
 - [x] Exclude functionality (gray out calls, persist via URL hash)
@@ -75,6 +75,13 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
   - Layer 2 — `analyze_features.py validate` subcommand with fuzzy matching (`--fix` for auto-correction)
   - Layer 3 — NEEDS_REVIEW escalation: inject accepts it, dashboard shows yellow flags, suggested_new_categories tracked in categories.json
 - [x] Segment mix bar on Personas tab (horizontal stacked bar showing % of calls per segment, animated, with legend)
+- [x] Competitors tab (6th dashboard tab) with overview cards, frequency bar chart, type filter chips, detail cards
+- [x] `competitors.json` — 16 canonical competitors across 5 types (direct, LMS, DIY, adjacent, marketplace)
+- [x] Competitor extraction in analysis prompt — mention_types: currently_using, switching_from, evaluated, asked_about, compared_to
+- [x] Competitor validation in inject + validate subcommand (fuzzy matching, NEEDS_REVIEW escalation)
+- [x] Dashboard reads from both new `competitor_mentions` format and legacy `marketing_data.competitors_mentioned`
+- [x] Competitors catalog embedded in DATA for dashboard metadata (type, description per competitor)
+- [x] `_load_valid_names()` returns 3 sets: categories, segments, competitors
 
 ## What's In Progress
 
@@ -137,6 +144,7 @@ sales-intelligence/
   dashboard_template.html    # HTML template with 5 tabs
   categories.json            # 10 feature category definitions
   segments.json              # 9 prospect segment definitions
+  competitors.json           # 16 canonical competitors (5 types)
   CLAUDE.md                  # Auto-loaded instructions for Claude Code
   README.md                  # Setup instructions, workflow docs
   PROJECT_STATUS.md          # This file — read first, update at session end
