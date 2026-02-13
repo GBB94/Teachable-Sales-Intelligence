@@ -2779,7 +2779,7 @@
         ],
         "timeline": "Course built by June 2026 for fall school year onboarding"
       },
-      "segment": "Professional Training",
+      "segment": "Professional Training & Development",
       "segment_confidence": 0.85,
       "segment_reasoning": "B2B SaaS company training their customers (school district super users) on how to use their product, plus internal staff onboarding",
       "alternative_segment": "Corporate Education",
@@ -2939,7 +2939,7 @@
         ],
         "timeline": "Prototype by end of April 2026"
       },
-      "segment": "Professional Training",
+      "segment": "Professional Training & Development",
       "segment_confidence": 0.9,
       "segment_reasoning": "Consulting firm building subscription-based training product to certify hires at home care/hospice agencies",
       "alternative_segment": "Health & Wellness",
@@ -3117,7 +3117,7 @@
         ],
         "timeline": "Up and running in approximately 6 months"
       },
-      "segment": "Coaches",
+      "segment": "Coaches & Consultants",
       "segment_confidence": 0.85,
       "segment_reasoning": "Virtual counseling/coaching program with 25 contracted counselors delivering structured 4-month programs to individual students",
       "alternative_segment": "CE & Credentialing",
@@ -3290,7 +3290,7 @@
         ],
         "timeline": "Launch ASAP, within one week if possible"
       },
-      "segment": "Course Creators",
+      "segment": "Course Creators & Digital Educators",
       "segment_confidence": 0.9,
       "segment_reasoning": "Individual business creating and selling online training course for a trade skill (epoxy flooring)",
       "alternative_segment": "Professional Training",

@@ -614,6 +614,14 @@ def cmd_inject(args):
             cats = json.load(f)
         valid_categories = {c["name"] for c in cats.get("categories", [])}
 
+    # Load valid segments for validation
+    valid_segments = set()
+    segments_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "segments.json")
+    if os.path.exists(segments_path):
+        with open(segments_path, "r") as f:
+            segs = json.load(f)
+        valid_segments = {s["name"] for s in segs.get("segments", [])}
+
     # Legacy: load categories map from --categories flag (optional)
     categories_map = {}
     if args.categories:
@@ -745,17 +753,30 @@ def cmd_inject(args):
                 call["marketing_data"] = marketing_data_by_call[call_id]
 
     # Store per-call segment data on each call object
+    segment_errors = []
     if segment_data_by_call:
         for call in calls:
             call_id = call.get("id", "")
             if call_id in segment_data_by_call:
                 seg = segment_data_by_call[call_id]
                 if seg:
-                    call["segment"] = seg.get("segment")
+                    segment_name = seg.get("segment")
+                    if valid_segments and segment_name and segment_name not in valid_segments:
+                        segment_errors.append(f"  ERROR: Call {call_id[:12]} has invalid segment \"{segment_name}\"")
+                        continue
+                    call["segment"] = segment_name
                     call["segment_confidence"] = seg.get("segment_confidence")
                     call["segment_reasoning"] = seg.get("segment_reasoning")
                     call["alternative_segment"] = seg.get("alternative_segment")
                     call["suggested_new_segment"] = seg.get("suggested_new_segment")
+
+    if segment_errors:
+        print("\n  SEGMENT VALIDATION FAILED — the following calls used non-canonical segment names:")
+        for err in segment_errors:
+            print(err)
+        print(f"\n  Valid segments: {sorted(valid_segments)}")
+        print("  Fix the analysis JSON and re-run inject.")
+        sys.exit(1)
 
     # Write updated dashboard
     _write_data_to_html(args.dashboard, data)
