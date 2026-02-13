@@ -750,6 +750,13 @@ body {
 
 <script>
 const DATA = {{DATA_JSON}};
+const ACTION_PASSWORD = 'sdflkjei';
+function checkActionPassword() {
+    const pw = prompt('Enter password to continue:');
+    if (!pw) return false;
+    if (pw !== ACTION_PASSWORD) { alert('Incorrect password'); return false; }
+    return true;
+}
 
 let currentTab = 'features';
 let excludedCalls = new Set();
@@ -1816,6 +1823,7 @@ function buildMarketingReport() {
 
 // ---- Report actions ----
 function generateReports(btn) {
+    if (!checkActionPassword()) return;
     buildProductReport();
     buildMarketingReport();
     btn.textContent = 'Updated!';
@@ -2138,6 +2146,7 @@ async function syncToSheets(btn) {
 }
 
 async function startScan(btn) {
+    if (!checkActionPassword()) return;
     // Static file mode: fall back to clipboard
     if (location.protocol === 'file:') {
         const cmd = document.getElementById('calls-view').dataset.scanCmd;
