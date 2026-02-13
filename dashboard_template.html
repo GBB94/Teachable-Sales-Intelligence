@@ -747,6 +747,93 @@ body {
 .seg-empty {
     padding: 2rem; text-align: center; color: #3a3d4e; font-size: 0.9rem;
 }
+
+/* Competitors tab */
+.comp-overview { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+.comp-card {
+    flex: 1 1 200px; max-width: 280px; min-width: 180px;
+    background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
+    padding: 1rem 1.2rem; border-left: 4px solid var(--comp-color, #4a7cff);
+}
+.comp-card-name { font-size: 1rem; font-weight: 700; color: #f0f1f4; margin-bottom: 0.25rem; }
+.comp-card-stat { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 700; color: #f0f1f4; }
+.comp-card-sub { font-size: 0.82rem; color: #6b7084; margin-top: 0.1rem; }
+.comp-freq-wrap { overflow-x: auto; margin-bottom: 1.5rem; }
+.comp-freq-bar {
+    display: flex; align-items: flex-end; gap: 6px;
+    height: 140px; padding: 0 0.5rem;
+}
+.comp-freq-col {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    flex: 1 1 60px; min-width: 48px;
+}
+.comp-freq-bar-inner {
+    width: 100%; border-radius: 4px 4px 0 0;
+    background: #4a7cff; min-height: 4px;
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.comp-freq-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+    font-weight: 600; color: #f0f1f4;
+}
+.comp-freq-label {
+    font-size: 0.72rem; color: #8b8fa3; text-align: center;
+    max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.comp-detail-card {
+    background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
+    padding: 1.25rem 1.5rem; margin-bottom: 0.75rem;
+    border-left: 4px solid var(--comp-color, #4a7cff);
+}
+.comp-detail-hdr {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.6rem;
+}
+.comp-detail-name { font-size: 1.1rem; font-weight: 700; color: #f0f1f4; }
+.comp-detail-type {
+    font-size: 0.75rem; font-weight: 500; color: #8b8fa3;
+    background: #1a1d2e; padding: 0.15rem 0.5rem; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.03em;
+}
+.comp-mention {
+    padding: 0.6rem 0; border-bottom: 1px solid #13151c;
+}
+.comp-mention:last-child { border-bottom: none; }
+.comp-mention-meta {
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;
+}
+.comp-mention-company { font-size: 0.9rem; font-weight: 600; color: #d0d3db; }
+.comp-mention-type {
+    font-size: 0.72rem; font-weight: 500; padding: 0.1rem 0.4rem;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.03em;
+}
+.comp-mention-type.currently_using { background: #1a2e1a; color: #4ade80; }
+.comp-mention-type.switching_from { background: #2e1a1a; color: #f87171; }
+.comp-mention-type.evaluated { background: #2a2518; color: #fbbf24; }
+.comp-mention-type.asked_about { background: #1a1d2e; color: #93c5fd; }
+.comp-mention-type.compared_to { background: #251a2e; color: #c4b5fd; }
+.comp-mention-context { font-size: 0.88rem; color: #9a9db0; line-height: 1.4; }
+.comp-mention-ts { font-size: 0.78rem; color: #555a6e; }
+.comp-section-title {
+    font-size: 0.82rem; font-weight: 600; color: #6b7084;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 0.75rem; padding-bottom: 0.35rem;
+    border-bottom: 1px solid #1e2130;
+}
+.comp-empty {
+    padding: 2rem; text-align: center; color: #3a3d4e; font-size: 0.9rem;
+}
+.comp-type-filter {
+    display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem;
+}
+.comp-type-chip {
+    font-size: 0.78rem; font-weight: 500; padding: 0.3rem 0.7rem;
+    border-radius: 20px; cursor: pointer; user-select: none;
+    background: #14161e; border: 1px solid #2a2d40; color: #8b8fa3;
+    transition: all 0.15s;
+}
+.comp-type-chip:hover { border-color: #3a3f5c; color: #c8cad2; }
+.comp-type-chip.active { background: #1a1d2e; border-color: #4a7cff; color: #f0f1f4; }
 </style>
 </head>
 <body>
@@ -766,6 +853,7 @@ body {
         <div class="tab active" data-tab="features" onclick="switchTab('features')">By Feature</div>
         <div class="tab" data-tab="calls" onclick="switchTab('calls')">By Call</div>
         <div class="tab" data-tab="personas" onclick="switchTab('personas')">Personas</div>
+        <div class="tab" data-tab="competitors" onclick="switchTab('competitors')">Competitors</div>
         <div class="tab" data-tab="product" onclick="switchTab('product')">Product Report</div>
         <div class="tab" data-tab="marketing" onclick="switchTab('marketing')">Marketing Report</div>
     </div>
@@ -791,6 +879,7 @@ body {
     <div id="features-view"></div>
     <div id="calls-view" style="display:none"></div>
     <div id="personas-view" style="display:none"></div>
+    <div id="competitors-view" style="display:none"></div>
     <div id="product-view" style="display:none"></div>
     <div id="marketing-view" style="display:none"></div>
 </div>
@@ -2776,6 +2865,260 @@ function toggleCompareRows(btn) {
     btn.textContent = showing ? 'Show all' : 'Show less';
 }
 
+// ---- Competitors tab ----
+const COMP_COLORS = {
+    'direct': '#4a9eff',
+    'lms': '#a78bfa',
+    'diy': '#fbbf24',
+    'adjacent': '#fb923c',
+    'marketplace': '#34d399'
+};
+const MENTION_TYPE_LABELS = {
+    'currently_using': 'Currently Using',
+    'switching_from': 'Switching From',
+    'evaluated': 'Evaluated',
+    'asked_about': 'Asked About',
+    'compared_to': 'Compared To'
+};
+
+let activeCompTypeFilter = null; // null = show all
+
+function buildCompetitors() {
+    const callMap = {};
+    DATA.calls.forEach(c => { callMap[c.id] = c; });
+
+    // Collect all competitor mentions from calls (date-filtered, non-excluded)
+    const dateIds = activeCallIds();
+    const activeCalls = DATA.calls.filter(c =>
+        !excludedCalls.has(c.id) && dateIds.has(c.id) &&
+        ((c.competitor_mentions && c.competitor_mentions.length > 0) ||
+         (c.marketing_data && c.marketing_data.competitors_mentioned && c.marketing_data.competitors_mentioned.length > 0))
+    );
+
+    // Flatten all mentions from new format (competitor_mentions) and legacy (marketing_data.competitors_mentioned)
+    const allMentions = [];
+    const seen = new Set(); // deduplicate
+    activeCalls.forEach(c => {
+        (c.competitor_mentions || []).forEach(cm => {
+            const key = c.id + '|' + (cm.competitor || cm.name || '') + '|' + (cm.timestamp || '');
+            if (seen.has(key)) return;
+            seen.add(key);
+            allMentions.push({
+                competitor: cm.competitor || cm.name || '?',
+                context: cm.context || '',
+                timestamp: cm.timestamp || '',
+                mention_type: cm.mention_type || 'asked_about',
+                call_id: c.id,
+                call_title: c.title || '',
+                call_date: c.date || '',
+                company: '',
+                segment: c.segment || ''
+            });
+        });
+        // Legacy: marketing_data.competitors_mentioned
+        if (c.marketing_data && c.marketing_data.competitors_mentioned) {
+            c.marketing_data.competitors_mentioned.forEach(cm => {
+                const name = cm.name || cm.competitor || '?';
+                const key = c.id + '|' + name + '|' + (cm.timestamp || '');
+                if (seen.has(key)) return;
+                seen.add(key);
+                allMentions.push({
+                    competitor: name,
+                    context: cm.context || '',
+                    timestamp: cm.timestamp || '',
+                    mention_type: cm.mention_type || 'asked_about',
+                    call_id: c.id,
+                    call_title: c.title || '',
+                    call_date: c.date || '',
+                    company: '',
+                    segment: c.segment || ''
+                });
+            });
+        }
+    });
+
+    // Infer company for each mention
+    const mentions = activeMentions();
+    mentions.forEach(m => { m._co = m._co || getCompany(m, callMap) || reportGetCompany(m, callMap) || ''; });
+    const callCompanyMap = {};
+    activeCalls.forEach(c => {
+        const callMentions = mentions.filter(m => m.call_id === c.id);
+        const cos = new Set(callMentions.map(m => m._co).filter(Boolean));
+        if (cos.size === 0) {
+            const chevron = (c.title || '').match(/^(.+?)\s*<>\s*Teachable/i) || (c.title || '').match(/^Teachable\s*<>\s*(.+)/i);
+            if (chevron) cos.add(chevron[1].split(':')[0].trim());
+        }
+        callCompanyMap[c.id] = [...cos][0] || '';
+    });
+    allMentions.forEach(cm => { cm.company = callCompanyMap[cm.call_id] || ''; });
+
+    if (allMentions.length === 0) {
+        document.getElementById('competitors-view').innerHTML =
+            '<div class="comp-empty">No competitor mentions found. Competitor data is extracted during call analysis — re-analyze calls to populate this tab.</div>';
+        return;
+    }
+
+    // Build competitor lookup from competitors.json data embedded in DATA (or fallback)
+    const compMeta = {};
+    if (DATA.competitors) {
+        DATA.competitors.forEach(c => {
+            compMeta[c.name] = { type: c.type || 'direct', description: c.description || '' };
+        });
+    }
+
+    // Group by competitor
+    const byComp = {};
+    allMentions.forEach(cm => {
+        const name = cm.competitor;
+        if (!byComp[name]) byComp[name] = { mentions: [], types: new Set(), companies: new Set() };
+        byComp[name].mentions.push(cm);
+        byComp[name].types.add(cm.mention_type);
+        if (cm.company) byComp[name].companies.add(cm.company);
+    });
+
+    // Sort competitors by mention count desc
+    const sortedComps = Object.entries(byComp).sort((a, b) => b[1].mentions.length - a[1].mentions.length);
+
+    // Group by mention type for overview
+    const byType = {};
+    allMentions.forEach(cm => {
+        if (!byType[cm.mention_type]) byType[cm.mention_type] = 0;
+        byType[cm.mention_type]++;
+    });
+
+    let html = '';
+
+    // ========== OVERVIEW CARDS ==========
+    html += '<div class="comp-section-title">Overview</div>';
+    html += '<div class="comp-overview">';
+
+    // Total mentions card
+    html += '<div class="comp-card" style="--comp-color:#4a7cff">' +
+        '<div class="comp-card-name">Total Mentions</div>' +
+        '<div class="comp-card-stat">' + allMentions.length + '</div>' +
+        '<div class="comp-card-sub">' + sortedComps.length + ' competitor' + (sortedComps.length !== 1 ? 's' : '') +
+        ' across ' + activeCalls.length + ' call' + (activeCalls.length !== 1 ? 's' : '') + '</div>' +
+    '</div>';
+
+    // Top competitor card
+    if (sortedComps.length > 0) {
+        const [topName, topData] = sortedComps[0];
+        const topType = (compMeta[topName] || {}).type || 'direct';
+        html += '<div class="comp-card" style="--comp-color:' + (COMP_COLORS[topType] || '#4a7cff') + '">' +
+            '<div class="comp-card-name">Most Mentioned</div>' +
+            '<div class="comp-card-stat">' + esc(topName) + '</div>' +
+            '<div class="comp-card-sub">' + topData.mentions.length + ' mention' + (topData.mentions.length !== 1 ? 's' : '') +
+            ' from ' + topData.companies.size + ' compan' + (topData.companies.size !== 1 ? 'ies' : 'y') + '</div>' +
+        '</div>';
+    }
+
+    // Mention type breakdown card
+    const typeEntries = Object.entries(byType).sort((a, b) => b[1] - a[1]);
+    if (typeEntries.length > 0) {
+        let typeList = '<ul class="seg-card-feats">';
+        typeEntries.forEach(([t, count]) => {
+            typeList += '<li>' + esc(MENTION_TYPE_LABELS[t] || t) + ': ' + count + '</li>';
+        });
+        typeList += '</ul>';
+        html += '<div class="comp-card" style="--comp-color:#a78bfa">' +
+            '<div class="comp-card-name">By Type</div>' +
+            typeList +
+        '</div>';
+    }
+
+    html += '</div>';
+
+    // ========== FREQUENCY BAR ==========
+    if (sortedComps.length > 1) {
+        html += '<div class="comp-section-title" style="margin-top:1rem">Mention Frequency</div>';
+        html += '<div class="comp-freq-wrap"><div class="comp-freq-bar">';
+        const maxCount = sortedComps[0][1].mentions.length;
+        sortedComps.forEach(([name, data]) => {
+            const pct = maxCount > 0 ? (data.mentions.length / maxCount * 100) : 0;
+            const type = (compMeta[name] || {}).type || 'direct';
+            const color = COMP_COLORS[type] || '#4a7cff';
+            html += '<div class="comp-freq-col">' +
+                '<div class="comp-freq-count">' + data.mentions.length + '</div>' +
+                '<div class="comp-freq-bar-inner" style="height:' + Math.max(pct, 5) + '%;background:' + color + '"></div>' +
+                '<div class="comp-freq-label" title="' + esc(name) + '">' + esc(name.split(' ')[0]) + '</div>' +
+            '</div>';
+        });
+        html += '</div></div>';
+    }
+
+    // ========== TYPE FILTER CHIPS ==========
+    const compTypes = new Set();
+    sortedComps.forEach(([name]) => {
+        const type = (compMeta[name] || {}).type || 'direct';
+        compTypes.add(type);
+    });
+    if (compTypes.size > 1) {
+        html += '<div class="comp-section-title" style="margin-top:1rem">Competitor Details</div>';
+        html += '<div class="comp-type-filter">';
+        html += '<div class="comp-type-chip active" onclick="filterCompType(null, this)">All</div>';
+        compTypes.forEach(t => {
+            const label = t.charAt(0).toUpperCase() + t.slice(1);
+            html += '<div class="comp-type-chip" onclick="filterCompType(\'' + esc(t) + '\', this)">' + esc(label) + '</div>';
+        });
+        html += '</div>';
+    } else {
+        html += '<div class="comp-section-title" style="margin-top:1rem">Competitor Details</div>';
+    }
+
+    // ========== DETAIL CARDS ==========
+    sortedComps.forEach(([name, data]) => {
+        const meta = compMeta[name] || {};
+        const type = meta.type || 'direct';
+        const color = COMP_COLORS[type] || '#4a7cff';
+        const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+
+        html += '<div class="comp-detail-card" data-comp-type="' + esc(type) + '" style="--comp-color:' + color + '">';
+        html += '<div class="comp-detail-hdr">';
+        html += '<div class="comp-detail-name">' + esc(name) + '</div>';
+        html += '<div class="comp-detail-type">' + esc(typeLabel) + '</div>';
+        html += '</div>';
+
+        if (meta.description) {
+            html += '<div style="font-size:0.82rem;color:#6b7084;margin-bottom:0.5rem">' + esc(meta.description) + '</div>';
+        }
+
+        // Sort mentions by date desc
+        const sorted = data.mentions.sort((a, b) => (b.call_date || '').localeCompare(a.call_date || ''));
+        sorted.forEach(cm => {
+            html += '<div class="comp-mention">';
+            html += '<div class="comp-mention-meta">';
+            html += '<span class="comp-mention-company">' + esc(cm.company || 'Unknown') + '</span>';
+            html += '<span class="comp-mention-type ' + esc(cm.mention_type) + '">' + esc(MENTION_TYPE_LABELS[cm.mention_type] || cm.mention_type) + '</span>';
+            if (cm.call_date) {
+                const d = cm.call_date.slice(5, 10).replace('-', '/');
+                html += '<span class="comp-mention-ts">' + d + '</span>';
+            }
+            html += '</div>';
+            if (cm.context) {
+                html += '<div class="comp-mention-context">' + esc(cm.context) + '</div>';
+            }
+            html += '</div>';
+        });
+
+        html += '</div>';
+    });
+
+    document.getElementById('competitors-view').innerHTML = html;
+}
+
+function filterCompType(type, chip) {
+    activeCompTypeFilter = type;
+    document.querySelectorAll('.comp-type-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    document.querySelectorAll('.comp-detail-card').forEach(card => {
+        if (!type || card.dataset.compType === type) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
 function switchTab(tab) {
     currentTab = tab;
     updateHash();
@@ -2784,9 +3127,10 @@ function switchTab(tab) {
     document.getElementById('features-view').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('calls-view').style.display = tab === 'calls' ? '' : 'none';
     document.getElementById('personas-view').style.display = tab === 'personas' ? '' : 'none';
+    document.getElementById('competitors-view').style.display = tab === 'competitors' ? '' : 'none';
     document.getElementById('product-view').style.display = tab === 'product' ? '' : 'none';
     document.getElementById('marketing-view').style.display = tab === 'marketing' ? '' : 'none';
-    document.querySelector('.search-box').style.display = (isReport || tab === 'personas') ? 'none' : '';
+    document.querySelector('.search-box').style.display = (isReport || tab === 'personas' || tab === 'competitors') ? 'none' : '';
     document.getElementById('co-dd').style.display = (tab === 'features' || tab === 'personas') ? '' : 'none';
     document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls' || tab === 'personas') ? '' : 'none';
     document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
@@ -2796,6 +3140,7 @@ function switchTab(tab) {
     closeAllDD();
     filter('');
     if (tab === 'personas') buildPersonas();
+    if (tab === 'competitors') buildCompetitors();
 }
 
 function filter(q) {

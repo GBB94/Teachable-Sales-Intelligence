@@ -353,17 +353,74 @@ SPEAKER & COMPANY RULES:
         print(f"     e.g. {examples} | signals: {signals}")
     print()
 
+    # Load and print competitors for extraction
+    comp_names = []
+    competitors_path = os.path.join(base_dir, "competitors.json")
+    if os.path.exists(competitors_path):
+        with open(competitors_path, "r") as f:
+            comps = json.load(f)
+        comp_names = [c["name"] for c in comps.get("competitors", [])]
+        comp_types = comps.get("competitor_types", {})
+
+        print(f"{'='*70}")
+        print("COMPETITORS (use these EXACT names, no variations):")
+        print(f"{'─'*70}")
+        by_type = {}
+        for c in comps.get("competitors", []):
+            t = c.get("type", "other")
+            if t not in by_type:
+                by_type[t] = []
+            by_type[t].append(c)
+        for t_key, t_desc in comp_types.items():
+            group = by_type.get(t_key, [])
+            if group:
+                print(f"\n  {t_key.upper()} — {t_desc}")
+                for c in group:
+                    print(f"    - {c['name']}: {c['description']}")
+        print()
+
+    print(f"{'='*70}")
+    print("COMPETITOR EXTRACTION")
+    print(f"{'─'*70}")
+    print("""Scan the transcript for any mentions of competing platforms, LMS systems,
+or alternative solutions the prospect has used, evaluated, or asked about.
+
+Use ONLY competitor names from the list above. Do NOT create new names.
+If a competitor is mentioned that is not on the list, use "NEEDS_REVIEW"
+as the competitor name and include what was actually said in the context.
+
+For each competitor mention, capture:
+- competitor: Exact name from the list
+- context: 1-3 sentence summary of what was said about this competitor.
+  Written from the prospect's perspective. Not a quote, a summary.
+- timestamp: Approximate location in the transcript (MM:SS)
+- mention_type: One of:
+    "currently_using"  — prospect is actively on this platform today
+    "switching_from"   — prospect is leaving or has left this platform
+    "evaluated"        — prospect looked at it but didn't choose it
+    "asked_about"      — prospect asked how Teachable compares
+    "compared_to"      — prospect or rep compared specific features/pricing
+
+Do NOT count:
+- Mentions by the Teachable sales rep (only prospect mentions)
+- Generic references to "other platforms" without naming a specific competitor
+- Mentions of tools that aren't competing with Teachable (e.g., Zoom, Stripe, Zapier)
+
+If no competitors were mentioned, return an empty array: "competitor_mentions": []
+""")
+
     print(f"{'='*70}")
     print("CRITICAL RULES")
     print(f"{'─'*70}")
-    print("""- You MUST use category and segment names EXACTLY as listed above.
-- Do NOT create new categories. Do NOT abbreviate. Do NOT rephrase.
+    print("""- You MUST use category, segment, and competitor names EXACTLY as listed above.
+- Do NOT create new categories, segments, or competitor names. Do NOT abbreviate. Do NOT rephrase.
 - If a feature does not clearly fit any category, set category to "NEEDS_REVIEW".
 - If a prospect does not clearly fit any segment, set segment to "NEEDS_REVIEW".
-  Also set "suggested_category" or "suggested_new_segment" to what you would have named it.
+- If a competitor is mentioned that is not on the list, set competitor to "NEEDS_REVIEW".
+  Also set "suggested_category", "suggested_new_segment", or include the actual name in context.
 - "NEEDS_REVIEW" items will be flagged for manual assignment.
 - NEVER use "Other" as a category or segment name.
-- For INTERNAL calls, set all segment fields to null.
+- For INTERNAL calls, set all segment fields to null and competitor_mentions to [].
 """)
 
     print(f"{'='*70}")
@@ -401,6 +458,16 @@ SPEAKER & COMPANY RULES:
       "alternative_segment": "Second-best fit or null",
       "suggested_new_segment": "only if NEEDS_REVIEW — what you would have named it, else null"
     }
+  },
+  "competitor_mentions": {
+    "<call_id>": [
+      {
+        "competitor": "EXACT name from competitors list (or NEEDS_REVIEW)",
+        "context": "1-3 sentence summary of what was said about this competitor",
+        "timestamp": "MM:SS",
+        "mention_type": "currently_using|switching_from|evaluated|asked_about|compared_to"
+      }
+    ]
   },
   "recap": "optional weekly recap paragraph",
   "company_summaries": { "Company": "one-line summary" }
@@ -606,6 +673,7 @@ def cmd_inject(args):
         marketing_report = raw.get("marketing_report", {})
         marketing_data_by_call = raw.get("marketing_data", {})
         segment_data_by_call = raw.get("segment_data", {})
+        competitor_mentions_by_call = raw.get("competitor_mentions", {})
     else:
         features_by_call = raw
         notes_by_call = {}
@@ -614,6 +682,7 @@ def cmd_inject(args):
         marketing_report = {}
         marketing_data_by_call = {}
         segment_data_by_call = {}
+        competitor_mentions_by_call = {}
 
     # Load categories list for validation (optional fallback)
     valid_categories = set()
@@ -630,6 +699,15 @@ def cmd_inject(args):
         with open(segments_path, "r") as f:
             segs = json.load(f)
         valid_segments = {s["name"] for s in segs.get("segments", [])}
+
+    # Load valid competitors for validation
+    valid_competitors = set()
+    competitors_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "competitors.json")
+    if os.path.exists(competitors_path):
+        with open(competitors_path, "r") as f:
+            comps = json.load(f)
+        valid_competitors = {c["name"] for c in comps.get("competitors", [])}
+    valid_mention_types = VALID_MENTION_TYPES
 
     # Legacy: load categories map from --categories flag (optional)
     categories_map = {}
@@ -766,6 +844,12 @@ def cmd_inject(args):
         data["company_summaries"] = company_summaries
     if marketing_report:
         data["marketing_report"] = marketing_report
+    # Embed competitors catalog for dashboard UI
+    if os.path.exists(competitors_path):
+        with open(competitors_path, "r") as f:
+            comp_catalog = json.load(f)
+        data["competitors"] = comp_catalog.get("competitors", [])
+        data["competitor_types"] = comp_catalog.get("competitor_types", {})
     # Store per-call marketing data on each call object
     if marketing_data_by_call:
         for call in calls:
@@ -801,6 +885,41 @@ def cmd_inject(args):
         print("  Tip: run `python3 analyze_features.py validate <file> --fix` to auto-correct.")
         sys.exit(1)
 
+    # Store per-call competitor mentions on each call object
+    competitor_errors = []
+    if competitor_mentions_by_call:
+        for call in calls:
+            call_id = call.get("id", "")
+            if call_id in competitor_mentions_by_call:
+                mentions_list = competitor_mentions_by_call[call_id]
+                if not isinstance(mentions_list, list):
+                    continue
+                validated = []
+                for cm in mentions_list:
+                    comp_name = cm.get("competitor", "")
+                    if valid_competitors and comp_name and comp_name != "NEEDS_REVIEW" and comp_name not in valid_competitors:
+                        suggestion = _suggest_match(comp_name, valid_competitors)
+                        hint = f' (did you mean "{suggestion}"?)' if suggestion else ""
+                        competitor_errors.append(f'  ERROR: Call {call_id[:12]} mentions invalid competitor "{comp_name}"{hint}')
+                        continue
+                    mt = cm.get("mention_type", "")
+                    if mt and mt not in valid_mention_types:
+                        competitor_errors.append(f'  ERROR: Call {call_id[:12]} has invalid mention_type "{mt}" for "{comp_name}"')
+                        continue
+                    validated.append(cm)
+                if validated:
+                    existing = call.get("competitor_mentions", [])
+                    call["competitor_mentions"] = existing + validated
+
+    if competitor_errors:
+        print("\n  COMPETITOR VALIDATION FAILED:")
+        for err in competitor_errors:
+            print(err)
+        print(f"\n  Valid competitors: {sorted(valid_competitors)}")
+        print(f"  Valid mention types: {sorted(valid_mention_types)}")
+        print("  Tip: run `python3 analyze_features.py validate <file> --fix` to auto-correct.")
+        sys.exit(1)
+
     # Write updated dashboard
     _write_data_to_html(args.dashboard, data)
 
@@ -828,14 +947,29 @@ def cmd_inject(args):
     # NEEDS_REVIEW summary
     nr_cats = [m for m in all_mentions if m.get("category") == "NEEDS_REVIEW"]
     nr_segs = [c for c in calls if c.get("segment") == "NEEDS_REVIEW"]
-    if nr_cats or nr_segs:
-        print(f"\n  NEEDS REVIEW: {len(nr_cats)} feature(s), {len(nr_segs)} segment(s)")
+    nr_comps = [cm for c in calls for cm in c.get("competitor_mentions", []) if cm.get("competitor") == "NEEDS_REVIEW"]
+    if nr_cats or nr_segs or nr_comps:
+        print(f"\n  NEEDS REVIEW: {len(nr_cats)} feature(s), {len(nr_segs)} segment(s), {len(nr_comps)} competitor(s)")
         if nr_cats:
             for m in nr_cats:
                 print(f"    - Feature \"{m.get('keyword')}\" (call {m.get('call_id', '')[:12]})")
         if nr_segs:
             for c in nr_segs:
                 print(f"    - Segment for \"{c.get('title', '')}\" (call {c.get('id', '')[:12]})")
+        if nr_comps:
+            for cm in nr_comps:
+                print(f"    - Competitor \"{cm.get('context', '')[:60]}\"")
+
+    # Print competitor summary
+    all_comp_mentions = [cm for c in calls for cm in c.get("competitor_mentions", [])]
+    if all_comp_mentions:
+        comp_counts = {}
+        for cm in all_comp_mentions:
+            n = cm.get("competitor", "?")
+            comp_counts[n] = comp_counts.get(n, 0) + 1
+        print(f"\n  Competitor mentions: {len(all_comp_mentions)} total")
+        for comp, count in sorted(comp_counts.items(), key=lambda x: -x[1]):
+            print(f"    {comp}: {count}")
 
     # Track suggested new categories/segments from NEEDS_REVIEW items
     from datetime import date
@@ -1038,11 +1172,15 @@ def cmd_refetch_empty(args):
         print("\nNo transcripts were updated.")
 
 
+VALID_MENTION_TYPES = {"currently_using", "switching_from", "evaluated", "asked_about", "compared_to"}
+
+
 def _load_valid_names():
-    """Load canonical category and segment names from JSON files."""
+    """Load canonical category, segment, and competitor names from JSON files."""
     base_dir = os.path.dirname(os.path.abspath(__file__))
     valid_categories = set()
     valid_segments = set()
+    valid_competitors = set()
 
     categories_path = os.path.join(base_dir, "categories.json")
     if os.path.exists(categories_path):
@@ -1056,7 +1194,13 @@ def _load_valid_names():
             segs = json.load(f)
         valid_segments = {s["name"] for s in segs.get("segments", [])}
 
-    return valid_categories, valid_segments
+    competitors_path = os.path.join(base_dir, "competitors.json")
+    if os.path.exists(competitors_path):
+        with open(competitors_path, "r") as f:
+            comps = json.load(f)
+        valid_competitors = {c["name"] for c in comps.get("competitors", [])}
+
+    return valid_categories, valid_segments, valid_competitors
 
 
 def _suggest_match(invalid_name, valid_names, cutoff=0.6):
@@ -1065,7 +1209,7 @@ def _suggest_match(invalid_name, valid_names, cutoff=0.6):
     return matches[0] if matches else None
 
 
-def validate_analysis(data, valid_categories, valid_segments):
+def validate_analysis(data, valid_categories, valid_segments, valid_competitors=None):
     """Validate an analysis JSON dict against canonical lists.
 
     Returns list of error dicts with keys: type, call_id, value, feature (if category),
@@ -1100,27 +1244,55 @@ def validate_analysis(data, valid_categories, valid_segments):
                 "suggestion": _suggest_match(segment, valid_segments),
             })
 
+    # Check competitor mentions
+    if valid_competitors:
+        for call_id, mentions in data.get("competitor_mentions", {}).items():
+            if not isinstance(mentions, list):
+                continue
+            for cm in mentions:
+                comp = cm.get("competitor", "")
+                if comp and comp != "NEEDS_REVIEW" and comp not in valid_competitors:
+                    errors.append({
+                        "type": "invalid_competitor",
+                        "call_id": call_id,
+                        "feature": None,
+                        "value": comp,
+                        "suggestion": _suggest_match(comp, valid_competitors),
+                    })
+                mt = cm.get("mention_type", "")
+                if mt and mt not in VALID_MENTION_TYPES:
+                    errors.append({
+                        "type": "invalid_mention_type",
+                        "call_id": call_id,
+                        "feature": comp or "?",
+                        "value": mt,
+                        "suggestion": _suggest_match(mt, VALID_MENTION_TYPES),
+                    })
+
     return errors
 
 
 def cmd_validate(args):
-    """Validate an analysis JSON against canonical category/segment lists."""
+    """Validate an analysis JSON against canonical category/segment/competitor lists."""
     with open(args.analysis_json, "r") as f:
         data = json.load(f)
 
-    valid_categories, valid_segments = _load_valid_names()
+    valid_categories, valid_segments, valid_competitors = _load_valid_names()
 
     if not valid_categories:
         print("WARNING: categories.json not found, skipping category validation")
     if not valid_segments:
         print("WARNING: segments.json not found, skipping segment validation")
+    if not valid_competitors:
+        print("WARNING: competitors.json not found, skipping competitor validation")
 
-    errors = validate_analysis(data, valid_categories, valid_segments)
+    errors = validate_analysis(data, valid_categories, valid_segments, valid_competitors)
 
     if not errors:
         # Count items
         feat_count = sum(len(v) for v in data.get("features", {}).values())
         seg_count = len(data.get("segment_data", {}))
+        comp_count = sum(len(v) for v in data.get("competitor_mentions", {}).values() if isinstance(v, list))
         needs_review_cats = sum(
             1 for feats in data.get("features", {}).values()
             for f in feats if f.get("category") == "NEEDS_REVIEW"
@@ -1129,9 +1301,14 @@ def cmd_validate(args):
             1 for s in data.get("segment_data", {}).values()
             if s and s.get("segment") == "NEEDS_REVIEW"
         )
-        print(f"VALID: {feat_count} features, {seg_count} segments — all canonical.")
-        if needs_review_cats or needs_review_segs:
-            print(f"  {needs_review_cats} feature(s) and {needs_review_segs} segment(s) marked NEEDS_REVIEW")
+        needs_review_comps = sum(
+            1 for mentions in data.get("competitor_mentions", {}).values()
+            if isinstance(mentions, list)
+            for cm in mentions if cm.get("competitor") == "NEEDS_REVIEW"
+        )
+        print(f"VALID: {feat_count} features, {seg_count} segments, {comp_count} competitor mentions — all canonical.")
+        if needs_review_cats or needs_review_segs or needs_review_comps:
+            print(f"  NEEDS_REVIEW: {needs_review_cats} feature(s), {needs_review_segs} segment(s), {needs_review_comps} competitor(s)")
         sys.exit(0)
 
     # Print errors
@@ -1139,9 +1316,13 @@ def cmd_validate(args):
     for err in errors:
         if err["type"] == "invalid_category":
             print(f'  [{err["call_id"][:12]}] Feature "{err["feature"]}" has invalid category "{err["value"]}"')
-        else:
+        elif err["type"] == "invalid_segment":
             print(f'  [{err["call_id"][:12]}] Invalid segment "{err["value"]}"')
-        if err["suggestion"]:
+        elif err["type"] == "invalid_competitor":
+            print(f'  [{err["call_id"][:12]}] Invalid competitor "{err["value"]}"')
+        elif err["type"] == "invalid_mention_type":
+            print(f'  [{err["call_id"][:12]}] Invalid mention_type "{err["value"]}" for competitor "{err["feature"]}"')
+        if err.get("suggestion"):
             print(f'    Did you mean: "{err["suggestion"]}"?')
         else:
             print(f'    No close match found. Use "NEEDS_REVIEW" if it doesn\'t fit.')
@@ -1154,19 +1335,18 @@ def cmd_validate(args):
 
 
 def _apply_fixes(data, errors, output_path):
-    """Auto-correct analysis JSON based on validation errors (Step 3).
+    """Auto-correct analysis JSON based on validation errors.
 
-    Uses a 0.6 cutoff for auto-fix — with only 10 categories and 9 segments,
-    any match above 0.6 is unambiguously the right canonical name.
+    Uses a 0.6 cutoff for auto-fix — with only 10 categories, 9 segments,
+    and 16 competitors, any match above 0.6 is unambiguously the right name.
     """
     FIX_CUTOFF = 0.6
     auto_fixed = 0
     needs_review = 0
-    valid_categories, valid_segments = _load_valid_names()
+    valid_categories, valid_segments, valid_competitors = _load_valid_names()
 
     for err in errors:
         if err["type"] == "invalid_category":
-            # Find the feature in the data and fix it
             for feat in data.get("features", {}).get(err["call_id"], []):
                 if feat.get("category") == err["value"] and feat.get("feature") == err["feature"]:
                     suggestion = _suggest_match(err["value"], valid_categories, cutoff=FIX_CUTOFF)
@@ -1193,6 +1373,34 @@ def _apply_fixes(data, errors, output_path):
                     seg["segment"] = "NEEDS_REVIEW"
                     needs_review += 1
                     print(f'  NEEDS_REVIEW: "{err["value"]}" (segment)')
+        elif err["type"] == "invalid_competitor":
+            mentions = data.get("competitor_mentions", {}).get(err["call_id"], [])
+            for cm in mentions:
+                if cm.get("competitor") == err["value"]:
+                    suggestion = _suggest_match(err["value"], valid_competitors, cutoff=FIX_CUTOFF)
+                    if suggestion:
+                        cm["competitor"] = suggestion
+                        auto_fixed += 1
+                        print(f'  AUTO-FIX: "{err["value"]}" -> "{suggestion}" (competitor)')
+                    else:
+                        cm["competitor"] = "NEEDS_REVIEW"
+                        needs_review += 1
+                        print(f'  NEEDS_REVIEW: "{err["value"]}" (competitor)')
+                    break
+        elif err["type"] == "invalid_mention_type":
+            mentions = data.get("competitor_mentions", {}).get(err["call_id"], [])
+            for cm in mentions:
+                if cm.get("mention_type") == err["value"]:
+                    suggestion = _suggest_match(err["value"], VALID_MENTION_TYPES, cutoff=FIX_CUTOFF)
+                    if suggestion:
+                        cm["mention_type"] = suggestion
+                        auto_fixed += 1
+                        print(f'  AUTO-FIX: mention_type "{err["value"]}" -> "{suggestion}"')
+                    else:
+                        cm["mention_type"] = "asked_about"
+                        needs_review += 1
+                        print(f'  FALLBACK: mention_type "{err["value"]}" -> "asked_about"')
+                    break
 
     with open(output_path, "w") as f:
         json.dump(data, f, indent=2)
@@ -1201,8 +1409,8 @@ def _apply_fixes(data, errors, output_path):
     print(f"Saved: {output_path}")
 
     # Re-validate to confirm
-    valid_categories, valid_segments = _load_valid_names()
-    remaining = validate_analysis(data, valid_categories, valid_segments)
+    valid_categories, valid_segments, valid_competitors = _load_valid_names()
+    remaining = validate_analysis(data, valid_categories, valid_segments, valid_competitors)
     if remaining:
         print(f"\nWARNING: {len(remaining)} error(s) remain after fix")
         sys.exit(1)
