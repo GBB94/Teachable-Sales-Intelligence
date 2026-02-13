@@ -2446,7 +2446,7 @@ function buildPersonas() {
         html += '<div class="seg-compare-wrap"><table class="seg-compare">';
         html += '<tr><th>Feature</th>';
         sortedSegs.forEach(([seg]) => {
-            html += '<th>' + esc(seg.replace(/ & /g, ' &amp; ').split(' ').slice(0, 3).join(' ')) + '</th>';
+            html += '<th>' + esc(seg.split(' ').slice(0, 3).join(' ')) + '</th>';
         });
         html += '</tr>';
 
