@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
 **Last updated:** 2026-02-13
-**Updated by:** Opus 4.6 (session 7)
+**Updated by:** Opus 4.6 (session 8)
 
 ---
 
@@ -86,6 +86,13 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Competitor exclusion system: dismiss button on cards, password-protected, persists to `excluded_competitors` in features.json
 - [x] "Excluded (N)" restore section at bottom of Competitors tab
 - [x] `/api/exclude-competitor` server endpoint (exclude/restore actions)
+- [x] Competitors tab filter bar: competitor dropdown (multi-select), type dropdown, segment dropdown, date range
+- [x] Competitors tab: collapsible detail cards (top 3 expanded, rest collapsed, click header to toggle)
+- [x] Competitors tab: Expand All / Collapse All toggle button
+- [x] Competitors tab: intel section on canonical cards (differentiator from `competitors.json`, dark background)
+- [x] Competitors tab: "Not in competitor database" message for unrecognized competitors
+- [x] Competitors tab: inline dismiss button (right-aligned in header row, replaces old hover-only dismiss)
+- [x] Segment and date filters now apply to Competitors tab (filter underlying calls)
 
 ## What's In Progress
 
