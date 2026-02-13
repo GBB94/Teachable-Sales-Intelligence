@@ -656,10 +656,10 @@ body {
     font-size: max(0.8rem, 13px); color: #555a6e;
     font-family: 'JetBrains Mono', monospace; margin-left: auto;
 }
-.seg-group-cards { padding: 0 0 0 1rem; column-count: 3; column-gap: 16px; }
+.seg-group-cards { padding: 0 0 0 1rem; column-count: 3; column-gap: 16px; max-height: 2000px; overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; opacity: 1; }
 @media (max-width: 1200px) { .seg-group-cards { column-count: 2; } }
 @media (max-width: 800px) { .seg-group-cards { column-count: 1; } }
-.seg-group.collapsed .seg-group-cards { display: none; }
+.seg-group.collapsed .seg-group-cards { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
 
 .prospect-card {
     background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
@@ -1969,9 +1969,6 @@ function toggleExpandAll() {
     document.querySelectorAll('#features-view .cat-section').forEach(s => {
         s.classList.toggle('collapsed', !allExpanded);
     });
-    document.querySelectorAll('#personas-view .seg-group').forEach(s => {
-        s.classList.toggle('collapsed', !allExpanded);
-    });
     document.getElementById('expand-btn').textContent = allExpanded ? 'Collapse All' : 'Expand All';
 }
 
@@ -2475,7 +2472,10 @@ function buildPersonas() {
     }
 
     // ========== SECTION 3: Prospect Cards by Segment ==========
-    html += '<div class="seg-section-title" style="margin-top:1rem">Prospects by Segment</div>';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem">' +
+        '<div class="seg-section-title" style="margin:0">Prospects by Segment</div>' +
+        '<button class="expand-btn" onclick="togglePersonasExpand(this)">' + (allExpanded ? 'Collapse All' : 'Expand All') + '</button>' +
+        '</div>';
 
     sortedSegs.forEach(([seg, data], idx) => {
         const color = segColor(seg);
@@ -2574,6 +2574,13 @@ function buildPersonas() {
     document.getElementById('personas-view').innerHTML = html;
 }
 
+function togglePersonasExpand(btn) {
+    const groups = document.querySelectorAll('#personas-view .seg-group');
+    const anyCollapsed = [...groups].some(g => g.classList.contains('collapsed'));
+    groups.forEach(g => g.classList.toggle('collapsed', !anyCollapsed));
+    btn.textContent = anyCollapsed ? 'Collapse All' : 'Expand All';
+}
+
 function scrollToSegGroup(seg) {
     const id = 'seg-group-' + seg.replace(/[^a-z0-9]/gi, '-').toLowerCase();
     const el = document.getElementById(id);
@@ -2603,7 +2610,7 @@ function switchTab(tab) {
     document.querySelector('.search-box').style.display = (isReport || tab === 'personas') ? 'none' : '';
     document.getElementById('co-dd').style.display = (tab === 'features' || tab === 'personas') ? '' : 'none';
     document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls' || tab === 'personas') ? '' : 'none';
-    document.getElementById('expand-btn').style.display = (tab === 'features' || tab === 'personas') ? '' : 'none';
+    document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('sync-sheets-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('q').value = '';
     closeAllDD();
