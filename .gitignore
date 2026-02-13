@@ -19,7 +19,8 @@ __pycache__/
 !dashboard_preview.html
 !dashboard_template.html
 !dashboard_latest.html
-!test_output/dashboard.html
+!test_output/index.html
+!test_output/_headers
 
 # Credentials
 credentials/

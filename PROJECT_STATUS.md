@@ -70,7 +70,7 @@ Nothing currently in progress.
 
 ## Known Issues
 
-- **Empty transcripts.** Some calls have blank `transcript_text`. Use `python3 analyze_features.py refetch-empty test_output/dashboard.html` to re-pull from Fireflies.
+- **Empty transcripts.** Some calls have blank `transcript_text`. Use `python3 analyze_features.py refetch-empty test_output/index.html` to re-pull from Fireflies.
 - **Exposed API key.** Fireflies key was shown in a chat session. Needs rotation.
 - **Confidence scores not yet populated.** The `confidence` field exists in the schema but current analyzed data doesn't have values. Next re-analysis with the updated prompt will populate them.
 - **Python 3.9 deprecation warnings.** Google auth libraries warn about Python 3.9 EOL. Functional but should upgrade Python eventually.
@@ -162,9 +162,9 @@ pip3 install -r requirements.txt
 python3 server.py  # Opens localhost:8080
 
 # Analyze calls
-python3 analyze_features.py extract test_output/dashboard.html
+python3 analyze_features.py extract test_output/index.html
 # ... Claude analyzes transcripts, outputs features JSON ...
-python3 analyze_features.py inject test_output/dashboard.html features_output.json
+python3 analyze_features.py inject test_output/index.html features_output.json
 
 # Sync to Google Sheets
 python3 sync_to_sheets.py --dry-run  # Preview

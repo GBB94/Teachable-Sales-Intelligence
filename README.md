@@ -13,9 +13,9 @@ python3 server.py     # Dashboard at http://localhost:8080
 ## Workflow
 
 1. **Scan** - Pull new calls from Fireflies (dashboard UI or CLI)
-2. **Extract** - Print transcripts for Claude analysis: `python3 analyze_features.py extract test_output/dashboard.html`
+2. **Extract** - Print transcripts for Claude analysis: `python3 analyze_features.py extract test_output/index.html`
 3. **Analyze** - Claude reads transcripts, outputs features JSON with categories
-4. **Inject** - Write features into dashboard: `python3 analyze_features.py inject test_output/dashboard.html features_output.json`
+4. **Inject** - Write features into dashboard: `python3 analyze_features.py inject test_output/index.html features_output.json`
 5. **Sync** - Push to Google Sheets: `python3 sync_to_sheets.py` or use the dashboard button
 
 ## Google Sheets Setup
@@ -120,4 +120,4 @@ Categories are assigned by Claude during transcript analysis and included in the
 | `categories.json` | Feature category definitions |
 | `generate_reports.py` | Friday cron: flag pending reports + sync |
 | `test_output/features.json` | Canonical data file (written by inject) |
-| `test_output/dashboard.html` | Rendered dashboard with embedded data |
+| `test_output/index.html` | Rendered dashboard with embedded data |

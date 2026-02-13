@@ -14,7 +14,7 @@ import sys
 from datetime import datetime, timezone
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DASHBOARD_PATH = os.path.join(BASE_DIR, "test_output", "dashboard.html")
+DASHBOARD_PATH = os.path.join(BASE_DIR, "test_output", "index.html")
 FLAG_PATH = os.path.join(BASE_DIR, ".reports_due")
 
 

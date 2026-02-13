@@ -39,7 +39,7 @@ PORT = 8080
 
 TEMPLATE_PATH = os.path.join(REPO_DIR, 'dashboard_template.html')
 OUTPUT_DIR = os.path.join(REPO_DIR, 'test_output')
-OUTPUT_PATH = os.path.join(OUTPUT_DIR, 'dashboard.html')
+OUTPUT_PATH = os.path.join(OUTPUT_DIR, 'index.html')
 
 app = Flask(__name__)
 
@@ -82,7 +82,7 @@ def _extract_data_from_html(path):
 
 
 def _load_existing_data():
-    """Load DATA JSON from test_output/dashboard.html."""
+    """Load DATA JSON from test_output/index.html."""
     data = _extract_data_from_html(OUTPUT_PATH)
     if data:
         return data
@@ -97,7 +97,7 @@ def _render_dashboard(data):
 
 
 def _save_dashboard(data):
-    """Save a rendered dashboard HTML to test_output/dashboard.html."""
+    """Save a rendered dashboard HTML to test_output/index.html."""
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     html = _render_dashboard(data)
     with open(OUTPUT_PATH, 'w') as f:

@@ -8,10 +8,10 @@ Three-step process:
   3. `inject`    — takes a features JSON file, rewrites the dashboard + HubSpot notes
 
 Usage (inside Claude Code):
-  python3 analyze_features.py extract test_output/dashboard.html [--prior old_dashboard.html]
+  python3 analyze_features.py extract test_output/index.html [--prior old_dashboard.html]
   # ... Claude Code reads transcripts, builds features.json ...
   python3 analyze_features.py normalize features.json --merge-map merge.json
-  python3 analyze_features.py inject test_output/dashboard.html features.json [--notes test_output/notes.txt]
+  python3 analyze_features.py inject test_output/index.html features.json [--notes test_output/notes.txt]
 """
 
 import argparse
