@@ -2986,14 +2986,6 @@ function buildCompetitors() {
         return;
     }
 
-    if (sortedComps.length === 0 && Object.keys(byCompExcluded).length > 0) {
-        // All mentions are excluded — show excluded section only
-        let html = '<div class="comp-empty">All competitor mentions are excluded.</div>';
-        html += buildExcludedSection(byCompExcluded);
-        document.getElementById('competitors-view').innerHTML = html;
-        return;
-    }
-
     // Build competitor lookup from competitors.json data embedded in DATA (or fallback)
     const compMeta = {};
     if (DATA.competitors) {
@@ -3018,6 +3010,13 @@ function buildCompetitors() {
     // Sort competitors by mention count desc
     const sortedComps = Object.entries(byComp).sort((a, b) => b[1].mentions.length - a[1].mentions.length);
     const activeMentionCount = sortedComps.reduce((sum, [, d]) => sum + d.mentions.length, 0);
+
+    if (sortedComps.length === 0 && Object.keys(byCompExcluded).length > 0) {
+        let html = '<div class="comp-empty">All competitor mentions are excluded.</div>';
+        html += buildExcludedSection(byCompExcluded);
+        document.getElementById('competitors-view').innerHTML = html;
+        return;
+    }
 
     let html = '';
 
