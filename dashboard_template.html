@@ -1411,6 +1411,7 @@ function buildCalls() {
                         '<span class="ico">&#128196;</span> <span class="arrow">&#9654;</span> Full Transcript' +
                     '</span>' +
                     '<div class="section-body">' +
+                        '<button class="copy-btn" onclick="event.stopPropagation(); copyTranscript(this, \'' + esc(c.id) + '\')">Copy</button>' +
                         '<div class="section-scroll"><div class="section-pre">' + esc(c.transcript_text) + '</div></div>' +
                     '</div>' +
                 '</div>';
@@ -2560,6 +2561,22 @@ function copyNote(btn, callId) {
     const call = DATA.calls.find(c => c.id === callId);
     if (!call || !call.hubspot_note) return;
     navigator.clipboard.writeText(call.hubspot_note).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+function copyTranscript(btn, callId) {
+    const call = DATA.calls.find(c => c.id === callId);
+    if (!call || !call.transcript_text) {
+        const orig = btn.textContent;
+        btn.textContent = 'No transcript available';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+        return;
+    }
+    navigator.clipboard.writeText(call.transcript_text).then(() => {
         const orig = btn.textContent;
         btn.textContent = 'Copied!';
         btn.classList.add('copied');
