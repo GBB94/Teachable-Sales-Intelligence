@@ -104,6 +104,8 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] `competitors.json` — `short_description` field added to all 18 competitors (one-liner summaries)
 - [x] 2 new canonical competitors added: Credly (adjacent, digital credentials) and WooCommerce (diy, WordPress ecommerce)
 - [x] `competitors.json` now has 18 competitors across 5 types (was 16)
+- [x] Fallback descriptions for unknown competitors: Fiducare, Wap hardcoded; future unknowns show "Description not available"
+- [x] Tab persistence via URL hash: `competitors` tab now included in `parseHash()` allowed list (reload preserves active tab)
 
 ## What's In Progress
 
