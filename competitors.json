@@ -1,0 +1,157 @@
+{
+  "competitors": [
+    {
+      "id": "kajabi",
+      "name": "Kajabi",
+      "type": "direct",
+      "short_description": "All-in-one platform for courses, coaching, podcasts, and memberships with built-in marketing.",
+      "description": "All-in-one course platform with built-in marketing, email, and funnels. Premium pricing.",
+      "differentiator": "All-in-one with built-in email, funnels, and marketing. Premium price point."
+    },
+    {
+      "id": "thinkific",
+      "name": "Thinkific",
+      "type": "direct",
+      "short_description": "Course creation platform with strong assessment tools and a free tier.",
+      "description": "Course creation platform with free tier. Strong quiz/assessment tools. No transaction fees on most plans.",
+      "differentiator": "Free tier, strong assessments, no transaction fees on most plans."
+    },
+    {
+      "id": "podia",
+      "name": "Podia",
+      "type": "direct",
+      "short_description": "Simple platform for courses, digital downloads, coaching, and community.",
+      "description": "Simple all-in-one platform for courses, digital downloads, coaching, and community.",
+      "differentiator": "Simple and affordable. Courses, downloads, coaching, community in one."
+    },
+    {
+      "id": "learnworlds",
+      "name": "LearnWorlds",
+      "type": "direct",
+      "short_description": "Course platform with interactive video, SCORM support, and white-label options.",
+      "description": "Course platform with interactive video, SCORM support, and white-label options.",
+      "differentiator": "Interactive video, SCORM support, white-label. Mid-market positioning."
+    },
+    {
+      "id": "skool",
+      "name": "Skool",
+      "type": "direct",
+      "short_description": "Community-first platform pairing courses with group engagement. Flat $99/mo.",
+      "description": "Community-first platform combining courses with group community features. Flat $99/mo pricing.",
+      "differentiator": "Community-first. Flat $99/mo. Courses are secondary to the group experience."
+    },
+    {
+      "id": "mighty-networks",
+      "name": "Mighty Networks",
+      "type": "direct",
+      "short_description": "Community platform with courses, events, and branded mobile apps.",
+      "description": "Community-centric platform with courses, events, and branded mobile apps.",
+      "differentiator": "Branded mobile apps, community-centric. Higher price tiers."
+    },
+    {
+      "id": "kartra",
+      "name": "Kartra",
+      "type": "direct",
+      "short_description": "Marketing-focused platform with funnels, email, helpdesk, and course hosting.",
+      "description": "All-in-one marketing platform with course hosting, funnels, email, and helpdesk.",
+      "differentiator": "Marketing-heavy. Funnels, email, helpdesk, plus course hosting."
+    },
+    {
+      "id": "docebo",
+      "name": "Docebo",
+      "type": "lms",
+      "short_description": "Enterprise AI-powered LMS for corporate training and compliance.",
+      "description": "Enterprise LMS for corporate training and compliance. AI-powered learning platform.",
+      "differentiator": "Enterprise LMS. AI-powered. Corporate training and compliance focused."
+    },
+    {
+      "id": "talentlms",
+      "name": "TalentLMS",
+      "type": "lms",
+      "short_description": "Cloud LMS for SMB employee training, onboarding, and compliance.",
+      "description": "Cloud-based LMS for employee training, onboarding, and compliance. SCORM/xAPI support.",
+      "differentiator": "Cloud LMS for SMB. Employee training, onboarding, SCORM/xAPI."
+    },
+    {
+      "id": "absorb",
+      "name": "Absorb LMS",
+      "type": "lms",
+      "short_description": "Enterprise LMS for employee and customer training with compliance tracking.",
+      "description": "Enterprise LMS focused on employee and customer training with compliance tracking.",
+      "differentiator": "Enterprise LMS. Employee and customer training with compliance tracking."
+    },
+    {
+      "id": "moodle",
+      "name": "Moodle",
+      "type": "lms",
+      "short_description": "Open-source LMS widely used by universities and institutions.",
+      "description": "Open-source LMS used by universities and institutions. Self-hosted or cloud.",
+      "differentiator": "Open-source, self-hosted. University and institutional standard."
+    },
+    {
+      "id": "canvas",
+      "name": "Canvas LMS",
+      "type": "lms",
+      "short_description": "Instructure's LMS dominant in higher education and K-12.",
+      "description": "Instructure's LMS for higher education and K-12. Widely adopted by universities.",
+      "differentiator": "Instructure's LMS. Dominant in higher ed and K-12."
+    },
+    {
+      "id": "wordpress-lms",
+      "name": "WordPress + LMS Plugin",
+      "type": "diy",
+      "short_description": "Self-hosted WordPress with LearnDash or LifterLMS. DIY approach.",
+      "description": "Self-hosted WordPress with LearnDash, LifterLMS, or similar plugin. DIY approach.",
+      "differentiator": "DIY approach. Flexible but requires technical maintenance."
+    },
+    {
+      "id": "clickfunnels",
+      "name": "ClickFunnels",
+      "type": "adjacent",
+      "short_description": "Sales funnel builder sometimes used to sell courses.",
+      "description": "Sales funnel builder sometimes used to sell courses. Not a dedicated course platform.",
+      "differentiator": "Sales funnel builder. Not a course platform but sometimes used as one."
+    },
+    {
+      "id": "udemy",
+      "name": "Udemy",
+      "type": "marketplace",
+      "short_description": "Course marketplace with built-in audience but limited creator control.",
+      "description": "Course marketplace. Prospects may mention as where they started before wanting their own platform.",
+      "differentiator": "Marketplace model. Built-in audience but limited branding and pricing control."
+    },
+    {
+      "id": "skillshare",
+      "name": "Skillshare",
+      "type": "marketplace",
+      "short_description": "Subscription-based creative skills marketplace with revenue share model.",
+      "description": "Subscription-based course marketplace for creative skills.",
+      "differentiator": "Subscription marketplace for creative skills. Revenue share model."
+    },
+    {
+      "id": "credly",
+      "name": "Credly",
+      "type": "adjacent",
+      "short_description": "Digital credentials and badges platform for verifiable achievements.",
+      "description": "Digital badges and Open Badge-compliant credentials platform by Pearson.",
+      "differentiator": "Blockchain-verified badges shareable on LinkedIn. Not a course platform."
+    },
+    {
+      "id": "woocommerce",
+      "name": "WooCommerce",
+      "type": "diy",
+      "short_description": "Open-source WordPress ecommerce plugin for selling digital and physical goods.",
+      "description": "WordPress ecommerce plugin sometimes used with course plugins to sell courses.",
+      "differentiator": "Free, open-source ecommerce. Flexible but requires WordPress + plugins."
+    }
+  ],
+  "competitor_types": {
+    "direct": "Direct course platform competitors (same market, same buyer)",
+    "lms": "Traditional LMS platforms (often comes up in CE/corporate segment)",
+    "diy": "DIY/self-hosted solutions",
+    "adjacent": "Adjacent tools sometimes used for courses",
+    "marketplace": "Course marketplaces (different model but prospects mention them)"
+  },
+  "suggested_new_competitors": [],
+  "last_updated": "2026-02-13"
+}

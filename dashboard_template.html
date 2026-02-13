@@ -3147,7 +3147,7 @@ function buildCompetitors() {
     const _compMetaStrip = {}; // stripped (no spaces, lowercase) -> meta
     if (DATA.competitors) {
         DATA.competitors.forEach(c => {
-            const entry = { type: c.type || 'direct', description: c.description || '', differentiator: c.differentiator || '' };
+            const entry = { type: c.type || 'direct', description: c.description || '', differentiator: c.differentiator || '', short_description: c.short_description || '' };
             compMeta[c.name] = entry;
             _compMetaLower[c.name.toLowerCase()] = entry;
             _compMetaStrip[c.name.toLowerCase().replace(/[\s\-()]/g, '')] = entry;
@@ -3230,18 +3230,14 @@ function buildCompetitors() {
     sortedComps.forEach(([name, data]) => {
         const meta = getCompMeta(name);
         const color = compColor(name);
-        const diffParts = (meta.differentiator || '').split(/\.\s+/).filter(Boolean).slice(0, 3);
-        let featsHTML = '';
-        if (diffParts.length > 0) {
-            featsHTML = '<ul class="seg-card-feats">';
-            diffParts.forEach(d => { featsHTML += '<li>' + esc(d.replace(/\.$/, '')) + '</li>'; });
-            featsHTML += '</ul>';
-        }
+        const descHTML = meta.short_description
+            ? '<div class="seg-card-sub" style="margin-top:0.5rem;padding-top:0.4rem;border-top:1px solid #1e2130">' + esc(meta.short_description) + '</div>'
+            : '';
         html += '<div class="seg-card" style="--seg-color:' + color + '">' +
             '<div class="seg-card-name">' + esc(name) + '</div>' +
             '<div class="seg-card-stat">' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + '</div>' +
             '<div class="seg-card-sub">from ' + data.companies.size + ' compan' + (data.companies.size !== 1 ? 'ies' : 'y') + '</div>' +
-            featsHTML +
+            descHTML +
         '</div>';
     });
     html += '</div>';
