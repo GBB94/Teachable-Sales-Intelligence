@@ -41,7 +41,7 @@ class FirefliesRetriever:
 
     # Speakers to exclude from feature request scanning by default.
     DEFAULT_EXCLUDE_DOMAINS: List[str] = ["teachable.com"]
-    DEFAULT_EXCLUDE_SPEAKERS: List[str] = ["zach mccall", "kevin", "jerome"]
+    DEFAULT_EXCLUDE_SPEAKERS: List[str] = ["zach mccall", "kevin", "kevin codde", "jerome", "jerome olaloye"]
 
     def __init__(self, api_key: str, request_delay: float = None):
         self.api_key = api_key

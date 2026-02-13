@@ -26,7 +26,8 @@ CANONICAL_NAMES_FILE = ".feature_names"
 
 # Internal Teachable employees — never the "source" of a feature request
 INTERNAL_SPEAKER_NAMES = {
-    'zach mccall', 'kevin', 'jerome', 'lennie zhu', 'sarah dean',
+    'zach mccall', 'kevin', 'kevin codde', 'jerome', 'jerome olaloye',
+    'lennie zhu', 'sarah dean',
     'jonathan corvin-blackburn', 'jonathan corvin blackburn',
 }
 

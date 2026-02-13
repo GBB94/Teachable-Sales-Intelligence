@@ -933,7 +933,7 @@ function buildFeatureCard(kw, mentions, callMap, companies) {
 
     // Group mentions by company
     const coMap = {}; // company -> { contacts: Set, count: number }
-    const INTERNAL_SPEAKERS = ['zach mccall', 'kevin', 'jerome', 'lennie zhu', 'sarah'];
+    const INTERNAL_SPEAKERS = ['zach mccall', 'kevin', 'kevin codde', 'jerome', 'jerome olaloye', 'lennie zhu', 'sarah'];
     mentions.forEach(m => {
         const co = getCompany(m, callMap);
         if (!co) return; // Skip mentions with no identifiable prospect company
