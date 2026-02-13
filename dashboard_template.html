@@ -839,17 +839,7 @@ body {
 }
 .comp-type-chip:hover { border-color: #3a3f5c; color: #c8cad2; }
 .comp-type-chip.active { background: #1a1d2e; border-color: #4a7cff; color: #f0f1f4; }
-.comp-dismiss {
-    position: absolute; top: 0.6rem; right: 0.6rem;
-    width: 24px; height: 24px; border-radius: 50%;
-    background: transparent; border: 1px solid #2a2d40;
-    color: #555a6e; font-size: 14px; line-height: 1;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s; opacity: 0;
-}
 .comp-detail-card { position: relative; }
-.comp-detail-card:hover .comp-dismiss { opacity: 1; }
-.comp-dismiss:hover { background: #2a1a1a; border-color: #f87171; color: #f87171; }
 .comp-detail-card.comp-unrecognized { opacity: 0.7; }
 .comp-detail-card.comp-unrecognized .comp-detail-name { font-style: italic; }
 .comp-detail-type-unknown { background: #1a1a1e !important; color: #555a6e !important; }
@@ -882,6 +872,48 @@ body {
     cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 0.15rem 0.4rem;
 }
 .comp-restore-btn:hover { text-decoration: underline; }
+
+/* Collapsible competitor detail cards */
+.comp-detail-card .comp-detail-hdr { cursor: pointer; user-select: none; }
+.comp-detail-card .comp-detail-hdr .comp-collapse-arrow {
+    font-size: 0.55rem; color: #555a6e; transition: transform 0.15s;
+    display: inline-block; margin-right: 0.4rem;
+}
+.comp-detail-card.collapsed .comp-collapse-arrow { transform: rotate(0deg); }
+.comp-detail-card:not(.collapsed) .comp-collapse-arrow { transform: rotate(90deg); }
+.comp-detail-body {
+    max-height: 2000px; overflow: hidden;
+    transition: max-height 0.35s ease-in-out, opacity 0.25s;
+    opacity: 1;
+}
+.comp-detail-card.collapsed .comp-detail-body {
+    max-height: 0; opacity: 0;
+}
+
+/* Competitor intel section */
+.comp-intel {
+    background: #1a1d28; border-radius: 6px; padding: 0.6rem 0.9rem;
+    margin-bottom: 0.6rem; font-size: 0.85rem; color: #9a9db0; line-height: 1.4;
+}
+.comp-intel-label {
+    font-size: 0.72rem; font-weight: 600; color: #6b7084;
+    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.2rem;
+}
+
+/* Inline dismiss button */
+.comp-dismiss-inline {
+    font-size: 0.78rem; color: #555a6e; background: none; border: 1px solid #2a2d40;
+    border-radius: 4px; padding: 0.1rem 0.5rem; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+    margin-left: auto; white-space: nowrap;
+}
+.comp-dismiss-inline:hover { border-color: #f87171; color: #f87171; background: #2a1a1a; }
+
+/* Unrecognized competitor message */
+.comp-unrecognized-msg {
+    font-size: 0.82rem; color: #555a6e; font-style: italic;
+    padding: 0.3rem 0 0.6rem 0;
+}
 </style>
 </head>
 <body>
@@ -919,7 +951,16 @@ body {
             <button class="dd-btn" onclick="toggleDD('seg-dd')"><span id="seg-label">Segments</span><span class="dd-arrow">&#9660;</span></button>
             <div class="dd-panel" id="seg-panel"></div>
         </div>
+        <div class="dd-wrap" id="comp-filter-dd" style="display:none">
+            <button class="dd-btn" onclick="toggleDD('comp-filter-dd')"><span id="comp-filter-label">Competitors</span><span class="dd-arrow">&#9660;</span></button>
+            <div class="dd-panel" id="comp-filter-panel"></div>
+        </div>
+        <div class="dd-wrap" id="comp-type-dd" style="display:none">
+            <button class="dd-btn" onclick="toggleDD('comp-type-dd')"><span id="comp-type-label">All Types</span><span class="dd-arrow">&#9660;</span></button>
+            <div class="dd-panel" id="comp-type-panel"></div>
+        </div>
         <button class="expand-btn" id="expand-btn" onclick="toggleExpandAll()" style="display:none">Collapse All</button>
+        <button class="expand-btn" id="comp-expand-btn" onclick="toggleCompExpandAll()" style="display:none">Expand All</button>
         <button class="scan-btn" id="sync-sheets-btn" onclick="syncToSheets(this)" style="display:none">Sync to Sheets</button>
         <div style="flex:1"></div>
         <button class="scan-btn" id="analyze-btn" onclick="showAnalyzeModal()" style="display:none">Run Analysis</button>
@@ -2107,6 +2148,7 @@ function selectDate(el) {
     buildFeatures();
     buildCalls();
     buildPersonas();
+    if (currentTab === 'competitors') buildCompetitors();
     buildProductReport();
     buildMarketingReport();
     updateStats();
@@ -2282,6 +2324,7 @@ function selectSegment(el) {
     syncSegmentLabel();
     applySegmentFilter();
     if (currentTab === 'personas') buildPersonas();
+    if (currentTab === 'competitors') buildCompetitors();
 }
 
 function syncSegmentLabel() {
@@ -2944,15 +2987,136 @@ const MENTION_TYPE_LABELS = {
 };
 
 let activeCompTypeFilter = null; // null = show all
+let activeCompNameFilters = new Set(); // empty = show all
+let compAllExpanded = false; // false = not all expanded (initial: top 3 open); toggled by button
+let compExpandUserSet = false; // true once user clicks expand/collapse toggle
+
+// ---- Competitor filter dropdowns ----
+function buildCompFilterDropdown(allCompNames) {
+    const sorted = [...allCompNames].sort();
+    const panel = document.getElementById('comp-filter-panel');
+    let html = '<div class="dd-item selected" data-val="__all__" onclick="selectCompFilter(this)"><span class="dd-check">&#10003;</span>All Competitors</div>';
+    html += '<div class="dd-sep"></div>';
+    sorted.forEach(name => {
+        const sel = activeCompNameFilters.size === 0 || activeCompNameFilters.has(name.toLowerCase());
+        html += '<div class="dd-item' + (sel && activeCompNameFilters.size > 0 ? ' selected' : '') + '" data-val="' + esc(name) + '" onclick="selectCompFilter(this)">' +
+            '<span class="dd-check">&#10003;</span>' + esc(name) + '</div>';
+    });
+    panel.innerHTML = html;
+    syncCompFilterLabel();
+}
+
+function selectCompFilter(el) {
+    const val = el.dataset.val;
+    if (val === '__all__') {
+        activeCompNameFilters.clear();
+        document.querySelectorAll('#comp-filter-panel .dd-item').forEach(d => {
+            d.classList.toggle('selected', d.dataset.val === '__all__');
+        });
+    } else {
+        document.querySelector('#comp-filter-panel .dd-item[data-val="__all__"]').classList.remove('selected');
+        el.classList.toggle('selected');
+        const name = val.toLowerCase();
+        if (el.classList.contains('selected')) {
+            activeCompNameFilters.add(name);
+        } else {
+            activeCompNameFilters.delete(name);
+        }
+        if (activeCompNameFilters.size === 0) {
+            document.querySelector('#comp-filter-panel .dd-item[data-val="__all__"]').classList.add('selected');
+        }
+    }
+    syncCompFilterLabel();
+    buildCompetitors();
+}
+
+function syncCompFilterLabel() {
+    const label = document.getElementById('comp-filter-label');
+    const btn = document.querySelector('#comp-filter-dd .dd-btn');
+    if (activeCompNameFilters.size === 0) {
+        label.textContent = 'Competitors';
+        btn.classList.remove('has-filter');
+    } else {
+        label.textContent = activeCompNameFilters.size + ' selected';
+        btn.classList.add('has-filter');
+    }
+}
+
+function buildCompTypeDropdown(availableTypes) {
+    const panel = document.getElementById('comp-type-panel');
+    const ALL_COMP_TYPES = ['direct', 'lms', 'diy', 'adjacent', 'marketplace'];
+    let html = '<div class="dd-item' + (!activeCompTypeFilter ? ' selected' : '') + '" data-val="__all__" onclick="selectCompType(this)"><span class="dd-check">&#10003;</span>All Types</div>';
+    html += '<div class="dd-sep"></div>';
+    ALL_COMP_TYPES.forEach(t => {
+        const label = t === 'lms' ? 'LMS' : t === 'diy' ? 'DIY' : t.charAt(0).toUpperCase() + t.slice(1);
+        const sel = activeCompTypeFilter === t;
+        const dimmed = !availableTypes.has(t) ? ' style="opacity:0.4"' : '';
+        html += '<div class="dd-item' + (sel ? ' selected' : '') + '" data-val="' + esc(t) + '" onclick="selectCompType(this)"' + dimmed + '>' +
+            '<span class="dd-check">&#10003;</span>' + esc(label) + '</div>';
+    });
+    // Add "Unrecognized" option
+    const hasUnrecognized = availableTypes.has('unknown');
+    html += '<div class="dd-item' + (activeCompTypeFilter === 'unknown' ? ' selected' : '') + '" data-val="unknown" onclick="selectCompType(this)"' + (!hasUnrecognized ? ' style="opacity:0.4"' : '') + '>' +
+        '<span class="dd-check">&#10003;</span>Unrecognized</div>';
+    panel.innerHTML = html;
+    syncCompTypeLabel();
+}
+
+function selectCompType(el) {
+    const val = el.dataset.val;
+    if (val === '__all__') {
+        activeCompTypeFilter = null;
+    } else {
+        activeCompTypeFilter = (activeCompTypeFilter === val) ? null : val;
+    }
+    document.querySelectorAll('#comp-type-panel .dd-item').forEach(d => {
+        if (d.dataset.val === '__all__') {
+            d.classList.toggle('selected', !activeCompTypeFilter);
+        } else {
+            d.classList.toggle('selected', d.dataset.val === activeCompTypeFilter);
+        }
+    });
+    syncCompTypeLabel();
+    closeAllDD();
+    buildCompetitors();
+}
+
+function syncCompTypeLabel() {
+    const label = document.getElementById('comp-type-label');
+    const btn = document.querySelector('#comp-type-dd .dd-btn');
+    if (!activeCompTypeFilter) {
+        label.textContent = 'All Types';
+        btn.classList.remove('has-filter');
+    } else {
+        const t = activeCompTypeFilter;
+        label.textContent = t === 'lms' ? 'LMS' : t === 'diy' ? 'DIY' : t === 'unknown' ? 'Unrecognized' : t.charAt(0).toUpperCase() + t.slice(1);
+        btn.classList.add('has-filter');
+    }
+}
+
+function toggleCompExpandAll() {
+    compAllExpanded = !compAllExpanded;
+    compExpandUserSet = true;
+    document.querySelectorAll('.comp-detail-card').forEach(card => {
+        card.classList.toggle('collapsed', !compAllExpanded);
+    });
+    document.getElementById('comp-expand-btn').textContent = compAllExpanded ? 'Collapse All' : 'Expand All';
+}
+
+function toggleCompCard(el) {
+    el.closest('.comp-detail-card').classList.toggle('collapsed');
+}
 
 function buildCompetitors() {
     const callMap = {};
     DATA.calls.forEach(c => { callMap[c.id] = c; });
 
-    // Collect all competitor mentions from calls (date-filtered, non-excluded)
+    // Collect all competitor mentions from calls (date-filtered, segment-filtered, non-excluded)
     const dateIds = activeCallIds();
+    const noSegFilter = activeSegmentFilters.size === 0;
     const activeCalls = DATA.calls.filter(c =>
         !excludedCalls.has(c.id) && dateIds.has(c.id) &&
+        (noSegFilter || (c.segment && activeSegmentFilters.has(c.segment.toLowerCase()))) &&
         ((c.competitor_mentions && c.competitor_mentions.length > 0) ||
          (c.marketing_data && c.marketing_data.competitors_mentioned && c.marketing_data.competitors_mentioned.length > 0))
     );
@@ -3024,7 +3188,7 @@ function buildCompetitors() {
     const compMeta = {};
     if (DATA.competitors) {
         DATA.competitors.forEach(c => {
-            compMeta[c.name] = { type: c.type || 'direct', description: c.description || '' };
+            compMeta[c.name] = { type: c.type || 'direct', description: c.description || '', differentiator: c.differentiator || '' };
         });
     }
 
@@ -3041,14 +3205,41 @@ function buildCompetitors() {
         if (cm.company) target[name].companies.add(cm.company);
     });
 
+    // Build filter dropdowns (always show all non-excluded competitors, even if filtered out by type)
+    buildCompFilterDropdown(Object.keys(byComp));
+    const availableTypes = new Set();
+    Object.entries(byComp).forEach(([name]) => {
+        const type = (compMeta[name] || {}).type || 'unknown';
+        availableTypes.add(type);
+    });
+    buildCompTypeDropdown(availableTypes);
+
+    // Apply competitor name filter and type filter
+    let filteredComps = Object.entries(byComp);
+    if (activeCompNameFilters.size > 0) {
+        filteredComps = filteredComps.filter(([name]) => activeCompNameFilters.has(name.toLowerCase()));
+    }
+    if (activeCompTypeFilter) {
+        filteredComps = filteredComps.filter(([name]) => {
+            const type = (compMeta[name] || {}).type || 'unknown';
+            return type === activeCompTypeFilter;
+        });
+    }
+
     // Sort competitors by mention count desc
-    const sortedComps = Object.entries(byComp).sort((a, b) => b[1].mentions.length - a[1].mentions.length);
+    const sortedComps = filteredComps.sort((a, b) => b[1].mentions.length - a[1].mentions.length);
     const activeMentionCount = sortedComps.reduce((sum, [, d]) => sum + d.mentions.length, 0);
 
     if (sortedComps.length === 0 && Object.keys(byCompExcluded).length > 0) {
-        let html = '<div class="comp-empty">All competitor mentions are excluded.</div>';
+        let html = '<div class="comp-empty">All competitor mentions are excluded or filtered out.</div>';
         html += buildExcludedSection(byCompExcluded, 0);
         document.getElementById('competitors-view').innerHTML = html;
+        return;
+    }
+
+    if (sortedComps.length === 0) {
+        document.getElementById('competitors-view').innerHTML =
+            '<div class="comp-empty">No competitors match the current filters.</div>';
         return;
     }
 
@@ -3102,46 +3293,42 @@ function buildCompetitors() {
         html += '</div></div>';
     }
 
-    // ========== TYPE FILTER CHIPS ==========
-    const compTypes = new Set();
-    sortedComps.forEach(([name]) => {
-        const type = (compMeta[name] || {}).type || 'direct';
-        compTypes.add(type);
-    });
-    if (compTypes.size > 1) {
-        html += '<div class="comp-section-title" style="margin-top:1rem">Competitor Details</div>';
-        html += '<div class="comp-type-filter">';
-        html += '<div class="comp-type-chip active" onclick="filterCompType(null, this)">All</div>';
-        compTypes.forEach(t => {
-            const label = t.charAt(0).toUpperCase() + t.slice(1);
-            html += '<div class="comp-type-chip" onclick="filterCompType(\'' + esc(t) + '\', this)">' + esc(label) + '</div>';
-        });
-        html += '</div>';
-    } else {
-        html += '<div class="comp-section-title" style="margin-top:1rem">Competitor Details</div>';
-    }
-
     // ========== DETAIL CARDS ==========
-    sortedComps.forEach(([name, data]) => {
+    html += '<div class="comp-section-title" style="margin-top:1rem">Competitor Details</div>';
+    sortedComps.forEach(([name, data], idx) => {
         const meta = compMeta[name] || {};
         const isCanonical = !!meta.type;
         const type = meta.type || 'unknown';
         const color = compColor(name);
+        // If user manually toggled, respect that. Otherwise: top 3 expanded, rest collapsed
+        const isCollapsed = compExpandUserSet ? !compAllExpanded : idx >= 3;
 
-        html += '<div class="comp-detail-card' + (isCanonical ? '' : ' comp-unrecognized') + '" data-comp-type="' + esc(type) + '" data-comp-name="' + esc(name) + '" style="--comp-color:' + color + '">';
-        html += '<button class="comp-dismiss" onclick="dismissCompetitor(\'' + esc(name).replace(/'/g, "\\'") + '\')" title="Exclude this competitor">&times;</button>';
-        html += '<div class="comp-detail-hdr">';
+        html += '<div class="comp-detail-card' + (isCanonical ? '' : ' comp-unrecognized') + (isCollapsed ? ' collapsed' : '') + '" data-comp-type="' + esc(type) + '" data-comp-name="' + esc(name) + '" style="--comp-color:' + color + '">';
+        html += '<div class="comp-detail-hdr" onclick="toggleCompCard(this)">';
+        html += '<span class="comp-collapse-arrow">&#9654;</span>';
         html += '<div class="comp-detail-name">' + esc(name) + '</div>';
         if (isCanonical) {
-            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+            const typeLabel = type === 'lms' ? 'LMS' : type === 'diy' ? 'DIY' : type.charAt(0).toUpperCase() + type.slice(1);
             html += '<div class="comp-detail-type">' + esc(typeLabel) + '</div>';
-        } else {
-            html += '<div class="comp-detail-type comp-detail-type-unknown">Unrecognized</div>';
         }
+        html += '<span style="font-size:0.82rem;color:#555a6e;margin-left:0.5rem">' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + '</span>';
+        html += '<button class="comp-dismiss-inline" onclick="event.stopPropagation();dismissCompetitor(\'' + esc(name).replace(/'/g, "\\'") + '\')" title="Exclude this competitor">Dismiss</button>';
         html += '</div>';
 
-        if (isCanonical && meta.description) {
-            html += '<div style="font-size:0.82rem;color:#6b7084;margin-bottom:0.5rem">' + esc(meta.description) + '</div>';
+        // ===== Collapsible body =====
+        html += '<div class="comp-detail-body">';
+
+        // Intel section for canonical competitors
+        if (isCanonical && meta.differentiator) {
+            html += '<div class="comp-intel">';
+            html += '<div class="comp-intel-label">Intelligence</div>';
+            html += esc(meta.differentiator);
+            html += '</div>';
+        }
+
+        // Unrecognized competitor message
+        if (!isCanonical) {
+            html += '<div class="comp-unrecognized-msg">Not in competitor database. Dismiss if not a real competitor.</div>';
         }
 
         // Sort mentions by date desc
@@ -3162,7 +3349,8 @@ function buildCompetitors() {
             html += '</div>';
         });
 
-        html += '</div>';
+        html += '</div>'; // close comp-detail-body
+        html += '</div>'; // close comp-detail-card
     });
 
     // ========== EXCLUDED SECTION ==========
@@ -3249,19 +3437,6 @@ async function restoreCompetitor(name) {
     }
 }
 
-function filterCompType(type, chip) {
-    activeCompTypeFilter = type;
-    document.querySelectorAll('.comp-type-chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    document.querySelectorAll('.comp-detail-card').forEach(card => {
-        if (!type || card.dataset.compType === type) {
-            card.style.display = '';
-        } else {
-            card.style.display = 'none';
-        }
-    });
-}
-
 function switchTab(tab) {
     currentTab = tab;
     updateHash();
@@ -3275,8 +3450,11 @@ function switchTab(tab) {
     document.getElementById('marketing-view').style.display = tab === 'marketing' ? '' : 'none';
     document.querySelector('.search-box').style.display = (isReport || tab === 'personas' || tab === 'competitors') ? 'none' : '';
     document.getElementById('co-dd').style.display = (tab === 'features' || tab === 'personas') ? '' : 'none';
-    document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls' || tab === 'personas') ? '' : 'none';
+    document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls' || tab === 'personas' || tab === 'competitors') ? '' : 'none';
+    document.getElementById('comp-filter-dd').style.display = tab === 'competitors' ? '' : 'none';
+    document.getElementById('comp-type-dd').style.display = tab === 'competitors' ? '' : 'none';
     document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
+    document.getElementById('comp-expand-btn').style.display = tab === 'competitors' ? '' : 'none';
     document.getElementById('sync-sheets-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('analyze-btn').style.display = tab === 'calls' ? '' : 'none';
     document.getElementById('q').value = '';
