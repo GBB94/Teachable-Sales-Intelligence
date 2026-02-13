@@ -636,6 +636,7 @@ def cmd_inject(args):
     new_mentions = []
     keyword_counts = {}
     calls_with_features = set()
+    category_errors = []
 
     for call in calls:
         call_id = call.get("id", "")
@@ -665,9 +666,10 @@ def cmd_inject(args):
 
             keyword_counts[feature_name] = keyword_counts.get(feature_name, 0) + 1
 
-            # Category: prefer inline from analysis, fallback to map, then "Other"
+            # Category: prefer inline from analysis, fallback to map
             category = feat.get("category") or categories_map.get(feature_name, "Other")
             if valid_categories and category not in valid_categories:
+                category_errors.append(f"  ERROR: \"{feature_name}\" has invalid category \"{category}\" (call {call_id[:12]})")
                 category = "Other"
 
             mention_id = generate_mention_id(call_id, feature_name)
@@ -713,6 +715,14 @@ def cmd_inject(args):
                 note = note + "\n" + fr_section
 
             call["hubspot_note"] = note
+
+    if category_errors:
+        print("\n  CATEGORY VALIDATION FAILED — the following features used non-canonical categories:")
+        for err in category_errors:
+            print(err)
+        print(f"\n  Valid categories: {sorted(valid_categories)}")
+        print("  Fix the analysis JSON and re-run inject.")
+        sys.exit(1)
 
     # Clear pending_analysis flag on all calls that now have features
     for call in calls:
