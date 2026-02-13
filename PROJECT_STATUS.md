@@ -75,13 +75,17 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
   - Layer 2 — `analyze_features.py validate` subcommand with fuzzy matching (`--fix` for auto-correction)
   - Layer 3 — NEEDS_REVIEW escalation: inject accepts it, dashboard shows yellow flags, suggested_new_categories tracked in categories.json
 - [x] Segment mix bar on Personas tab (horizontal stacked bar showing % of calls per segment, animated, with legend)
-- [x] Competitors tab (6th dashboard tab) with overview cards, frequency bar chart, type filter chips, detail cards
+- [x] Competitors tab (6th dashboard tab) with mix bar, frequency chart, type filter chips, detail cards
 - [x] `competitors.json` — 16 canonical competitors across 5 types (direct, LMS, DIY, adjacent, marketplace)
 - [x] Competitor extraction in analysis prompt — mention_types: currently_using, switching_from, evaluated, asked_about, compared_to
 - [x] Competitor validation in inject + validate subcommand (fuzzy matching, NEEDS_REVIEW escalation)
 - [x] Dashboard reads from both new `competitor_mentions` format and legacy `marketing_data.competitors_mentioned`
 - [x] Competitors catalog embedded in DATA for dashboard metadata (type, description per competitor)
 - [x] `_load_valid_names()` returns 3 sets: categories, segments, competitors
+- [x] Competitor mix bar (horizontal stacked %, animated, same pattern as segment mix bar)
+- [x] Competitor exclusion system: dismiss button on cards, password-protected, persists to `excluded_competitors` in features.json
+- [x] "Excluded (N)" restore section at bottom of Competitors tab
+- [x] `/api/exclude-competitor` server endpoint (exclude/restore actions)
 
 ## What's In Progress
 

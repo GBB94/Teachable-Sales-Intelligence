@@ -3409,5 +3409,8 @@
     "adjacent": "Adjacent tools sometimes used for courses",
     "marketplace": "Course marketplaces (different model but prospects mention them)"
   },
-  "excluded_competitors": []
+  "excluded_competitors": [
+    "SurveyMonkey",
+    "Confluence (Atlassian)"
+  ]
 }
