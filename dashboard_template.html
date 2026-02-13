@@ -749,15 +749,6 @@ body {
 }
 
 /* Competitors tab */
-.comp-overview { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
-.comp-card {
-    flex: 1 1 200px; max-width: 280px; min-width: 180px;
-    background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
-    padding: 1rem 1.2rem; border-left: 4px solid var(--comp-color, #4a7cff);
-}
-.comp-card-name { font-size: 1rem; font-weight: 700; color: #f0f1f4; margin-bottom: 0.25rem; }
-.comp-card-stat { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 700; color: #f0f1f4; }
-.comp-card-sub { font-size: 0.82rem; color: #6b7084; margin-top: 0.1rem; }
 .comp-freq-wrap { overflow-x: auto; margin-bottom: 1.5rem; }
 .comp-freq-bar {
     display: flex; align-items: flex-end; gap: 6px;
@@ -3028,54 +3019,37 @@ function buildCompetitors() {
     const sortedComps = Object.entries(byComp).sort((a, b) => b[1].mentions.length - a[1].mentions.length);
     const activeMentionCount = sortedComps.reduce((sum, [, d]) => sum + d.mentions.length, 0);
 
-    // Group by mention type for overview (only active, non-excluded)
-    const byType = {};
-    allMentions.filter(cm => !excludedCompetitors.has(cm.competitor.toLowerCase())).forEach(cm => {
-        if (!byType[cm.mention_type]) byType[cm.mention_type] = 0;
-        byType[cm.mention_type]++;
-    });
-
     let html = '';
 
-    // ========== OVERVIEW CARDS ==========
-    html += '<div class="comp-section-title">Overview</div>';
-    html += '<div class="comp-overview">';
-
-    // Total mentions card
-    html += '<div class="comp-card" style="--comp-color:#4a7cff">' +
-        '<div class="comp-card-name">Total Mentions</div>' +
-        '<div class="comp-card-stat">' + activeMentionCount + '</div>' +
-        '<div class="comp-card-sub">' + sortedComps.length + ' competitor' + (sortedComps.length !== 1 ? 's' : '') +
-        ' across ' + activeCalls.length + ' call' + (activeCalls.length !== 1 ? 's' : '') + '</div>' +
-    '</div>';
-
-    // Top competitor card
+    // ========== COMPETITOR MIX BAR ==========
     if (sortedComps.length > 0) {
-        const [topName, topData] = sortedComps[0];
-        const topType = (compMeta[topName] || {}).type || 'direct';
-        html += '<div class="comp-card" style="--comp-color:' + (COMP_COLORS[topType] || '#4a7cff') + '">' +
-            '<div class="comp-card-name">Most Mentioned</div>' +
-            '<div class="comp-card-stat">' + esc(topName) + '</div>' +
-            '<div class="comp-card-sub">' + topData.mentions.length + ' mention' + (topData.mentions.length !== 1 ? 's' : '') +
-            ' from ' + topData.companies.size + ' compan' + (topData.companies.size !== 1 ? 'ies' : 'y') + '</div>' +
-        '</div>';
-    }
-
-    // Mention type breakdown card
-    const typeEntries = Object.entries(byType).sort((a, b) => b[1] - a[1]);
-    if (typeEntries.length > 0) {
-        let typeList = '<ul class="seg-card-feats">';
-        typeEntries.forEach(([t, count]) => {
-            typeList += '<li>' + esc(MENTION_TYPE_LABELS[t] || t) + ': ' + count + '</li>';
+        html += '<div class="comp-section-title">Competitor Mix</div>';
+        html += '<div class="seg-mix">';
+        html += '<div class="seg-mix-bar">';
+        sortedComps.forEach(([name, data]) => {
+            const pct = activeMentionCount > 0 ? (data.mentions.length / activeMentionCount * 100) : 0;
+            const type = (compMeta[name] || {}).type || 'direct';
+            const color = COMP_COLORS[type] || '#4a7cff';
+            const shortName = name.split(' ').slice(0, 2).join(' ');
+            const label = pct >= 14 ? (shortName + ' ' + Math.round(pct) + '%') : (pct >= 7 ? Math.round(pct) + '%' : '');
+            html += '<div class="seg-mix-seg comp-mix-seg" data-pct="' + pct.toFixed(1) + '" style="background:' + color + '" title="' + esc(name) + ': ' + Math.round(pct) + '% (' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + ')">';
+            html += '<span>' + esc(label) + '</span>';
+            html += '</div>';
         });
-        typeList += '</ul>';
-        html += '<div class="comp-card" style="--comp-color:#a78bfa">' +
-            '<div class="comp-card-name">By Type</div>' +
-            typeList +
-        '</div>';
+        html += '</div>';
+        html += '<div class="seg-mix-legend">';
+        sortedComps.forEach(([name, data]) => {
+            const pct = activeMentionCount > 0 ? Math.round(data.mentions.length / activeMentionCount * 100) : 0;
+            const type = (compMeta[name] || {}).type || 'direct';
+            const color = COMP_COLORS[type] || '#4a7cff';
+            html += '<div class="seg-mix-legend-item">' +
+                '<span class="seg-mix-dot" style="background:' + color + '"></span>' +
+                esc(name) + ' ' + pct + '%' +
+            '</div>';
+        });
+        html += '</div>';
+        html += '</div>';
     }
-
-    html += '</div>';
 
     // ========== FREQUENCY BAR ==========
     if (sortedComps.length > 1) {
@@ -3157,6 +3131,13 @@ function buildCompetitors() {
     html += buildExcludedSection(byCompExcluded);
 
     document.getElementById('competitors-view').innerHTML = html;
+
+    // Animate mix bar widths
+    requestAnimationFrame(() => {
+        document.querySelectorAll('.comp-mix-seg').forEach(el => {
+            el.style.width = el.dataset.pct + '%';
+        });
+    });
 }
 
 function buildExcludedSection(byCompExcluded) {
