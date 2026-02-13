@@ -649,6 +649,28 @@ body {
 }
 .seg-card-feats li::before { content: '\2022'; color: #555a6e; margin-right: 0.4rem; }
 
+/* Segment mix bar */
+.seg-mix { margin-top: 0.25rem; }
+.seg-mix-bar {
+    display: flex; width: 100%; height: 32px; border-radius: 6px;
+    overflow: hidden; background: #1e2130;
+}
+.seg-mix-seg {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 600; color: #fff; white-space: nowrap;
+    overflow: hidden; position: relative; cursor: default;
+    width: 0; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.seg-mix-seg span { padding: 0 6px; text-overflow: ellipsis; overflow: hidden; }
+.seg-mix-legend {
+    display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; margin-top: 0.5rem;
+    font-size: 0.8rem; color: #9a9db0;
+}
+.seg-mix-legend-item { display: flex; align-items: center; gap: 0.35rem; }
+.seg-mix-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+
 /* Section 2: Comparison table */
 .seg-compare-wrap { overflow-x: auto; }
 .seg-compare {
@@ -2540,6 +2562,36 @@ function buildPersonas() {
     });
     html += '</div>';
 
+    // ========== SEGMENT MIX BAR ==========
+    if (sortedSegs.length > 0) {
+        const totalCalls = filteredCalls.length;
+        html += '<div class="seg-mix">';
+        html += '<div class="seg-section-title">Segment Mix</div>';
+        html += '<div class="seg-mix-bar">';
+        sortedSegs.forEach(([seg, data]) => {
+            const pct = totalCalls > 0 ? (data.calls.length / totalCalls * 100) : 0;
+            const color = segColor(seg);
+            const displaySeg = seg === 'NEEDS_REVIEW' ? 'Unclassified' : seg;
+            const label = pct >= 12 ? (displaySeg.split(' ').slice(0, 3).join(' ') + ' ' + Math.round(pct) + '%') : (pct >= 6 ? Math.round(pct) + '%' : '');
+            html += '<div class="seg-mix-seg" data-pct="' + pct.toFixed(1) + '" style="background:' + color + '" title="' + esc(displaySeg) + ': ' + Math.round(pct) + '% (' + data.calls.length + ' call' + (data.calls.length !== 1 ? 's' : '') + ')">';
+            html += '<span>' + esc(label) + '</span>';
+            html += '</div>';
+        });
+        html += '</div>';
+        html += '<div class="seg-mix-legend">';
+        sortedSegs.forEach(([seg, data]) => {
+            const pct = totalCalls > 0 ? Math.round(data.calls.length / totalCalls * 100) : 0;
+            const color = segColor(seg);
+            const displaySeg = seg === 'NEEDS_REVIEW' ? 'Unclassified' : seg;
+            html += '<div class="seg-mix-legend-item">' +
+                '<span class="seg-mix-dot" style="background:' + color + '"></span>' +
+                esc(displaySeg) + ' ' + pct + '%' +
+            '</div>';
+        });
+        html += '</div>';
+        html += '</div>';
+    }
+
     // ========== SECTION 2: Segment Comparison Table ==========
     // Collect all features with 2+ total mentions across ALL segments
     const allFeatureCounts = {};
@@ -2692,6 +2744,13 @@ function buildPersonas() {
     });
 
     document.getElementById('personas-view').innerHTML = html;
+
+    // Animate segment mix bar widths
+    requestAnimationFrame(() => {
+        document.querySelectorAll('.seg-mix-seg').forEach(el => {
+            el.style.width = el.dataset.pct + '%';
+        });
+    });
 }
 
 function togglePersonasExpand(btn) {
