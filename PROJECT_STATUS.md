@@ -100,6 +100,7 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Competitors tab: Expand/Collapse button inline with "Competitor Details" header (matches Personas pattern)
 - [x] Fuzzy competitor name matching: "Learn Worlds" → LearnWorlds, "School (Skool)" → Skool
 - [x] Redesigned intel block in detail cards: description (muted) + differentiator (bright) + type badge pill
+- [x] Action password updated to match Netlify Basic-Auth credential across all password-protected actions
 
 ## What's In Progress
 
