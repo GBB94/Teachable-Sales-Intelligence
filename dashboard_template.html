@@ -842,12 +842,20 @@ body {
 
 /* Competitor intel section */
 .comp-intel {
-    background: #1a1d28; border-radius: 6px; padding: 0.6rem 0.9rem;
-    margin-bottom: 0.6rem; font-size: 0.85rem; color: #9a9db0; line-height: 1.4;
+    background: #1a1d28; border-radius: 6px; padding: 0.75rem 0.9rem;
+    margin-bottom: 0.75rem; line-height: 1.5;
 }
-.comp-intel-label {
-    font-size: 0.72rem; font-weight: 600; color: #6b7084;
-    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.2rem;
+.comp-intel-desc {
+    font-size: 0.85rem; color: #8b8fa3; margin-bottom: 0.35rem;
+}
+.comp-intel-diff {
+    font-size: 0.85rem; color: #c8cad2;
+}
+.comp-intel-type {
+    display: inline-block; font-size: 0.72rem; font-weight: 500; color: #8b8fa3;
+    background: #12141c; padding: 0.1rem 0.45rem; border-radius: 3px;
+    text-transform: uppercase; letter-spacing: 0.03em;
+    margin-top: 0.35rem;
 }
 
 /* Inline dismiss button */
@@ -3135,10 +3143,29 @@ function buildCompetitors() {
 
     // Build competitor lookup from competitors.json data embedded in DATA (or fallback)
     const compMeta = {};
+    const _compMetaLower = {}; // lowercase name -> meta
+    const _compMetaStrip = {}; // stripped (no spaces, lowercase) -> meta
     if (DATA.competitors) {
         DATA.competitors.forEach(c => {
-            compMeta[c.name] = { type: c.type || 'direct', description: c.description || '', differentiator: c.differentiator || '' };
+            const entry = { type: c.type || 'direct', description: c.description || '', differentiator: c.differentiator || '' };
+            compMeta[c.name] = entry;
+            _compMetaLower[c.name.toLowerCase()] = entry;
+            _compMetaStrip[c.name.toLowerCase().replace(/[\s\-()]/g, '')] = entry;
         });
+    }
+    function getCompMeta(name) {
+        if (compMeta[name]) return compMeta[name];
+        if (_compMetaLower[name.toLowerCase()]) return _compMetaLower[name.toLowerCase()];
+        const stripped = name.toLowerCase().replace(/[\s\-()]/g, '');
+        if (_compMetaStrip[stripped]) return _compMetaStrip[stripped];
+        // Check if name contains a canonical name in parentheses, e.g. "School (Skool)" -> "Skool"
+        const paren = name.match(/\(([^)]+)\)/);
+        if (paren) {
+            const inner = paren[1].toLowerCase();
+            if (_compMetaLower[inner]) return _compMetaLower[inner];
+            if (_compMetaStrip[inner.replace(/[\s\-()]/g, '')]) return _compMetaStrip[inner.replace(/[\s\-()]/g, '')];
+        }
+        return {};
     }
 
     // Group by competitor (separate active vs excluded)
@@ -3158,7 +3185,7 @@ function buildCompetitors() {
     buildCompFilterDropdown(Object.keys(byComp));
     const availableTypes = new Set();
     Object.entries(byComp).forEach(([name]) => {
-        const type = (compMeta[name] || {}).type || 'unknown';
+        const type = getCompMeta(name).type || 'unknown';
         availableTypes.add(type);
     });
     buildCompTypeDropdown(availableTypes);
@@ -3170,7 +3197,7 @@ function buildCompetitors() {
     }
     if (activeCompTypeFilter) {
         filteredComps = filteredComps.filter(([name]) => {
-            const type = (compMeta[name] || {}).type || 'unknown';
+            const type = getCompMeta(name).type || 'unknown';
             return type === activeCompTypeFilter;
         });
     }
@@ -3201,7 +3228,7 @@ function buildCompetitors() {
     html += '<div class="seg-section-title">Competitor Overview</div>';
     html += '<div class="seg-overview">';
     sortedComps.forEach(([name, data]) => {
-        const meta = compMeta[name] || {};
+        const meta = getCompMeta(name);
         const color = compColor(name);
         const diffParts = (meta.differentiator || '').split(/\.\s+/).filter(Boolean).slice(0, 3);
         let featsHTML = '';
@@ -3254,7 +3281,7 @@ function buildCompetitors() {
         '<button class="expand-btn" onclick="toggleCompExpandAll(this)">' + (compAllExpanded ? 'Collapse All' : 'Expand All') + '</button>' +
         '</div>';
     sortedComps.forEach(([name, data], idx) => {
-        const meta = compMeta[name] || {};
+        const meta = getCompMeta(name);
         const isCanonical = !!meta.type;
         const type = meta.type || 'unknown';
         const color = compColor(name);
@@ -3276,16 +3303,19 @@ function buildCompetitors() {
         // ===== Collapsible body =====
         html += '<div class="comp-detail-body">';
 
-        // Intel section for canonical competitors
-        if (isCanonical && meta.differentiator) {
+        // Intel section for recognized competitors
+        if (isCanonical) {
             html += '<div class="comp-intel">';
-            html += '<div class="comp-intel-label">Intelligence</div>';
-            html += esc(meta.differentiator);
+            if (meta.description) {
+                html += '<div class="comp-intel-desc">' + esc(meta.description) + '</div>';
+            }
+            if (meta.differentiator) {
+                html += '<div class="comp-intel-diff">' + esc(meta.differentiator) + '</div>';
+            }
+            const typeLabel = type === 'lms' ? 'LMS' : type === 'diy' ? 'DIY' : type.charAt(0).toUpperCase() + type.slice(1);
+            html += '<span class="comp-intel-type">' + esc(typeLabel) + '</span>';
             html += '</div>';
-        }
-
-        // Unrecognized competitor message
-        if (!isCanonical) {
+        } else {
             html += '<div class="comp-unrecognized-msg">Not in competitor database. Dismiss if not a real competitor.</div>';
         }
 
