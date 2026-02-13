@@ -76,7 +76,7 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
   - Layer 3 — NEEDS_REVIEW escalation: inject accepts it, dashboard shows yellow flags, suggested_new_categories tracked in categories.json
 - [x] Segment mix bar on Personas tab (horizontal stacked bar showing % of calls per segment, animated, with legend)
 - [x] Competitors tab (6th dashboard tab) with mix bar, frequency chart, type filter chips, detail cards
-- [x] `competitors.json` — 16 canonical competitors across 5 types (direct, LMS, DIY, adjacent, marketplace)
+- [x] `competitors.json` — 18 canonical competitors across 5 types (direct, LMS, DIY, adjacent, marketplace)
 - [x] Competitor extraction in analysis prompt — mention_types: currently_using, switching_from, evaluated, asked_about, compared_to
 - [x] Competitor validation in inject + validate subcommand (fuzzy matching, NEEDS_REVIEW escalation)
 - [x] Dashboard reads from both new `competitor_mentions` format and legacy `marketing_data.competitors_mentioned`
@@ -93,7 +93,7 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Competitors tab: "Not in competitor database" message for unrecognized competitors
 - [x] Competitors tab: inline dismiss button (right-aligned in header row, replaces old hover-only dismiss)
 - [x] Segment and date filters now apply to Competitors tab (filter underlying calls)
-- [x] Competitors tab: overview cards (seg-card style) with mention count, company count, differentiator bullets
+- [x] Competitors tab: overview cards (seg-card style) with mention count, company count, short_description
 - [x] Competitors tab: uses seg-mix-bar/seg-mix-seg classes (identical to Personas mix bar)
 - [x] Competitors tab: frequency bar chart removed (redundant with overview cards + mix bar)
 - [x] Competitors tab: `#competitors-view` flex column with 1.5rem gap (matches Personas spacing)
@@ -101,6 +101,9 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Fuzzy competitor name matching: "Learn Worlds" → LearnWorlds, "School (Skool)" → Skool
 - [x] Redesigned intel block in detail cards: description (muted) + differentiator (bright) + type badge pill
 - [x] Action password updated to match Netlify Basic-Auth credential across all password-protected actions
+- [x] `competitors.json` — `short_description` field added to all 18 competitors (one-liner summaries)
+- [x] 2 new canonical competitors added: Credly (adjacent, digital credentials) and WooCommerce (diy, WordPress ecommerce)
+- [x] `competitors.json` now has 18 competitors across 5 types (was 16)
 
 ## What's In Progress
 
@@ -160,10 +163,10 @@ sales-intelligence/
   models.py                  # Data models, HubSpot note template
   client.py                  # Fireflies API client
   exports.py                 # JSON/CSV/dashboard export functions
-  dashboard_template.html    # HTML template with 5 tabs
+  dashboard_template.html    # HTML template with 6 tabs
   categories.json            # 10 feature category definitions
   segments.json              # 9 prospect segment definitions
-  competitors.json           # 16 canonical competitors (5 types)
+  competitors.json           # 18 canonical competitors (5 types), with short_description
   CLAUDE.md                  # Auto-loaded instructions for Claude Code
   README.md                  # Setup instructions, workflow docs
   PROJECT_STATUS.md          # This file — read first, update at session end
