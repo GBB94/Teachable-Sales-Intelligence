@@ -538,6 +538,26 @@ body {
 .scan-process-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .scan-process-btn.processing { animation: scanPulse 1.2s ease-in-out infinite; }
 
+/* Analysis modal */
+.analyze-cmd {
+    background: #0d0f16; border: 1px solid #2a2d40; border-radius: 8px;
+    padding: 1rem 1.2rem; font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85rem; color: #e0e3eb; line-height: 1.6;
+    white-space: pre-wrap; word-break: break-all; margin: 0.75rem 0;
+}
+.analyze-info {
+    font-size: 0.82rem; color: #555a6e; line-height: 1.5; margin-top: 0.75rem;
+}
+.analyze-copy-btn {
+    font-size: 0.85rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    padding: 0.45rem 1.2rem; border-radius: 8px;
+    background: #4a7cff; border: none; color: #fff;
+    cursor: pointer; transition: all 0.15s; margin-top: 1rem;
+}
+.analyze-copy-btn:hover { background: #5b8aff; }
+.analyze-copy-btn.copied { background: #1a3a2a; color: #4ade80; }
+.analyze-pending { color: #f0a030; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.75rem; }
+
 /* Call list items in modal */
 .scan-call {
     display: flex; align-items: flex-start; gap: 0.75rem;
@@ -724,6 +744,8 @@ body {
         </div>
         <button class="expand-btn" id="expand-btn" onclick="toggleExpandAll()" style="display:none">Collapse All</button>
         <button class="scan-btn" id="sync-sheets-btn" onclick="syncToSheets(this)" style="display:none">Sync to Sheets</button>
+        <div style="flex:1"></div>
+        <button class="scan-btn" id="analyze-btn" onclick="showAnalyzeModal()" style="display:none">Run Analysis</button>
     </div>
     <div id="features-view"></div>
     <div id="calls-view" style="display:none"></div>
@@ -744,6 +766,18 @@ body {
         <div class="scan-modal-footer" id="scan-modal-footer" style="display:none">
             <div class="scan-modal-info" id="scan-modal-info"></div>
             <button class="scan-process-btn" id="scan-process-btn" onclick="processSelectedCalls()">Process Selected</button>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis command modal -->
+<div class="scan-overlay" id="analyze-overlay" onclick="if(event.target===this)closeAnalyzeModal()">
+    <div class="scan-modal">
+        <div class="scan-modal-hdr">
+            <h2>Run Analysis</h2>
+            <button class="scan-modal-close" onclick="closeAnalyzeModal()">&times;</button>
+        </div>
+        <div class="scan-modal-body" id="analyze-modal-body">
         </div>
     </div>
 </div>
@@ -2121,6 +2155,41 @@ function closeScanModal() {
     document.getElementById('scan-overlay').classList.remove('open');
 }
 
+function showAnalyzeModal() {
+    if (!checkActionPassword()) return;
+    const analyzed = new Set(DATA.mentions.map(m => m.call_id));
+    const pending = DATA.calls.filter(c => c.pending_analysis || !analyzed.has(c.id));
+    const body = document.getElementById('analyze-modal-body');
+    const cmd = 'python3 analyze_features.py extract test_output/index.html';
+    let html = '';
+    if (pending.length > 0) {
+        html += '<div class="analyze-pending">' + pending.length + ' call' + (pending.length === 1 ? '' : 's') + ' pending analysis</div>';
+        html += '<div style="margin-bottom:0.75rem;font-size:0.85rem;color:#8b8fa3">';
+        pending.forEach(c => {
+            html += '<div style="padding:0.2rem 0">' + esc(c.title) + ' <span style="color:#555a6e">(' + c.date + ')</span></div>';
+        });
+        html += '</div>';
+    } else {
+        html += '<div style="color:#4ade80;font-weight:600;font-size:0.9rem;margin-bottom:0.75rem">All calls analyzed</div>';
+    }
+    html += '<div style="font-size:0.85rem;color:#8b8fa3;margin-bottom:0.5rem">Run this in Claude Code:</div>';
+    html += '<div class="analyze-cmd">' + esc(cmd) + '</div>';
+    html += '<div class="analyze-info">This will extract pending transcripts for CC to analyze. CC will read the transcripts, extract features, assign segments, and inject results back into the dashboard. After inject, commit and push to update Netlify.</div>';
+    html += '<button class="analyze-copy-btn" onclick="copyAnalyzeCmd(this)">Copy Command</button>';
+    body.innerHTML = html;
+    document.getElementById('analyze-overlay').classList.add('open');
+}
+function closeAnalyzeModal() {
+    document.getElementById('analyze-overlay').classList.remove('open');
+}
+function copyAnalyzeCmd(btn) {
+    navigator.clipboard.writeText('python3 analyze_features.py extract test_output/index.html').then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy Command'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
 async function syncToSheets(btn) {
     btn.disabled = true;
     btn.textContent = 'Syncing...';
@@ -2621,6 +2690,7 @@ function switchTab(tab) {
     document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls' || tab === 'personas') ? '' : 'none';
     document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('sync-sheets-btn').style.display = tab === 'features' ? '' : 'none';
+    document.getElementById('analyze-btn').style.display = tab === 'calls' ? '' : 'none';
     document.getElementById('q').value = '';
     closeAllDD();
     filter('');
