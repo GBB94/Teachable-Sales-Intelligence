@@ -194,10 +194,13 @@ class FirefliesRetriever:
         if filter_criteria.max_duration is not None and duration > filter_criteria.max_duration:
             return False
 
-        # Owner
+        # Owner (check organizer OR attendees — prospect may have sent the invite)
         if filter_criteria.owner_emails:
             organizer = raw_call.get("organizer_email", "").lower()
-            if not any(o.lower() in organizer for o in filter_criteria.owner_emails):
+            attendee_emails = [a.get("email", "").lower() for a in raw_call.get("meeting_attendees", [])]
+            org_match = any(o.lower() in organizer for o in filter_criteria.owner_emails)
+            att_match = any(o.lower() in ae for o in filter_criteria.owner_emails for ae in attendee_emails)
+            if not org_match and not att_match:
                 return False
 
         # Attendee
