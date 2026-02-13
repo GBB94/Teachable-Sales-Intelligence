@@ -749,6 +749,20 @@ body {
 }
 
 /* Competitors tab */
+.comp-mix-bar {
+    display: flex; width: 100%; height: 32px; border-radius: 6px;
+    overflow: hidden; background: #1e2130; gap: 2px;
+}
+.comp-mix-seg {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 600; color: #fff; white-space: nowrap;
+    overflow: hidden; position: relative; cursor: default;
+    width: 0; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.comp-mix-seg:first-child { border-radius: 6px 0 0 6px; }
+.comp-mix-seg:last-child { border-radius: 0 6px 6px 0; }
+.comp-mix-seg:only-child { border-radius: 6px; }
+.comp-mix-seg span { padding: 0 6px; text-overflow: ellipsis; overflow: hidden; }
 .comp-freq-wrap { overflow-x: auto; margin-bottom: 1.5rem; }
 .comp-freq-bar {
     display: flex; align-items: flex-end; gap: 6px;
@@ -836,6 +850,13 @@ body {
 .comp-detail-card { position: relative; }
 .comp-detail-card:hover .comp-dismiss { opacity: 1; }
 .comp-dismiss:hover { background: #2a1a1a; border-color: #f87171; color: #f87171; }
+.comp-detail-card.comp-unrecognized { opacity: 0.7; }
+.comp-detail-card.comp-unrecognized .comp-detail-name { font-style: italic; }
+.comp-detail-type-unknown { background: #1a1a1e !important; color: #555a6e !important; }
+.comp-detail-card.dismissing {
+    opacity: 0; transform: scale(0.97); transition: opacity 0.3s, transform 0.3s;
+}
+.comp-excluded-summary { font-size: 0.82rem; color: #3a3d4e; }
 .comp-excluded-section {
     margin-top: 1.5rem; padding-top: 1rem;
     border-top: 1px solid #1e2130;
@@ -2894,13 +2915,26 @@ function toggleCompareRows(btn) {
 }
 
 // ---- Competitors tab ----
-const COMP_COLORS = {
+const COMP_TYPE_COLORS = {
     'direct': '#4a9eff',
     'lms': '#a78bfa',
     'diy': '#fbbf24',
     'adjacent': '#fb923c',
     'marketplace': '#34d399'
 };
+const COMP_PALETTE = [
+    '#4a9eff', '#f472b6', '#fbbf24', '#4ade80', '#a78bfa',
+    '#fb923c', '#34d399', '#f87171', '#38bdf8', '#c084fc',
+    '#facc15', '#2dd4bf', '#e879f9', '#94a3b8'
+];
+const _compColorCache = {};
+function compColor(name) {
+    if (!_compColorCache[name]) {
+        const idx = Object.keys(_compColorCache).length % COMP_PALETTE.length;
+        _compColorCache[name] = COMP_PALETTE[idx];
+    }
+    return _compColorCache[name];
+}
 const MENTION_TYPE_LABELS = {
     'currently_using': 'Currently Using',
     'switching_from': 'Switching From',
@@ -3013,25 +3047,27 @@ function buildCompetitors() {
 
     if (sortedComps.length === 0 && Object.keys(byCompExcluded).length > 0) {
         let html = '<div class="comp-empty">All competitor mentions are excluded.</div>';
-        html += buildExcludedSection(byCompExcluded);
+        html += buildExcludedSection(byCompExcluded, 0);
         document.getElementById('competitors-view').innerHTML = html;
         return;
     }
 
     let html = '';
 
+    // Assign stable per-competitor colors (sorted order = color assignment order)
+    sortedComps.forEach(([name]) => compColor(name));
+
     // ========== COMPETITOR MIX BAR ==========
     if (sortedComps.length > 0) {
         html += '<div class="comp-section-title">Competitor Mix</div>';
         html += '<div class="seg-mix">';
-        html += '<div class="seg-mix-bar">';
+        html += '<div class="comp-mix-bar">';
         sortedComps.forEach(([name, data]) => {
             const pct = activeMentionCount > 0 ? (data.mentions.length / activeMentionCount * 100) : 0;
-            const type = (compMeta[name] || {}).type || 'direct';
-            const color = COMP_COLORS[type] || '#4a7cff';
+            const color = compColor(name);
             const shortName = name.split(' ').slice(0, 2).join(' ');
             const label = pct >= 14 ? (shortName + ' ' + Math.round(pct) + '%') : (pct >= 7 ? Math.round(pct) + '%' : '');
-            html += '<div class="seg-mix-seg comp-mix-seg" data-pct="' + pct.toFixed(1) + '" style="background:' + color + '" title="' + esc(name) + ': ' + Math.round(pct) + '% (' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + ')">';
+            html += '<div class="comp-mix-seg" data-pct="' + pct.toFixed(1) + '" style="background:' + color + '" title="' + esc(name) + ': ' + Math.round(pct) + '% (' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + ')">';
             html += '<span>' + esc(label) + '</span>';
             html += '</div>';
         });
@@ -3039,8 +3075,7 @@ function buildCompetitors() {
         html += '<div class="seg-mix-legend">';
         sortedComps.forEach(([name, data]) => {
             const pct = activeMentionCount > 0 ? Math.round(data.mentions.length / activeMentionCount * 100) : 0;
-            const type = (compMeta[name] || {}).type || 'direct';
-            const color = COMP_COLORS[type] || '#4a7cff';
+            const color = compColor(name);
             html += '<div class="seg-mix-legend-item">' +
                 '<span class="seg-mix-dot" style="background:' + color + '"></span>' +
                 esc(name) + ' ' + pct + '%' +
@@ -3057,8 +3092,7 @@ function buildCompetitors() {
         const maxCount = sortedComps[0][1].mentions.length;
         sortedComps.forEach(([name, data]) => {
             const pct = maxCount > 0 ? (data.mentions.length / maxCount * 100) : 0;
-            const type = (compMeta[name] || {}).type || 'direct';
-            const color = COMP_COLORS[type] || '#4a7cff';
+            const color = compColor(name);
             html += '<div class="comp-freq-col">' +
                 '<div class="comp-freq-count">' + data.mentions.length + '</div>' +
                 '<div class="comp-freq-bar-inner" style="height:' + Math.max(pct, 5) + '%;background:' + color + '"></div>' +
@@ -3090,18 +3124,23 @@ function buildCompetitors() {
     // ========== DETAIL CARDS ==========
     sortedComps.forEach(([name, data]) => {
         const meta = compMeta[name] || {};
-        const type = meta.type || 'direct';
-        const color = COMP_COLORS[type] || '#4a7cff';
-        const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+        const isCanonical = !!meta.type;
+        const type = meta.type || 'unknown';
+        const color = compColor(name);
 
-        html += '<div class="comp-detail-card" data-comp-type="' + esc(type) + '" data-comp-name="' + esc(name) + '" style="--comp-color:' + color + '">';
+        html += '<div class="comp-detail-card' + (isCanonical ? '' : ' comp-unrecognized') + '" data-comp-type="' + esc(type) + '" data-comp-name="' + esc(name) + '" style="--comp-color:' + color + '">';
         html += '<button class="comp-dismiss" onclick="dismissCompetitor(\'' + esc(name).replace(/'/g, "\\'") + '\')" title="Exclude this competitor">&times;</button>';
         html += '<div class="comp-detail-hdr">';
         html += '<div class="comp-detail-name">' + esc(name) + '</div>';
-        html += '<div class="comp-detail-type">' + esc(typeLabel) + '</div>';
+        if (isCanonical) {
+            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+            html += '<div class="comp-detail-type">' + esc(typeLabel) + '</div>';
+        } else {
+            html += '<div class="comp-detail-type comp-detail-type-unknown">Unrecognized</div>';
+        }
         html += '</div>';
 
-        if (meta.description) {
+        if (isCanonical && meta.description) {
             html += '<div style="font-size:0.82rem;color:#6b7084;margin-bottom:0.5rem">' + esc(meta.description) + '</div>';
         }
 
@@ -3127,7 +3166,7 @@ function buildCompetitors() {
     });
 
     // ========== EXCLUDED SECTION ==========
-    html += buildExcludedSection(byCompExcluded);
+    html += buildExcludedSection(byCompExcluded, sortedComps.length);
 
     document.getElementById('competitors-view').innerHTML = html;
 
@@ -3139,11 +3178,13 @@ function buildCompetitors() {
     });
 }
 
-function buildExcludedSection(byCompExcluded) {
+function buildExcludedSection(byCompExcluded, visibleCount) {
     const excludedNames = Object.keys(byCompExcluded).sort();
     if (excludedNames.length === 0) return '';
+    const total = (visibleCount || 0) + excludedNames.length;
     let html = '<div class="comp-excluded-section">';
-    html += '<button class="comp-excluded-toggle" onclick="toggleExcludedList()">Excluded (' + excludedNames.length + ')</button>';
+    html += '<span class="comp-excluded-summary">Showing ' + (visibleCount || 0) + ' of ' + total + ' competitors. </span>';
+    html += '<button class="comp-excluded-toggle" onclick="toggleExcludedList()">' + excludedNames.length + ' hidden.</button>';
     html += '<div class="comp-excluded-list" id="comp-excluded-list">';
     excludedNames.forEach(name => {
         const count = byCompExcluded[name].mentions.length;
@@ -3163,6 +3204,10 @@ function toggleExcludedList() {
 
 async function dismissCompetitor(name) {
     if (!checkActionPassword()) return;
+    // Fade out the card
+    const card = document.querySelector('.comp-detail-card[data-comp-name="' + CSS.escape(name) + '"]');
+    if (card) card.classList.add('dismissing');
+    await new Promise(r => setTimeout(r, 300));
     try {
         const res = await fetch('/api/exclude-competitor', {
             method: 'POST',
@@ -3177,7 +3222,6 @@ async function dismissCompetitor(name) {
             alert('Error: ' + (data.error || 'unknown'));
         }
     } catch (e) {
-        // Static file mode — persist in-memory only
         excludedCompetitors.add(name.toLowerCase());
         buildCompetitors();
     }
