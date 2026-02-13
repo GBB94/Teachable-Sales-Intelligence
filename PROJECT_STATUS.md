@@ -93,6 +93,13 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Competitors tab: "Not in competitor database" message for unrecognized competitors
 - [x] Competitors tab: inline dismiss button (right-aligned in header row, replaces old hover-only dismiss)
 - [x] Segment and date filters now apply to Competitors tab (filter underlying calls)
+- [x] Competitors tab: overview cards (seg-card style) with mention count, company count, differentiator bullets
+- [x] Competitors tab: uses seg-mix-bar/seg-mix-seg classes (identical to Personas mix bar)
+- [x] Competitors tab: frequency bar chart removed (redundant with overview cards + mix bar)
+- [x] Competitors tab: `#competitors-view` flex column with 1.5rem gap (matches Personas spacing)
+- [x] Competitors tab: Expand/Collapse button inline with "Competitor Details" header (matches Personas pattern)
+- [x] Fuzzy competitor name matching: "Learn Worlds" → LearnWorlds, "School (Skool)" → Skool
+- [x] Redesigned intel block in detail cards: description (muted) + differentiator (bright) + type badge pill
 
 ## What's In Progress
 
