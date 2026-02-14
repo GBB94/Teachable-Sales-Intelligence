@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
-**Last updated:** 2026-02-13
-**Updated by:** Opus 4.6 (session 8)
+**Last updated:** 2026-02-14
+**Updated by:** Opus 4.6 (session 9)
 
 ---
 
@@ -122,6 +122,10 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Segment label redesign: muted uppercase label above call title, segment color drives left border accent on card
 - [x] Week header segment breakdown: colored dots with count + abbreviation (PT&D, CE&C, etc.) per week
 - [x] Password gate redesign: custom modal with contextual action labels, shake animation on wrong password, Escape/backdrop to cancel. Replaces browser prompt/alert.
+- [x] Password gate enlarged to final spec (460px wide, 36px padding, 20px lock in 48px circle, 18px header, 15px input/button)
+- [x] Segment tags on competitor mentions: colored segment badge inline with each mention entry (company → segment → type → date)
+- [x] Prospect-first titles on By Call tab: generic titles ("Connect With Teachable", "Teachable Followup") swapped for prospect/company name, original title as muted subtitle
+- [x] New Since Last Visit system: localStorage tracks last dashboard visit, blue dot indicators on new cards, "NEW" badges on new competitor mentions, "N new" pill in header, "New Since Last Visit" date filter option
 
 ## What's In Progress
 
