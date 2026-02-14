@@ -3448,6 +3448,14 @@
       "short_description": "Open-source WordPress ecommerce plugin for selling digital and physical goods.",
       "description": "WordPress ecommerce plugin sometimes used with course plugins to sell courses.",
       "differentiator": "Free, open-source ecommerce. Flexible but requires WordPress + plugins."
+    },
+    {
+      "id": "wapcrm",
+      "name": "WapCRM",
+      "type": "adjacent",
+      "short_description": "WhatsApp and Instagram CRM with unified inbox, sales automation, and omnichannel support. Targets e-commerce, healthcare, and small business.",
+      "description": "WhatsApp/Instagram-focused CRM with unified inbox, sales automation, omnichannel messaging, and customer scoring.",
+      "differentiator": "Omnichannel CRM for WhatsApp/Instagram. Not a course platform \u2014 adjacent tool for customer communication."
     }
   ],
   "competitor_types": {

@@ -3217,13 +3217,16 @@ function buildCompetitors() {
     }
     // Fallback descriptions for competitors not in competitors.json
     const _unknownCompDesc = {
-        'fiducare': 'Financial compliance and fiduciary management platform.',
-        'wap': 'Unable to identify. Consider dismissing if not a real competitor.'
+        'fiducare': 'Financial compliance and fiduciary management platform.'
     };
+    // Aliases for legacy/abbreviated competitor names in call data
+    const _compAliases = { 'wap': 'wapcrm' };
     function getCompMeta(name) {
         if (compMeta[name]) return compMeta[name];
-        if (_compMetaLower[name.toLowerCase()]) return _compMetaLower[name.toLowerCase()];
-        const stripped = name.toLowerCase().replace(/[\s\-()]/g, '');
+        const lower = name.toLowerCase();
+        if (_compMetaLower[lower]) return _compMetaLower[lower];
+        if (_compAliases[lower] && _compMetaLower[_compAliases[lower]]) return _compMetaLower[_compAliases[lower]];
+        const stripped = lower.replace(/[\s\-()]/g, '');
         if (_compMetaStrip[stripped]) return _compMetaStrip[stripped];
         // Check if name contains a canonical name in parentheses, e.g. "School (Skool)" -> "Skool"
         const paren = name.match(/\(([^)]+)\)/);
