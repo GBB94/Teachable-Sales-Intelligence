@@ -226,6 +226,7 @@ body {
 
 /* Cards (shared) */
 .card {
+    position: relative;
     background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
     overflow: hidden; transition: border-color 0.15s;
 }
@@ -279,6 +280,21 @@ body {
     display: block; font-size: 0.65rem; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em;
     color: var(--seg-label-color, #6b7084); margin-bottom: 0.15rem;
+}
+.orig-title {
+    display: block; font-size: 0.75rem; font-weight: 400;
+    color: #555a6e; margin-top: 0.1rem;
+}
+/* New-since-last-visit indicators */
+.new-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #3b82f6;
+    position: absolute; top: 8px; left: 8px; z-index: 2;
+    box-shadow: 0 0 4px rgba(59,130,246,0.4);
+}
+.new-badge {
+    font-size: 0.6rem; font-weight: 700; padding: 0.05rem 0.35rem;
+    border-radius: 3px; background: rgba(59,130,246,0.15); color: #60a5fa;
+    text-transform: uppercase; letter-spacing: 0.04em; margin-left: 0.4rem;
 }
 /* Company pill (for By Feature view) */
 .co-pill-wrap {
@@ -936,6 +952,10 @@ body {
 .comp-mention-type.evaluated { background: #2a2518; color: #fbbf24; }
 .comp-mention-type.asked_about { background: #1a1d2e; color: #93c5fd; }
 .comp-mention-type.compared_to { background: #251a2e; color: #c4b5fd; }
+.comp-mention-seg {
+    font-size: 0.68rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 3px;
+    text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap;
+}
 .comp-mention-context { font-size: 0.88rem; color: #9a9db0; line-height: 1.4; }
 .comp-mention-ts { font-size: 0.78rem; color: #555a6e; }
 .comp-empty {
@@ -1202,6 +1222,10 @@ function updateHash() {
 // Date range filter — returns {start, end} Date objects or null for "all"
 function getDateRange() {
     if (activeDateRange === 'all') return null;
+    if (activeDateRange === 'new') {
+        if (!_lastVisitDate) return null; // no previous visit, show all
+        return { start: new Date(_lastVisitDate + 'T00:00:00'), end: new Date(Date.now() + 86400000) };
+    }
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const day = today.getDay(); // 0=Sun
@@ -1270,6 +1294,30 @@ function esc(s) {
     const d = document.createElement('div');
     d.textContent = s;
     return d.innerHTML;
+}
+
+const GENERIC_TITLE_RE = /^connect\s+with\s+teachable$/i;
+const FOLLOWUP_TITLE_RE = /^teachable\s+followup$/i;
+function getProspectTitle(call) {
+    const t = (call.title || '').trim();
+    if (!GENERIC_TITLE_RE.test(t) && !FOLLOWUP_TITLE_RE.test(t)) return null;
+    // Try marketing_data.company
+    if (call.marketing_data && call.marketing_data.company && !isTeachableInternal(call.marketing_data.company)) {
+        return call.marketing_data.company;
+    }
+    // Try hubspot_note COMPANY line
+    if (call.hubspot_note) {
+        const cm = call.hubspot_note.match(/^COMPANY:\s*(.+)/m);
+        if (cm && cm[1].trim() && !isTeachableInternal(cm[1].trim())) return cm[1].trim();
+    }
+    // Try attendees
+    const ext = extractCompany(call.attendees);
+    if (ext) return ext;
+    // Try marketing_data contacts
+    if (call.marketing_data && call.marketing_data.contacts && call.marketing_data.contacts.length > 0) {
+        return call.marketing_data.contacts[0].name;
+    }
+    return null;
 }
 
 function extractCompany(attendeeStr) {
@@ -1680,11 +1728,18 @@ function buildCalls() {
 
         const segLabelColor = SEG_LABEL_COLORS[(c.segment || '').toLowerCase()] || '#6b7084';
         const segLabel = c.segment ? '<span class="seg-label" style="--seg-label-color:' + segLabelColor + '">' + esc(c.segment) + '</span>' : '';
-        const displayTitle = esc(c.title) + (extAttendees ? '<span style="color:#9a9db0;font-weight:400"> &mdash; ' + esc(extAttendees) + '</span>' : '');
+        const prospectName = getProspectTitle(c);
+        let displayTitle;
+        if (prospectName) {
+            displayTitle = esc(prospectName) + '<span class="orig-title">' + esc(c.title) + '</span>';
+        } else {
+            displayTitle = esc(c.title) + (extAttendees ? '<span style="color:#9a9db0;font-weight:400"> &mdash; ' + esc(extAttendees) + '</span>' : '');
+        }
 
         const isExcluded = excludedCalls.has(c.id);
         const featureCountLabel = isPending ? 'pending' : callMentions.length + ' feature' + (callMentions.length > 1 ? 's' : '');
         const cardBorderStyle = c.segment ? 'border-left:3px solid ' + segLabelColor : '';
+        const isNew = isNewCall(c);
 
         if (isPending) {
             // Compact single-line pending card
@@ -1704,6 +1759,7 @@ function buildCalls() {
                 '<div class="mentions">' + mHTML + sectionsHTML + '</div></div>';
         } else {
             html += '<div class="card' + (isExcluded ? ' excluded' : '') + '" data-callid="' + esc(c.id) + '" data-segment="' + esc((c.segment || '').toLowerCase()) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + (c.segment || '') + ' ' + callMentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '"' + (cardBorderStyle ? ' style="' + cardBorderStyle + '"' : '') + '>' +
+                (isNew ? '<span class="new-dot"></span>' : '') +
                 '<div class="card-hdr" onclick="toggleCard(this)">' +
                     '<div class="left"><span class="arrow">&#9654;</span>' +
                         '<div class="name-block">' +
@@ -2363,6 +2419,7 @@ let activeSegmentFilters = new Set();
 // ---- Dropdown logic ----
 const DATE_OPTIONS = [
     { value: 'all', label: 'All Time' },
+    { value: 'new', label: 'New Since Last Visit' },
     { value: 'this-week', label: 'This Week' },
     { value: 'last-week', label: 'Last Week' },
     { value: 'last-2-weeks', label: 'Last 2 Weeks' },
@@ -3577,7 +3634,9 @@ function buildCompetitors() {
             : '';
         const badge = isVerified ? '' : '<span class="seg-card-unverified-badge">Unverified</span>';
         const dismissX = '<button class="seg-card-dismiss" onclick="event.stopPropagation();dismissCompetitor(\'' + esc(name).replace(/'/g, "\\'") + '\')" title="Dismiss competitor">&#10005;</button>';
+        const hasNewMentions = data.mentions.some(cm => isNewMention(cm));
         html += '<div class="seg-card clickable' + (isVerified ? '' : ' unverified') + '" style="--seg-color:' + color + '" onclick="scrollToCompDetail(\'' + esc(name).replace(/'/g, "\\'") + '\')">' +
+            (hasNewMentions ? '<span class="new-dot"></span>' : '') +
             dismissX +
             '<div class="seg-card-name">' + esc(name) + badge + '</div>' +
             '<div class="seg-card-stat">' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + '</div>' +
@@ -3666,10 +3725,15 @@ function buildCompetitors() {
             html += '<div class="comp-mention">';
             html += '<div class="comp-mention-meta">';
             html += '<span class="comp-mention-company">' + esc(cm.company || 'Unknown') + '</span>';
+            if (cm.segment) {
+                const sc = segColor(cm.segment);
+                html += '<span class="comp-mention-seg" style="background:' + sc + '22;color:' + sc + '">' + esc(cm.segment) + '</span>';
+            }
             html += '<span class="comp-mention-type ' + esc(cm.mention_type) + '">' + esc(MENTION_TYPE_LABELS[cm.mention_type] || cm.mention_type) + '</span>';
             if (cm.call_date) {
                 const d = cm.call_date.slice(5, 10).replace('-', '/');
                 html += '<span class="comp-mention-ts">' + d + '</span>';
+                if (isNewMention(cm)) html += '<span class="new-badge">New</span>';
             }
             html += '</div>';
             if (cm.context) {
@@ -3855,6 +3919,10 @@ function updateStats() {
     if (pendingCount > 0) {
         pillsHTML += '<span class="hdr-pill" style="border-color:#5a4a20"><span class="n" style="color:#fb923c">' + pendingCount + '</span><span class="l" style="color:#fb923c">pending</span></span>';
     }
+    const newCount = getNewCallCount();
+    if (newCount > 0) {
+        pillsHTML += '<span class="hdr-pill" style="border-color:#1e3a5f"><span class="n" style="color:#60a5fa">' + newCount + '</span><span class="l" style="color:#60a5fa">new</span></span>';
+    }
     document.getElementById('hdr-stats').innerHTML = pillsHTML;
 
     // Tagline: compute date range from visible calls
@@ -3880,6 +3948,25 @@ function updateStats() {
     document.getElementById('hdr-tagline').textContent = tagline;
 }
 
+// ---- Last visit tracking ----
+const TSI_LAST_VISIT_KEY = 'tsi_last_visit';
+const _lastVisitRaw = localStorage.getItem(TSI_LAST_VISIT_KEY);
+const _lastVisitDate = _lastVisitRaw ? _lastVisitRaw.slice(0, 10) : null;
+function isNewCall(call) {
+    if (!_lastVisitDate) return false;
+    return (call.date || '') > _lastVisitDate;
+}
+function isNewMention(cm) {
+    if (!_lastVisitDate) return false;
+    return (cm.call_date || '') > _lastVisitDate;
+}
+function getNewCallCount() {
+    if (!_lastVisitDate) return 0;
+    return DATA.calls.filter(c => !c.pending_analysis && isNewCall(c)).length;
+}
+// Update last visit timestamp after rendering
+function recordVisit() { localStorage.setItem(TSI_LAST_VISIT_KEY, new Date().toISOString().slice(0, 10)); }
+
 // Init — parse hash for exclusions, date range, and tab, then build
 const initTab = parseHash();
 buildDateDropdown();
@@ -3892,6 +3979,8 @@ buildPersonas();
 buildProductReport();
 buildMarketingReport();
 switchTab(initTab || 'features');
+// Record visit after rendering so "new" indicators are computed against previous visit
+setTimeout(recordVisit, 2000);
 </script>
 </body>
 </html>
