@@ -121,6 +121,7 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Compact pending calls: single-line rows with PENDING badge, 60% opacity, gray left border
 - [x] Segment label redesign: muted uppercase label above call title, segment color drives left border accent on card
 - [x] Week header segment breakdown: colored dots with count + abbreviation (PT&D, CE&C, etc.) per week
+- [x] Password gate redesign: custom modal with contextual action labels, shake animation on wrong password, Escape/backdrop to cancel. Replaces browser prompt/alert.
 
 ## What's In Progress
 

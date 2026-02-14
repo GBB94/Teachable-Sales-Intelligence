@@ -559,6 +559,52 @@ body {
 .scan-btn.scanning { animation: scanPulse 1.2s ease-in-out infinite; }
 @keyframes scanPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
+/* ---- Password gate modal ---- */
+.pw-overlay {
+    display: none; position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+    align-items: center; justify-content: center;
+}
+.pw-overlay.open { display: flex; }
+.pw-modal {
+    background: #16181f; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;
+    width: 340px; padding: 1.4rem 1.5rem; box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    animation: pwFadeIn 0.2s ease;
+}
+@keyframes pwFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.pw-hdr {
+    font-size: 0.95rem; font-weight: 600; color: #e5e7eb;
+    display: flex; align-items: center; gap: 0.4rem;
+}
+.pw-lock { font-size: 0.85rem; }
+.pw-sub { font-size: 0.8rem; color: #6b7084; margin: 0.35rem 0 0.9rem; }
+.pw-row { display: flex; gap: 0.5rem; }
+.pw-input {
+    flex: 1; font-size: 13px; font-family: 'DM Sans', sans-serif;
+    padding: 0.45rem 0.6rem; border-radius: 6px;
+    background: rgba(255,255,255,0.03); color: #e5e7eb;
+    border: 1px solid rgba(255,255,255,0.06);
+    outline: none; transition: border-color 0.15s;
+}
+.pw-input:focus { border-color: rgba(255,255,255,0.12); }
+.pw-input.pw-input-error { border-color: #8c5555; }
+.pw-confirm {
+    font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    padding: 0.45rem 1rem; border-radius: 6px; cursor: pointer;
+    background: #e5e7eb; color: #0f1117; border: none;
+    transition: background 0.15s;
+}
+.pw-confirm:hover { background: #f3f4f6; }
+.pw-error { font-size: 11px; color: #8c5555; margin-top: 0.4rem; min-height: 1rem; }
+@keyframes pwShake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+}
+.pw-shake { animation: pwShake 0.35s ease; }
+
 /* ---- Scan modal overlay ---- */
 .scan-overlay {
     display: none; position: fixed; inset: 0; z-index: 9999;
@@ -1057,16 +1103,65 @@ body {
         </div>
     </div>
 </div>
+<div class="pw-overlay" id="pw-overlay">
+    <div class="pw-modal" id="pw-modal">
+        <div class="pw-hdr"><span class="pw-lock">&#128274;</span> Password required</div>
+        <div class="pw-sub" id="pw-sub">This action requires authentication.</div>
+        <div class="pw-row">
+            <input type="password" class="pw-input" id="pw-input" placeholder="Enter password" autocomplete="off">
+            <button class="pw-confirm" id="pw-confirm">Confirm</button>
+        </div>
+        <div class="pw-error" id="pw-error"></div>
+    </div>
+</div>
 
 <script>
 const DATA = {{DATA_JSON}};
 const ACTION_PASSWORD = 'sdflkjei';
-function checkActionPassword() {
-    const pw = prompt('Enter password to continue:');
-    if (!pw) return false;
-    if (pw !== ACTION_PASSWORD) { alert('Incorrect password'); return false; }
-    return true;
+let _pwResolve = null;
+function checkActionPassword(actionLabel) {
+    return new Promise(resolve => {
+        _pwResolve = resolve;
+        const sub = document.getElementById('pw-sub');
+        sub.textContent = actionLabel
+            ? actionLabel + ' requires authentication to continue.'
+            : 'This action requires authentication.';
+        const input = document.getElementById('pw-input');
+        const error = document.getElementById('pw-error');
+        input.value = '';
+        error.textContent = '';
+        input.classList.remove('pw-input-error');
+        const overlay = document.getElementById('pw-overlay');
+        overlay.classList.add('open');
+        setTimeout(() => input.focus(), 50);
+    });
 }
+function _pwSubmit() {
+    const input = document.getElementById('pw-input');
+    const error = document.getElementById('pw-error');
+    if (input.value === ACTION_PASSWORD) {
+        document.getElementById('pw-overlay').classList.remove('open');
+        if (_pwResolve) { _pwResolve(true); _pwResolve = null; }
+    } else {
+        input.classList.add('pw-input-error');
+        error.textContent = 'Incorrect password. Try again.';
+        document.getElementById('pw-modal').classList.add('pw-shake');
+        setTimeout(() => document.getElementById('pw-modal').classList.remove('pw-shake'), 350);
+        input.value = '';
+        input.focus();
+    }
+}
+function _pwCancel() {
+    document.getElementById('pw-overlay').classList.remove('open');
+    if (_pwResolve) { _pwResolve(false); _pwResolve = null; }
+}
+document.getElementById('pw-overlay').addEventListener('click', function(e) { if (e.target === this) _pwCancel(); });
+document.getElementById('pw-confirm').addEventListener('click', _pwSubmit);
+document.getElementById('pw-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') _pwSubmit();
+    else if (e.key === 'Escape') _pwCancel();
+    else this.classList.remove('pw-input-error');
+});
 
 let currentTab = 'features';
 let excludedCalls = new Set();
@@ -2223,8 +2318,8 @@ function buildMarketingReport() {
 }
 
 // ---- Report actions ----
-function generateReports(btn) {
-    if (!checkActionPassword()) return;
+async function generateReports(btn) {
+    if (!await checkActionPassword('Generate reports')) return;
     buildProductReport();
     buildMarketingReport();
     btn.textContent = 'Updated!';
@@ -2533,8 +2628,8 @@ function closeScanModal() {
     document.getElementById('scan-overlay').classList.remove('open');
 }
 
-function showAnalyzeModal() {
-    if (!checkActionPassword()) return;
+async function showAnalyzeModal() {
+    if (!await checkActionPassword('Run analysis')) return;
     const analyzed = new Set(DATA.mentions.map(m => m.call_id));
     const pending = DATA.calls.filter(c => c.pending_analysis || !analyzed.has(c.id));
     const body = document.getElementById('analyze-modal-body');
@@ -2593,7 +2688,7 @@ async function syncToSheets(btn) {
 }
 
 async function startScan(btn) {
-    if (!checkActionPassword()) return;
+    if (!await checkActionPassword('Scan for calls')) return;
     // Static file mode: fall back to clipboard
     if (location.protocol === 'file:') {
         const cmd = document.getElementById('calls-view').dataset.scanCmd;
@@ -3636,7 +3731,7 @@ function scrollToCompDetail(name) {
 }
 
 async function dismissCompetitor(name) {
-    if (!checkActionPassword()) return;
+    if (!await checkActionPassword('Dismiss competitor')) return;
     // Fade out the card
     const card = document.querySelector('.comp-detail-card[data-comp-name="' + CSS.escape(name) + '"]');
     if (card) card.classList.add('dismissing');
@@ -3661,7 +3756,7 @@ async function dismissCompetitor(name) {
 }
 
 async function restoreCompetitor(name) {
-    if (!checkActionPassword()) return;
+    if (!await checkActionPassword('Restore competitor')) return;
     try {
         const res = await fetch('/api/exclude-competitor', {
             method: 'POST',
