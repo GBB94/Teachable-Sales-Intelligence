@@ -567,21 +567,27 @@ body {
 }
 .pw-overlay.open { display: flex; }
 .pw-modal {
-    background: #16181f; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;
-    width: 340px; padding: 1.4rem 1.5rem; box-shadow: 0 16px 40px rgba(0,0,0,0.4);
-    animation: pwFadeIn 0.2s ease;
+    background: #16181f; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+    width: 460px; padding: 36px; box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    animation: pwFadeIn 0.2s ease; text-align: center;
 }
 @keyframes pwFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-.pw-hdr {
-    font-size: 0.95rem; font-weight: 600; color: #e5e7eb;
-    display: flex; align-items: center; gap: 0.4rem;
+.pw-lock-circle {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
 }
-.pw-lock { font-size: 0.85rem; }
-.pw-sub { font-size: 0.8rem; color: #6b7084; margin: 0.35rem 0 0.9rem; }
+.pw-lock-circle .pw-lock { font-size: 20px; line-height: 1; }
+.pw-hdr {
+    font-size: 18px; font-weight: 600; color: #e5e7eb;
+    justify-content: center;
+}
+.pw-sub { font-size: 14px; color: #6b7084; margin: 6px 0 24px; }
 .pw-row { display: flex; gap: 0.5rem; }
 .pw-input {
-    flex: 1; font-size: 13px; font-family: 'DM Sans', sans-serif;
-    padding: 0.45rem 0.6rem; border-radius: 6px;
+    flex: 1; font-size: 15px; font-family: 'DM Sans', sans-serif;
+    padding: 12px 16px; border-radius: 8px;
     background: rgba(255,255,255,0.03); color: #e5e7eb;
     border: 1px solid rgba(255,255,255,0.06);
     outline: none; transition: border-color 0.15s;
@@ -589,13 +595,13 @@ body {
 .pw-input:focus { border-color: rgba(255,255,255,0.12); }
 .pw-input.pw-input-error { border-color: #8c5555; }
 .pw-confirm {
-    font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
-    padding: 0.45rem 1rem; border-radius: 6px; cursor: pointer;
+    font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    padding: 12px 24px; border-radius: 8px; cursor: pointer;
     background: #e5e7eb; color: #0f1117; border: none;
     transition: background 0.15s;
 }
 .pw-confirm:hover { background: #f3f4f6; }
-.pw-error { font-size: 11px; color: #8c5555; margin-top: 0.4rem; min-height: 1rem; }
+.pw-error { font-size: 13px; color: #8c5555; margin-top: 8px; min-height: 1.2rem; }
 @keyframes pwShake {
     0%,100% { transform: translateX(0); }
     20% { transform: translateX(-8px); }
@@ -1105,7 +1111,8 @@ body {
 </div>
 <div class="pw-overlay" id="pw-overlay">
     <div class="pw-modal" id="pw-modal">
-        <div class="pw-hdr"><span class="pw-lock">&#128274;</span> Password required</div>
+        <div class="pw-lock-circle"><span class="pw-lock">&#128274;</span></div>
+        <div class="pw-hdr">Password required</div>
         <div class="pw-sub" id="pw-sub">This action requires authentication.</div>
         <div class="pw-row">
             <input type="password" class="pw-input" id="pw-input" placeholder="Enter password" autocomplete="off">

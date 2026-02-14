@@ -31,3 +31,6 @@ credentials/
 
 # OS
 .DS_Store
+
+# Local Netlify folder
+.netlify
