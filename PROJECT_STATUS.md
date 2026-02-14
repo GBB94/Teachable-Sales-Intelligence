@@ -76,7 +76,7 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
   - Layer 3 — NEEDS_REVIEW escalation: inject accepts it, dashboard shows yellow flags, suggested_new_categories tracked in categories.json
 - [x] Segment mix bar on Personas tab (horizontal stacked bar showing % of calls per segment, animated, with legend)
 - [x] Competitors tab (6th dashboard tab) with mix bar, frequency chart, type filter chips, detail cards
-- [x] `competitors.json` — 18 canonical competitors across 5 types (direct, LMS, DIY, adjacent, marketplace)
+- [x] `competitors.json` — 19 canonical competitors across 5 types (direct, LMS, DIY, adjacent, marketplace)
 - [x] Competitor extraction in analysis prompt — mention_types: currently_using, switching_from, evaluated, asked_about, compared_to
 - [x] Competitor validation in inject + validate subcommand (fuzzy matching, NEEDS_REVIEW escalation)
 - [x] Dashboard reads from both new `competitor_mentions` format and legacy `marketing_data.competitors_mentioned`
@@ -103,14 +103,19 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Action password updated to match Netlify Basic-Auth credential across all password-protected actions
 - [x] `competitors.json` — `short_description` field added to all 18 competitors (one-liner summaries)
 - [x] 2 new canonical competitors added: Credly (adjacent, digital credentials) and WooCommerce (diy, WordPress ecommerce)
-- [x] `competitors.json` now has 18 competitors across 5 types (was 16)
-- [x] Fallback descriptions for unknown competitors: Fiducare, Wap hardcoded; future unknowns show "Description not available"
+- [x] `competitors.json` now has 19 competitors across 5 types (added WapCRM as adjacent, alias 'Wap' → 'WapCRM')
+- [x] Fallback descriptions for unknown competitors: Fiducare hardcoded; future unknowns show "Description not available"
+- [x] Competitor alias system: `_compAliases` map for legacy/abbreviated names in call data
 - [x] Tab persistence via URL hash: `competitors` tab now included in `parseHash()` allowed list (reload preserves active tab)
 - [x] Copy Transcript button on By Call tab (same pattern as Copy HubSpot Note, handles missing transcript)
 - [x] Competitor overview cards: hover-reveal dismiss X button (top-right, turns red on hover, password-protected)
 - [x] Unverified competitor state: unknown competitors shown with reduced opacity, dashed border, "Unverified" badge, sorted to end of grid
 - [x] Pending analysis banner restyled: muted blue-gray background with blue left-border accent, pulsing count badge (replaces bright orange inline-styled banner)
-- [x] Card-to-details navigation: clicking overview card smooth-scrolls to detail section, auto-expands if collapsed, flash highlight on arrival, hover glow effect
+- [x] Card-to-details navigation: clicking overview card smooth-scrolls to detail section, auto-expands if collapsed, flash highlight on arrival
+- [x] Adaptive competitor mix: stacked bar for 10+ mentions and 4+ competitors; compact sorted list with inline bars for low-volume data
+- [x] Details section polish: 16px mention gaps, left indent, rgba separator lines, 200ms expand/collapse animation
+- [x] Colored type tags on detail cards: DIRECT (blue), LMS (green), DIY (gold), ADJACENT (purple), MARKETPLACE (red)
+- [x] Segment comparison heat map: replaced dot indicators with color-intensity cells (rgba blue, opacity scales with count), numbers in light blue, 2px cell gaps, legend below
 
 ## What's In Progress
 
