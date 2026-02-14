@@ -130,6 +130,23 @@ body {
 }
 .nr-banner-icon { font-size: 1.1rem; }
 .nr-banner-count { font-weight: 600; }
+/* Pending analysis banner */
+.pending-banner {
+    background: #161820; border: 1px solid #1e2130; border-left: 3px solid #4a7cff;
+    border-radius: 8px; padding: 0.65rem 1rem; margin-bottom: 1rem;
+    color: #9a9db0; font-size: 0.85rem; font-weight: 400;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.pending-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 22px; border-radius: 11px;
+    background: #1e2a4a; color: #6b9fff; font-weight: 700; font-size: 0.8rem;
+    padding: 0 0.4rem; animation: pendingPulse 2.5s ease-in-out infinite;
+}
+@keyframes pendingPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
 /* NEEDS_REVIEW category section — yellow accent */
 .cat-section.needs-review { --cat-color: #f0c040; }
 .cat-section.needs-review .cat-hdr { color: #f0c040; }
@@ -641,7 +658,30 @@ body {
     transition: border-color 0.15s, transform 0.1s;
     border-left: 4px solid var(--seg-color, #4a7cff);
 }
+.seg-card { position: relative; }
 .seg-card:hover { border-color: #2a2d40; transform: translateY(-1px); }
+/* Dismiss X on competitor overview cards */
+.seg-card-dismiss {
+    position: absolute; top: 0.5rem; right: 0.5rem;
+    width: 22px; height: 22px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; color: #555a6e; background: none; border: 1px solid transparent;
+    cursor: pointer; opacity: 0; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+    line-height: 1;
+}
+.seg-card:hover .seg-card-dismiss { opacity: 1; }
+.seg-card-dismiss:hover { color: #f87171; border-color: #f87171; background: #2a1a1a; }
+/* Unverified competitor card state */
+.seg-card.unverified {
+    opacity: 0.55; border-style: dashed;
+}
+.seg-card.unverified:hover { opacity: 0.8; }
+.seg-card-unverified-badge {
+    display: inline-block; font-size: 0.65rem; font-weight: 500; color: #8b8fa3;
+    background: #1e2130; padding: 0.1rem 0.4rem; border-radius: 3px;
+    text-transform: uppercase; letter-spacing: 0.03em; margin-left: 0.4rem;
+    vertical-align: middle;
+}
 .seg-card-name { font-size: 1rem; font-weight: 700; color: #f0f1f4; margin-bottom: 0.4rem; }
 .seg-card-stat { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 700; color: #f0f1f4; }
 .seg-card-sub { font-size: 0.82rem; color: #6b7084; margin-top: 0.15rem; }
@@ -1215,8 +1255,8 @@ function buildFeatures() {
     if (pendingCalls.length > 0) {
         const banner = document.createElement('div');
         banner.id = 'pending-banner';
-        banner.style.cssText = 'background:#2a2010;border:1px solid #5a4a20;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;color:#fb923c;font-size:0.88rem;font-weight:500;';
-        banner.textContent = pendingCalls.length + ' new call' + (pendingCalls.length > 1 ? 's' : '') + ' pending feature analysis. Run analysis to update.';
+        banner.className = 'pending-banner';
+        banner.innerHTML = '<span class="pending-badge">' + pendingCalls.length + '</span> new call' + (pendingCalls.length > 1 ? 's' : '') + ' pending feature analysis. Run analysis to update.';
         const fv = document.getElementById('features-view');
         fv.parentNode.insertBefore(banner, fv);
     }
@@ -3227,8 +3267,13 @@ function buildCompetitors() {
         });
     }
 
-    // Sort competitors by mention count desc
-    const sortedComps = filteredComps.sort((a, b) => b[1].mentions.length - a[1].mentions.length);
+    // Sort competitors: verified first (by mention count desc), then unverified (by mention count desc)
+    const sortedComps = filteredComps.sort((a, b) => {
+        const aVerified = !!getCompMeta(a[0]).type;
+        const bVerified = !!getCompMeta(b[0]).type;
+        if (aVerified !== bVerified) return bVerified ? 1 : -1;
+        return b[1].mentions.length - a[1].mentions.length;
+    });
     const activeMentionCount = sortedComps.reduce((sum, [, d]) => sum + d.mentions.length, 0);
 
     if (sortedComps.length === 0 && Object.keys(byCompExcluded).length > 0) {
@@ -3254,12 +3299,16 @@ function buildCompetitors() {
     html += '<div class="seg-overview">';
     sortedComps.forEach(([name, data]) => {
         const meta = getCompMeta(name);
+        const isVerified = !!meta.type;
         const color = compColor(name);
         const descHTML = meta.short_description
             ? '<div class="seg-card-sub" style="margin-top:0.5rem;padding-top:0.4rem;border-top:1px solid #1e2130">' + esc(meta.short_description) + '</div>'
             : '';
-        html += '<div class="seg-card" style="--seg-color:' + color + '">' +
-            '<div class="seg-card-name">' + esc(name) + '</div>' +
+        const badge = isVerified ? '' : '<span class="seg-card-unverified-badge">Unverified</span>';
+        const dismissX = '<button class="seg-card-dismiss" onclick="event.stopPropagation();dismissCompetitor(\'' + esc(name).replace(/'/g, "\\'") + '\')" title="Dismiss competitor">&#10005;</button>';
+        html += '<div class="seg-card' + (isVerified ? '' : ' unverified') + '" style="--seg-color:' + color + '">' +
+            dismissX +
+            '<div class="seg-card-name">' + esc(name) + badge + '</div>' +
             '<div class="seg-card-stat">' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + '</div>' +
             '<div class="seg-card-sub">from ' + data.companies.size + ' compan' + (data.companies.size !== 1 ? 'ies' : 'y') + '</div>' +
             descHTML +

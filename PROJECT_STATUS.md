@@ -106,6 +106,10 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] `competitors.json` now has 18 competitors across 5 types (was 16)
 - [x] Fallback descriptions for unknown competitors: Fiducare, Wap hardcoded; future unknowns show "Description not available"
 - [x] Tab persistence via URL hash: `competitors` tab now included in `parseHash()` allowed list (reload preserves active tab)
+- [x] Copy Transcript button on By Call tab (same pattern as Copy HubSpot Note, handles missing transcript)
+- [x] Competitor overview cards: hover-reveal dismiss X button (top-right, turns red on hover, password-protected)
+- [x] Unverified competitor state: unknown competitors shown with reduced opacity, dashed border, "Unverified" badge, sorted to end of grid
+- [x] Pending analysis banner restyled: muted blue-gray background with blue left-border accent, pulsing count badge (replaces bright orange inline-styled banner)
 
 ## What's In Progress
 
