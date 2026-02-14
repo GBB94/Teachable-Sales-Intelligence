@@ -459,6 +459,17 @@ body {
 .report-generate-muted.done { background: #1a3a2a; color: #4ade80; border-color: #2d5a3d; }
 .report-export-row { display: flex; gap: 0.4rem; margin-left: auto; }
 
+/* Report panels */
+.rpt-panel { margin-bottom: 3rem; }
+.rpt-panel-hdr {
+    font-size: 1.1rem; font-weight: 700; color: #e5e7eb; margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+}
+.rpt-divider {
+    height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent);
+    margin: 2rem 0 2.5rem;
+}
+
 /* Report sections — dark theme */
 .rpt-section {
     background: #16181f; border: 1px solid rgba(255,255,255,0.04); border-radius: 10px;
@@ -1937,38 +1948,36 @@ function reportWeekRange(weekStart) {
     return fmtShortDate(weekStart) + ' \u2013 ' + fmtShortDate(end) + ', ' + weekStart.getFullYear();
 }
 // ---- Report state + config ----
-let reportSections = {
-    summary: true, segments: true, features: true,
-    competitors: true, marketing: true, prospects: true
-};
-const REPORT_SECTION_LABELS = {
-    summary: 'Summary', segments: 'Segments', features: 'Features',
-    competitors: 'Competitors', marketing: 'Marketing', prospects: 'Prospects'
-};
+let prodSections = { summary: true, segments: true, features: true, competitors: true, prospects: true };
+let mktSections = { insights: true, signals: true, terminology: true };
 
-function buildReportConfigBar() {
+const PROD_SECTION_LABELS = { summary: 'Summary', segments: 'Segments', features: 'Features', competitors: 'Competitors', prospects: 'Prospects' };
+const MKT_SECTION_LABELS = { insights: 'Insights', signals: 'Signals', terminology: 'Terminology' };
+
+function buildPanelConfigBar(panelId, sections, labels) {
     let pills = '<div class="report-pills">';
-    Object.entries(REPORT_SECTION_LABELS).forEach(([key, label]) => {
-        pills += '<span class="report-pill' + (reportSections[key] ? ' active' : '') + '" data-section="' + key + '" onclick="toggleReportSection(\'' + key + '\')">' + label + '</span>';
+    Object.entries(labels).forEach(([key, label]) => {
+        pills += '<span class="report-pill' + (sections[key] ? ' active' : '') + '" data-panel="' + panelId + '" data-section="' + key + '" onclick="togglePanelSection(\'' + panelId + '\',\'' + key + '\')">' + label + '</span>';
     });
     pills += '</div>';
     return '<div class="report-config">' + pills +
-        '<button class="report-generate-muted" onclick="generateReport(this)">Generate</button>' +
+        '<button class="report-generate-muted" onclick="generatePanel(\'' + panelId + '\', this)">Generate</button>' +
         '<div class="report-export-row">' +
-        '<button class="report-btn" onclick="copyReportHTML(\'reports-view\', this)">Copy Email HTML</button>' +
-        '<button class="report-btn" onclick="copyReportPlain(\'reports-view\', this)">Copy Plain Text</button>' +
+        '<button class="report-btn" onclick="copyReportHTML(\'' + panelId + '\', this)">Copy Email HTML</button>' +
+        '<button class="report-btn" onclick="copyReportPlain(\'' + panelId + '\', this)">Copy Plain Text</button>' +
         '</div></div>';
 }
 
-function toggleReportSection(key) {
-    reportSections[key] = !reportSections[key];
-    const pill = document.querySelector('.report-pill[data-section="' + key + '"]');
-    if (pill) pill.classList.toggle('active', reportSections[key]);
-    const sec = document.getElementById('rpt-' + key);
-    if (sec) sec.classList.toggle('hidden', !reportSections[key]);
+function togglePanelSection(panelId, key) {
+    const sections = panelId === 'product-panel' ? prodSections : mktSections;
+    sections[key] = !sections[key];
+    const pill = document.querySelector('.report-pill[data-panel="' + panelId + '"][data-section="' + key + '"]');
+    if (pill) pill.classList.toggle('active', sections[key]);
+    const sec = document.getElementById(panelId + '-' + key);
+    if (sec) sec.classList.toggle('hidden', !sections[key]);
 }
 
-// ---- Unified Report builder ----
+// ---- Split Report builder (two panels on one page) ----
 function buildReport() {
     const callMap = {};
     DATA.calls.forEach(c => { callMap[c.id] = c; });
@@ -2060,7 +2069,6 @@ function buildReport() {
         return null;
     }
 
-    // Gather structured competitor_mentions
     activeCalls.forEach(c => {
         (c.competitor_mentions || []).forEach(cm => {
             const name = cm.competitor || cm.name || '';
@@ -2073,7 +2081,6 @@ function buildReport() {
             });
         });
     });
-    // Merge legacy marketing_data.competitors_mentioned
     allMktCompetitors.forEach(cm => {
         const name = cm.name || '';
         if (!name) return;
@@ -2083,6 +2090,7 @@ function buildReport() {
             company: cm._co || '', segment: '', call_date: cm._call ? cm._call.date || '' : ''
         });
     });
+    const compNames = Object.keys(compMentionsByName).sort((a, b) => compMentionsByName[b].length - compMentionsByName[a].length);
 
     // Prospect aggregation
     const prospectMap = {};
@@ -2100,7 +2108,6 @@ function buildReport() {
             if (!prospectMap[co].contacts.find(x => x.name === ct.name)) prospectMap[co].contacts.push(ct);
         });
         if (!prospectMap[co].calls.find(x => x.id === call.id)) prospectMap[co].calls.push(call);
-        // Grab a notable quote
         if (!prospectMap[co].quote && md.quotes && md.quotes.length) {
             prospectMap[co].quote = md.quotes[0].text || '';
         }
@@ -2117,7 +2124,7 @@ function buildReport() {
     });
     const segEntries = Object.entries(segMap).sort((a, b) => b[1].length - a[1].length);
 
-    // Helper: timestamp link for dark theme
+    // Helpers
     function rptTsLink(call, tsSec, tsDisplay) {
         if (tsSec != null && call && call.transcript) {
             const url = call.transcript.split('?')[0] + '?t=' + Math.floor(tsSec);
@@ -2126,7 +2133,6 @@ function buildReport() {
         if (tsDisplay) return '<span style="color:#6b7280">' + esc(tsDisplay) + '</span>';
         return '';
     }
-    // Helper: light-theme timestamp link for email card
     function emailTsLink(call, tsSec, tsDisplay) {
         if (tsSec != null && call && call.transcript) {
             const url = call.transcript.split('?')[0] + '?t=' + Math.floor(tsSec);
@@ -2141,56 +2147,53 @@ function buildReport() {
         if (call.transcript) return '<a href="' + esc(call.transcript) + '" target="_blank" style="color:#4a7cff;text-decoration:none">' + label + '</a>';
         return label;
     }
-
-    // Competitor type colors (reuse from competitors tab)
     const _ctc = { 'direct': '#4a9eff', 'lms': '#a78bfa', 'diy': '#fbbf24', 'adjacent': '#fb923c', 'marketplace': '#34d399' };
 
-    // ==================== DARK-THEMED SECTIONS ====================
-    let html = '';
+    // ==================== PRODUCT PANEL ====================
+    let prodH = '';
 
-    // ---- SECTION 1: Summary ----
-    html += '<div class="rpt-section' + (reportSections.summary ? '' : ' hidden') + '" id="rpt-summary">';
-    html += '<div class="rpt-section-hdr">Summary</div>';
-    html += '<div class="rpt-stat-grid">';
-    html += '<div class="rpt-stat"><div class="rpt-stat-n">' + activeCalls.length + '</div><div class="rpt-stat-l">Calls</div></div>';
-    html += '<div class="rpt-stat"><div class="rpt-stat-n">' + mentions.length + '</div><div class="rpt-stat-l">Feature Mentions</div></div>';
-    if (topTheme) html += '<div class="rpt-stat"><div class="rpt-stat-n">' + esc(topTheme.cat) + '</div><div class="rpt-stat-l">Top Theme (' + topTheme.total + ')</div></div>';
-    html += '<div class="rpt-stat"><div class="rpt-stat-n">' + companies.length + '</div><div class="rpt-stat-l">Prospects</div></div>';
-    html += '</div>';
-    if (dateRange) html += '<div class="rpt-body" style="font-size:0.8rem;color:#6b7280">' + esc(dateRange) + '</div>';
-    html += '</div>';
+    // Summary
+    prodH += '<div class="rpt-section' + (prodSections.summary ? '' : ' hidden') + '" id="product-panel-summary">';
+    prodH += '<div class="rpt-section-hdr">Summary</div>';
+    prodH += '<div class="rpt-stat-grid">';
+    prodH += '<div class="rpt-stat"><div class="rpt-stat-n">' + activeCalls.length + '</div><div class="rpt-stat-l">Calls</div></div>';
+    prodH += '<div class="rpt-stat"><div class="rpt-stat-n">' + mentions.length + '</div><div class="rpt-stat-l">Feature Mentions</div></div>';
+    if (topTheme) prodH += '<div class="rpt-stat"><div class="rpt-stat-n">' + esc(topTheme.cat) + '</div><div class="rpt-stat-l">Top Theme (' + topTheme.total + ')</div></div>';
+    prodH += '<div class="rpt-stat"><div class="rpt-stat-n">' + companies.length + '</div><div class="rpt-stat-l">Prospects</div></div>';
+    prodH += '</div>';
+    if (dateRange) prodH += '<div class="rpt-body" style="font-size:0.8rem;color:#6b7280">' + esc(dateRange) + '</div>';
+    prodH += '</div>';
 
-    // ---- SECTION 2: Calls by Segment ----
-    html += '<div class="rpt-section' + (reportSections.segments ? '' : ' hidden') + '" id="rpt-segments">';
-    html += '<div class="rpt-section-hdr">Calls by Segment</div>';
+    // Calls by Segment
+    prodH += '<div class="rpt-section' + (prodSections.segments ? '' : ' hidden') + '" id="product-panel-segments">';
+    prodH += '<div class="rpt-section-hdr">Calls by Segment</div>';
     if (segEntries.length && segEntries.some(([s]) => s !== 'Unclassified')) {
         segEntries.forEach(([seg, names]) => {
             const sc = segColor(seg);
-            html += '<div class="rpt-segment-row">';
-            html += '<span class="rpt-segment-count">' + names.length + '</span>';
-            html += '<span class="rpt-segment-name" style="color:' + sc + '">' + esc(seg) + '</span>';
-            html += '<span class="rpt-segment-cos">' + esc(names.join(', ')) + '</span>';
-            html += '</div>';
+            prodH += '<div class="rpt-segment-row">';
+            prodH += '<span class="rpt-segment-count">' + names.length + '</span>';
+            prodH += '<span class="rpt-segment-name" style="color:' + sc + '">' + esc(seg) + '</span>';
+            prodH += '<span class="rpt-segment-cos">' + esc(names.join(', ')) + '</span>';
+            prodH += '</div>';
         });
     } else {
-        html += '<div class="rpt-body"><em>No segment data available.</em></div>';
+        prodH += '<div class="rpt-body"><em>No segment data available.</em></div>';
     }
-    html += '</div>';
+    prodH += '</div>';
 
-    // ---- SECTION 3: Feature Recap ----
-    html += '<div class="rpt-section' + (reportSections.features ? '' : ' hidden') + '" id="rpt-features">';
-    html += '<div class="rpt-section-hdr">Feature Recap</div>';
+    // Feature Recap
+    prodH += '<div class="rpt-section' + (prodSections.features ? '' : ' hidden') + '" id="product-panel-features">';
+    prodH += '<div class="rpt-section-hdr">Feature Recap</div>';
     if (DATA.recap) {
-        html += '<div class="rpt-recap-block">' + DATA.recap.replace(/\n/g, '<br>') + '</div>';
+        prodH += '<div class="rpt-recap-block">' + DATA.recap.replace(/\n/g, '<br>') + '</div>';
     } else {
-        html += '<div class="rpt-recap-block"><em>Run analysis to generate the feature recap narrative.</em></div>';
+        prodH += '<div class="rpt-recap-block"><em>Run analysis to generate the feature recap narrative.</em></div>';
     }
-    // Category/feature list
     if (catEntries.length) {
-        html += '<div class="rpt-subhead">By Category</div>';
+        prodH += '<div class="rpt-subhead">By Category</div>';
         catEntries.forEach(ce => {
-            html += '<div class="rpt-cat-group">';
-            html += '<div class="rpt-cat-title">' + esc(ce.cat) + ' <span class="rpt-cat-co">(' + ce.coCount + ' compan' + (ce.coCount !== 1 ? 'ies' : 'y') + ')</span></div>';
+            prodH += '<div class="rpt-cat-group">';
+            prodH += '<div class="rpt-cat-title">' + esc(ce.cat) + ' <span class="rpt-cat-co">(' + ce.coCount + ' compan' + (ce.coCount !== 1 ? 'ies' : 'y') + ')</span></div>';
             Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
                 const byCompany = {};
                 entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
@@ -2200,300 +2203,311 @@ function buildReport() {
                     if (e.tsDisplay) return esc(co) + ' (' + esc(e.tsDisplay) + ')';
                     return esc(co);
                 });
-                html += '<div class="rpt-feat-line">\u2013 <strong>' + esc(feat) + '</strong> \u2014 ' + parts.join(' \u00b7 ') + '</div>';
+                prodH += '<div class="rpt-feat-line">\u2013 <strong>' + esc(feat) + '</strong> \u2014 ' + parts.join(' \u00b7 ') + '</div>';
             });
-            html += '</div>';
+            prodH += '</div>';
         });
     }
-    html += '</div>';
+    prodH += '</div>';
 
-    // ---- SECTION 4: Competitor Intelligence ----
-    html += '<div class="rpt-section' + (reportSections.competitors ? '' : ' hidden') + '" id="rpt-competitors">';
-    html += '<div class="rpt-section-hdr">Competitor Intelligence</div>';
-    const compNames = Object.keys(compMentionsByName).sort((a, b) => compMentionsByName[b].length - compMentionsByName[a].length);
+    // Competitor Intelligence
+    prodH += '<div class="rpt-section' + (prodSections.competitors ? '' : ' hidden') + '" id="product-panel-competitors">';
+    prodH += '<div class="rpt-section-hdr">Competitor Intelligence</div>';
     if (compNames.length) {
         compNames.forEach(name => {
             const meta = rptGetCompMeta(name);
             const type = meta ? (meta.type || 'direct') : '';
             const typeColor = _ctc[type] || '#9a9db0';
-            html += '<div class="rpt-comp-card">';
-            html += '<div class="rpt-comp-hdr">';
-            html += '<span class="rpt-comp-name">' + esc(name) + '</span>';
-            if (type) html += '<span class="rpt-comp-type-badge" style="background:' + typeColor + '22;color:' + typeColor + '">' + esc(type) + '</span>';
-            html += '<span style="color:#6b7280;font-size:0.78rem;margin-left:auto">' + compMentionsByName[name].length + ' mention' + (compMentionsByName[name].length !== 1 ? 's' : '') + '</span>';
-            html += '</div>';
-            if (meta && meta.short_description) html += '<div class="rpt-comp-desc">' + esc(meta.short_description) + '</div>';
+            prodH += '<div class="rpt-comp-card">';
+            prodH += '<div class="rpt-comp-hdr">';
+            prodH += '<span class="rpt-comp-name">' + esc(name) + '</span>';
+            if (type) prodH += '<span class="rpt-comp-type-badge" style="background:' + typeColor + '22;color:' + typeColor + '">' + esc(type) + '</span>';
+            prodH += '<span style="color:#6b7280;font-size:0.78rem;margin-left:auto">' + compMentionsByName[name].length + ' mention' + (compMentionsByName[name].length !== 1 ? 's' : '') + '</span>';
+            prodH += '</div>';
+            if (meta && meta.short_description) prodH += '<div class="rpt-comp-desc">' + esc(meta.short_description) + '</div>';
             compMentionsByName[name].forEach(cm => {
-                html += '<div class="rpt-comp-mention">';
-                if (cm.company) html += '<strong>' + esc(cm.company) + '</strong> \u2014 ';
-                html += esc(cm.context || cm.mention_type || '');
-                if (cm.call_date) html += ' <span style="color:#555a6e">(' + cm.call_date.slice(5).replace('-', '/') + ')</span>';
-                html += '</div>';
+                prodH += '<div class="rpt-comp-mention">';
+                if (cm.company) prodH += '<strong>' + esc(cm.company) + '</strong> \u2014 ';
+                prodH += esc(cm.context || cm.mention_type || '');
+                if (cm.call_date) prodH += ' <span style="color:#555a6e">(' + cm.call_date.slice(5).replace('-', '/') + ')</span>';
+                prodH += '</div>';
             });
-            html += '</div>';
+            prodH += '</div>';
         });
     } else {
-        html += '<div class="rpt-body"><em>No competitor mentions in this period.</em></div>';
+        prodH += '<div class="rpt-body"><em>No competitor mentions in this period.</em></div>';
     }
-    html += '</div>';
+    prodH += '</div>';
 
-    // ---- SECTION 5: Marketing Insights ----
-    html += '<div class="rpt-section' + (reportSections.marketing ? '' : ' hidden') + '" id="rpt-marketing">';
-    html += '<div class="rpt-section-hdr">Marketing Insights</div>';
+    // Prospect Highlights
+    prodH += '<div class="rpt-section' + (prodSections.prospects ? '' : ' hidden') + '" id="product-panel-prospects">';
+    prodH += '<div class="rpt-section-hdr">Prospect Highlights</div>';
+    if (prospects.length) {
+        prospects.forEach(([name, p]) => {
+            prodH += '<div class="rpt-prospect-card">';
+            prodH += '<div class="rpt-prospect-hdr">';
+            prodH += '<span class="rpt-prospect-name">' + esc(name) + '</span>';
+            if (p.segment) {
+                const sc = segColor(p.segment);
+                prodH += '<span class="rpt-prospect-seg" style="background:' + sc + '22;color:' + sc + '">' + esc(p.segment) + '</span>';
+            }
+            prodH += '<span style="color:#6b7280;font-size:0.78rem;margin-left:auto">' + p.calls.length + ' call' + (p.calls.length !== 1 ? 's' : '') + '</span>';
+            prodH += '</div>';
+            if (p.contacts.length) {
+                prodH += '<div class="rpt-prospect-meta">' + p.contacts.map(ct => esc(ct.name || '') + (ct.title ? ', ' + esc(ct.title) : '')).join(' \u00b7 ') + '</div>';
+            }
+            if (p.description) prodH += '<div class="rpt-prospect-meta">' + esc(p.description) + '</div>';
+            if (p.features.length) {
+                prodH += '<div class="rpt-prospect-features">';
+                p.features.slice(0, 6).forEach(f => { prodH += '<span class="rpt-prospect-feature-pill">' + esc(f) + '</span>'; });
+                if (p.features.length > 6) prodH += '<span class="rpt-prospect-feature-pill" style="opacity:0.6">+' + (p.features.length - 6) + ' more</span>';
+                prodH += '</div>';
+            }
+            if (p.quote) {
+                prodH += '<div class="rpt-quote" style="margin-top:0.3rem"><div class="rpt-quote-text" style="font-size:0.82rem">\u201c' + esc(p.quote) + '\u201d</div></div>';
+            }
+            prodH += '</div>';
+        });
+    } else {
+        prodH += '<div class="rpt-body"><em>No prospect data in this period.</em></div>';
+    }
+    prodH += '</div>';
+
+    // ==================== MARKETING PANEL ====================
+    let mktH = '';
     const problemQuotes = allQuotes.filter(q => q.theme === 'problem_description');
     const workaroundQuotes = allQuotes.filter(q => q.theme === 'workaround');
     const otherQuotes = allQuotes.filter(q => q.theme !== 'problem_description' && q.theme !== 'workaround');
 
+    // Insights (quotes, workarounds, objections)
+    mktH += '<div class="rpt-section' + (mktSections.insights ? '' : ' hidden') + '" id="marketing-panel-insights">';
+    mktH += '<div class="rpt-section-hdr">What Prospects Are Saying</div>';
     if (problemQuotes.length) {
-        html += '<div class="rpt-subhead">How they describe their problems</div>';
+        mktH += '<div class="rpt-subhead">How they describe their problems</div>';
         problemQuotes.forEach(q => {
-            html += '<div class="rpt-quote">';
-            html += '<div class="rpt-quote-text">\u201c' + esc(q.text || '') + '\u201d</div>';
-            html += '<div class="rpt-quote-attr">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
-            if (q.ts_seconds != null) html += ' ' + rptTsLink(q._call, q.ts_seconds, q.timestamp);
-            html += '</div></div>';
+            mktH += '<div class="rpt-quote">';
+            mktH += '<div class="rpt-quote-text">\u201c' + esc(q.text || '') + '\u201d</div>';
+            mktH += '<div class="rpt-quote-attr">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
+            if (q.ts_seconds != null) mktH += ' ' + rptTsLink(q._call, q.ts_seconds, q.timestamp);
+            mktH += '</div></div>';
         });
     }
     if (workaroundQuotes.length) {
-        html += '<div class="rpt-subhead">Current workarounds</div>';
+        mktH += '<div class="rpt-subhead">Current workarounds</div>';
         workaroundQuotes.forEach(q => {
-            html += '<div class="rpt-quote workaround">';
-            html += '<div class="rpt-quote-text">\u201c' + esc(q.text || '') + '\u201d</div>';
-            html += '<div class="rpt-quote-attr">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
-            if (q.ts_seconds != null) html += ' ' + rptTsLink(q._call, q.ts_seconds, q.timestamp);
-            html += '</div></div>';
+            mktH += '<div class="rpt-quote workaround">';
+            mktH += '<div class="rpt-quote-text">\u201c' + esc(q.text || '') + '\u201d</div>';
+            mktH += '<div class="rpt-quote-attr">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
+            if (q.ts_seconds != null) mktH += ' ' + rptTsLink(q._call, q.ts_seconds, q.timestamp);
+            mktH += '</div></div>';
         });
     }
     if (otherQuotes.length) {
-        html += '<div class="rpt-subhead">Notable quotes</div>';
+        mktH += '<div class="rpt-subhead">Notable quotes</div>';
         otherQuotes.forEach(q => {
-            html += '<div class="rpt-quote signal">';
-            html += '<div class="rpt-quote-text">\u201c' + esc(q.text || '') + '\u201d</div>';
-            html += '<div class="rpt-quote-attr">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
-            if (q.ts_seconds != null) html += ' ' + rptTsLink(q._call, q.ts_seconds, q.timestamp);
-            html += '</div></div>';
+            mktH += '<div class="rpt-quote signal">';
+            mktH += '<div class="rpt-quote-text">\u201c' + esc(q.text || '') + '\u201d</div>';
+            mktH += '<div class="rpt-quote-attr">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
+            if (q.ts_seconds != null) mktH += ' ' + rptTsLink(q._call, q.ts_seconds, q.timestamp);
+            mktH += '</div></div>';
         });
     }
     if (allObjections.length) {
-        html += '<div class="rpt-subhead">Hesitations</div>';
+        mktH += '<div class="rpt-subhead">Hesitations</div>';
         allObjections.forEach(o => {
-            html += '<div class="rpt-quote objection">';
-            html += '<div class="rpt-quote-text">' + (o.quote ? '\u201c' + esc(o.quote) + '\u201d' : esc(o.objection || '')) + '</div>';
-            html += '<div class="rpt-quote-attr">\u2014 ' + esc(o.speaker || '') + ', ' + esc(o._co);
-            if (o.ts_seconds != null) html += ' ' + rptTsLink(o._call, o.ts_seconds, o.timestamp);
-            html += '</div></div>';
+            mktH += '<div class="rpt-quote objection">';
+            mktH += '<div class="rpt-quote-text">' + (o.quote ? '\u201c' + esc(o.quote) + '\u201d' : esc(o.objection || '')) + '</div>';
+            mktH += '<div class="rpt-quote-attr">\u2014 ' + esc(o.speaker || '') + ', ' + esc(o._co);
+            if (o.ts_seconds != null) mktH += ' ' + rptTsLink(o._call, o.ts_seconds, o.timestamp);
+            mktH += '</div></div>';
         });
     }
+    if (!problemQuotes.length && !workaroundQuotes.length && !otherQuotes.length && !allObjections.length) {
+        mktH += '<div class="rpt-body"><em>No quote data from this period.</em></div>';
+    }
+    mktH += '</div>';
+
+    // Signals (buying signals, timelines)
+    mktH += '<div class="rpt-section' + (mktSections.signals ? '' : ' hidden') + '" id="marketing-panel-signals">';
+    mktH += '<div class="rpt-section-hdr">Buying Signals &amp; Timeline</div>';
     if (allSignals.length) {
-        html += '<div class="rpt-subhead">Buying signals</div>';
         allSignals.forEach(s => {
-            html += '<div class="rpt-quote signal">';
-            html += '<div class="rpt-quote-text">' + esc(s.signal || '');
-            if (s.interpretation) html += ' \u2014 <em>' + esc(s.interpretation) + '</em>';
-            html += '</div>';
-            html += '<div class="rpt-quote-attr">' + esc(s._co);
-            if (s.ts_seconds != null) html += ' ' + rptTsLink(s._call, s.ts_seconds, s.timestamp);
-            html += '</div></div>';
+            mktH += '<div class="rpt-quote signal">';
+            mktH += '<div class="rpt-quote-text">' + esc(s.signal || '');
+            if (s.interpretation) mktH += ' \u2014 <em>' + esc(s.interpretation) + '</em>';
+            mktH += '</div>';
+            mktH += '<div class="rpt-quote-attr">' + esc(s._co);
+            if (s.ts_seconds != null) mktH += ' ' + rptTsLink(s._call, s.ts_seconds, s.timestamp);
+            mktH += '</div></div>';
         });
     }
+    if (allTimelines.some(t => t.timeline)) {
+        mktH += '<div class="rpt-subhead">Timeline indicators</div>';
+        mktH += '<div class="rpt-body">';
+        allTimelines.filter(t => t.timeline).forEach(t => {
+            mktH += '<div>\u2022 <strong>' + esc(t.company) + ':</strong> ' + esc(t.timeline) + '</div>';
+        });
+        mktH += '</div>';
+    }
+    if (!allSignals.length && !allTimelines.some(t => t.timeline)) {
+        mktH += '<div class="rpt-body"><em>No buying signals from this period.</em></div>';
+    }
+    mktH += '</div>';
+
+    // Terminology
+    mktH += '<div class="rpt-section' + (mktSections.terminology ? '' : ' hidden') + '" id="marketing-panel-terminology">';
+    mktH += '<div class="rpt-section-hdr">Language &amp; Terminology</div>';
     if (allTerminology.length) {
-        html += '<div class="rpt-subhead">Terminology</div>';
-        html += '<div class="rpt-body">';
+        mktH += '<div class="rpt-body">';
         allTerminology.forEach(t => {
             if (typeof t === 'string') {
-                html += '<div>\u2022 ' + esc(t) + '</div>';
+                mktH += '<div>\u2022 ' + esc(t) + '</div>';
             } else {
-                html += '<div>\u2022 \u201c' + esc(t.prospect_term || '') + '\u201d not \u201c' + esc(t.standard_term || '') + '\u201d <span style="color:#6b7280">(' + esc(t._co) + ')</span></div>';
+                mktH += '<div>\u2022 \u201c' + esc(t.prospect_term || '') + '\u201d not \u201c' + esc(t.standard_term || '') + '\u201d <span style="color:#6b7280">(' + esc(t._co) + ')</span></div>';
             }
         });
-        html += '</div>';
-    }
-    if (!problemQuotes.length && !workaroundQuotes.length && !otherQuotes.length && !allObjections.length && !allSignals.length && !allTerminology.length) {
-        html += '<div class="rpt-body"><em>No marketing data from this period.</em></div>';
-    }
-    html += '</div>';
-
-    // ---- SECTION 6: Prospect Highlights ----
-    html += '<div class="rpt-section' + (reportSections.prospects ? '' : ' hidden') + '" id="rpt-prospects">';
-    html += '<div class="rpt-section-hdr">Prospect Highlights</div>';
-    if (prospects.length) {
-        prospects.forEach(([name, p]) => {
-            html += '<div class="rpt-prospect-card">';
-            html += '<div class="rpt-prospect-hdr">';
-            html += '<span class="rpt-prospect-name">' + esc(name) + '</span>';
-            if (p.segment) {
-                const sc = segColor(p.segment);
-                html += '<span class="rpt-prospect-seg" style="background:' + sc + '22;color:' + sc + '">' + esc(p.segment) + '</span>';
-            }
-            html += '<span style="color:#6b7280;font-size:0.78rem;margin-left:auto">' + p.calls.length + ' call' + (p.calls.length !== 1 ? 's' : '') + '</span>';
-            html += '</div>';
-            // Contacts
-            if (p.contacts.length) {
-                html += '<div class="rpt-prospect-meta">' + p.contacts.map(ct => esc(ct.name || '') + (ct.title ? ', ' + esc(ct.title) : '')).join(' \u00b7 ') + '</div>';
-            }
-            if (p.description) html += '<div class="rpt-prospect-meta">' + esc(p.description) + '</div>';
-            // Feature pills (top 6)
-            if (p.features.length) {
-                html += '<div class="rpt-prospect-features">';
-                p.features.slice(0, 6).forEach(f => { html += '<span class="rpt-prospect-feature-pill">' + esc(f) + '</span>'; });
-                if (p.features.length > 6) html += '<span class="rpt-prospect-feature-pill" style="opacity:0.6">+' + (p.features.length - 6) + ' more</span>';
-                html += '</div>';
-            }
-            if (p.quote) {
-                html += '<div class="rpt-quote" style="margin-top:0.3rem"><div class="rpt-quote-text" style="font-size:0.82rem">\u201c' + esc(p.quote) + '\u201d</div></div>';
-            }
-            html += '</div>';
-        });
+        mktH += '</div>';
     } else {
-        html += '<div class="rpt-body"><em>No prospect data in this period.</em></div>';
+        mktH += '<div class="rpt-body"><em>No terminology data from this period.</em></div>';
     }
-    html += '</div>';
+    mktH += '</div>';
 
-    // ==================== HIDDEN EMAIL CARD (light theme, for export) ====================
-    let emailH = '<h1>SALES INTELLIGENCE REPORT</h1>';
-    emailH += '<div class="email-date">Week of ' + esc(dateRange) + '</div>';
-
-    // Summary
-    emailH += '<h2>Summary</h2>';
-    emailH += '<ul class="summary-list">';
-    emailH += '<li>' + activeCalls.length + ' sales call' + (activeCalls.length !== 1 ? 's' : '') + '</li>';
-    emailH += '<li>' + mentions.length + ' feature request' + (mentions.length !== 1 ? 's' : '') + ' across ' + companies.length + ' prospect' + (companies.length !== 1 ? 's' : '') + '</li>';
-    if (topTheme) emailH += '<li>Top theme: <strong>' + esc(topTheme.cat) + '</strong> (' + topTheme.total + ' mentions)</li>';
-    emailH += '</ul>';
-
-    // Calls by Segment
+    // ==================== PRODUCT EMAIL CARD (light theme) ====================
+    let prodEmail = '<h1>PRODUCT INTELLIGENCE REPORT</h1>';
+    prodEmail += '<div class="email-date">Week of ' + esc(dateRange) + '</div>';
+    prodEmail += '<h2>Summary</h2><ul class="summary-list">';
+    prodEmail += '<li>' + activeCalls.length + ' sales call' + (activeCalls.length !== 1 ? 's' : '') + '</li>';
+    prodEmail += '<li>' + mentions.length + ' feature request' + (mentions.length !== 1 ? 's' : '') + ' across ' + companies.length + ' prospect' + (companies.length !== 1 ? 's' : '') + '</li>';
+    if (topTheme) prodEmail += '<li>Top theme: <strong>' + esc(topTheme.cat) + '</strong> (' + topTheme.total + ' mentions)</li>';
+    prodEmail += '</ul>';
     if (segEntries.length && segEntries.some(([s]) => s !== 'Unclassified')) {
-        emailH += '<h2>Calls by Segment</h2>';
-        segEntries.forEach(([seg, names]) => {
-            emailH += '<div class="co-line"><strong>' + esc(seg) + ':</strong> ' + names.length + ' (' + esc(names.join(', ')) + ')</div>';
-        });
+        prodEmail += '<h2>Calls by Segment</h2>';
+        segEntries.forEach(([seg, names]) => { prodEmail += '<div class="co-line"><strong>' + esc(seg) + ':</strong> ' + names.length + ' (' + esc(names.join(', ')) + ')</div>'; });
     }
-
-    // Feature Recap
-    emailH += '<h2>Feature Recap</h2>';
-    emailH += '<div class="recap-block">' + (DATA.recap ? DATA.recap.replace(/\n/g, '<br>') : '<em>Not yet generated.</em>') + '</div>';
-
-    // Customers
-    emailH += '<h2>Customers</h2>';
+    prodEmail += '<h2>Feature Recap</h2>';
+    prodEmail += '<div class="recap-block">' + (DATA.recap ? DATA.recap.replace(/\n/g, '<br>') : '<em>Not yet generated.</em>') + '</div>';
+    prodEmail += '<h2>Customers</h2>';
     companies.forEach(([name, d]) => {
         const summary = coSummaries[name] || '';
         let links = [];
-        d.calls.forEach(c => {
-            if (c && c.transcript) {
-                const ds = c.date ? c.date.slice(5).replace('-', '/') : '';
-                links.push('<a href="' + esc(c.transcript) + '" target="_blank">Call (' + ds + ')</a>');
-            }
-        });
-        emailH += '<div class="co-line"><strong>' + esc(name) + '</strong>';
-        if (summary) emailH += ' \u2014 ' + esc(summary);
-        if (links.length) emailH += ' \u2192 ' + links.join(', ');
-        emailH += '</div>';
+        d.calls.forEach(c => { if (c && c.transcript) { links.push('<a href="' + esc(c.transcript) + '" target="_blank">Call (' + (c.date || '').slice(5).replace('-', '/') + ')</a>'); } });
+        prodEmail += '<div class="co-line"><strong>' + esc(name) + '</strong>';
+        if (summary) prodEmail += ' \u2014 ' + esc(summary);
+        if (links.length) prodEmail += ' \u2192 ' + links.join(', ');
+        prodEmail += '</div>';
     });
-
-    // Feature Themes
-    emailH += '<h2>Feature Themes</h2>';
+    prodEmail += '<h2>Feature Themes</h2>';
     catEntries.forEach(ce => {
-        emailH += '<div class="cat-group"><div class="cat-title">' + esc(ce.cat) + ' <span class="cat-co">(' + ce.coCount + ' compan' + (ce.coCount !== 1 ? 'ies' : 'y') + ')</span></div>';
+        prodEmail += '<div class="cat-group"><div class="cat-title">' + esc(ce.cat) + ' <span class="cat-co">(' + ce.coCount + ' compan' + (ce.coCount !== 1 ? 'ies' : 'y') + ')</span></div>';
         Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
             const byCompany = {};
             entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
             const parts = Object.entries(byCompany).map(([co, es]) => {
                 const e = es[0];
                 if (e.link && e.tsDisplay) return esc(co) + ' (<a href="' + esc(e.link) + '" target="_blank">' + esc(e.tsDisplay) + '</a>)';
-                if (e.tsDisplay) return esc(co) + ' (' + esc(e.tsDisplay) + ')';
-                return esc(co);
+                return e.tsDisplay ? esc(co) + ' (' + esc(e.tsDisplay) + ')' : esc(co);
             });
-            emailH += '<div class="feat-line">\u2013 <strong>' + esc(feat) + '</strong> \u2014 ' + parts.join(' \u00b7 ') + '</div>';
+            prodEmail += '<div class="feat-line">\u2013 <strong>' + esc(feat) + '</strong> \u2014 ' + parts.join(' \u00b7 ') + '</div>';
         });
-        emailH += '</div>';
+        prodEmail += '</div>';
     });
 
-    // Marketing sections in email
-    if (allQuotes.length || allObjections.length || allSignals.length) {
-        emailH += '<h2>Marketing Insights</h2>';
+    // ==================== MARKETING EMAIL CARD (light theme) ====================
+    let mktEmail = '<h1>MARKETING INTELLIGENCE REPORT</h1>';
+    mktEmail += '<div class="email-date">Week of ' + esc(dateRange) + '</div>';
+    if (allQuotes.length || allObjections.length) {
+        mktEmail += '<h2>What They\u2019re Saying</h2>';
         allQuotes.forEach(q => {
-            emailH += '<div style="margin-bottom:0.5em;padding-left:0.8rem;border-left:3px solid #4a7cff">';
-            emailH += '\u201c' + esc(q.text || '') + '\u201d';
-            emailH += '<br><span style="color:#666;font-size:13px">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
-            if (q.ts_seconds != null) emailH += ' ' + emailTsLink(q._call, q.ts_seconds, q.timestamp);
-            emailH += '</span></div>';
+            mktEmail += '<div style="margin-bottom:0.5em;padding-left:0.8rem;border-left:3px solid #4a7cff">';
+            mktEmail += '\u201c' + esc(q.text || '') + '\u201d';
+            mktEmail += '<br><span style="color:#666;font-size:13px">\u2014 ' + esc(q.speaker || '') + ', ' + esc(q._co);
+            if (q.ts_seconds != null) mktEmail += ' ' + emailTsLink(q._call, q.ts_seconds, q.timestamp);
+            mktEmail += '</span></div>';
         });
         if (allObjections.length) {
-            emailH += '<div style="font-size:13px;font-weight:600;color:#888;margin:1rem 0 0.4rem;text-transform:uppercase">Hesitations</div>';
+            mktEmail += '<div style="font-size:13px;font-weight:600;color:#888;margin:1rem 0 0.4rem;text-transform:uppercase">Hesitations</div>';
             allObjections.forEach(o => {
-                emailH += '<div style="margin-bottom:0.5em;padding-left:0.8rem;border-left:3px solid #f472b6">';
-                emailH += (o.quote ? '\u201c' + esc(o.quote) + '\u201d' : esc(o.objection || ''));
-                emailH += '<br><span style="color:#666;font-size:13px">\u2014 ' + esc(o.speaker || '') + ', ' + esc(o._co) + '</span></div>';
+                mktEmail += '<div style="margin-bottom:0.5em;padding-left:0.8rem;border-left:3px solid #f472b6">';
+                mktEmail += (o.quote ? '\u201c' + esc(o.quote) + '\u201d' : esc(o.objection || ''));
+                mktEmail += '<br><span style="color:#666;font-size:13px">\u2014 ' + esc(o.speaker || '') + ', ' + esc(o._co) + '</span></div>';
             });
         }
-        if (allSignals.length) {
-            emailH += '<div style="font-size:13px;font-weight:600;color:#888;margin:1rem 0 0.4rem;text-transform:uppercase">Buying Signals</div>';
-            allSignals.forEach(s => {
-                emailH += '<div style="margin-bottom:0.4em">\u2022 ' + esc(s.signal || '');
-                if (s.interpretation) emailH += ' \u2014 <em>' + esc(s.interpretation) + '</em>';
-                emailH += ' (' + esc(s._co) + ')</div>';
-            });
-        }
+    }
+    if (allSignals.length) {
+        mktEmail += '<h2>Buying Signals</h2>';
+        allSignals.forEach(s => {
+            mktEmail += '<div style="margin-bottom:0.4em">\u2022 ' + esc(s.signal || '');
+            if (s.interpretation) mktEmail += ' \u2014 <em>' + esc(s.interpretation) + '</em>';
+            mktEmail += ' (' + esc(s._co) + ')</div>';
+        });
     }
 
     // ==================== PLAIN TEXT ====================
-    let plain = 'SALES INTELLIGENCE REPORT\nWeek of ' + dateRange + '\n';
-    plain += '\nSUMMARY\n';
-    plain += '- ' + activeCalls.length + ' sales calls\n';
-    plain += '- ' + mentions.length + ' feature requests across ' + companies.length + ' prospects\n';
-    if (topTheme) plain += '- Top theme: ' + topTheme.cat + ' (' + topTheme.total + ' mentions)\n';
-
+    let prodPlain = 'PRODUCT INTELLIGENCE REPORT\nWeek of ' + dateRange + '\n';
+    prodPlain += '\nSUMMARY\n- ' + activeCalls.length + ' sales calls\n- ' + mentions.length + ' feature requests across ' + companies.length + ' prospects\n';
+    if (topTheme) prodPlain += '- Top theme: ' + topTheme.cat + ' (' + topTheme.total + ' mentions)\n';
     if (segEntries.length && segEntries.some(([s]) => s !== 'Unclassified')) {
-        plain += '\nCALLS BY SEGMENT\n';
-        segEntries.forEach(([seg, names]) => { plain += '- ' + seg + ': ' + names.length + ' (' + names.join(', ') + ')\n'; });
+        prodPlain += '\nCALLS BY SEGMENT\n';
+        segEntries.forEach(([seg, names]) => { prodPlain += '- ' + seg + ': ' + names.length + ' (' + names.join(', ') + ')\n'; });
     }
-
-    plain += '\nFEATURE RECAP\n' + (DATA.recap || '(Not yet generated)') + '\n';
-    plain += '\nCUSTOMERS\n';
-    companies.forEach(([name]) => { plain += '- ' + name + (coSummaries[name] ? ' \u2014 ' + coSummaries[name] : '') + '\n'; });
-
-    plain += '\nFEATURE THEMES\n';
+    prodPlain += '\nFEATURE RECAP\n' + (DATA.recap || '(Not yet generated)') + '\n';
+    prodPlain += '\nCUSTOMERS\n';
+    companies.forEach(([name]) => { prodPlain += '- ' + name + (coSummaries[name] ? ' \u2014 ' + coSummaries[name] : '') + '\n'; });
+    prodPlain += '\nFEATURE THEMES\n';
     catEntries.forEach(ce => {
-        plain += ce.cat + ' (' + ce.coCount + ' companies)\n';
+        prodPlain += ce.cat + ' (' + ce.coCount + ' companies)\n';
         Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
             const byCompany = {};
             entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
             const parts = Object.entries(byCompany).map(([co, es]) => (es[0].tsDisplay ? co + ' (' + es[0].tsDisplay + ')' : co));
-            plain += '  - ' + feat + ' \u2014 ' + parts.join(' \u00b7 ') + '\n';
+            prodPlain += '  - ' + feat + ' \u2014 ' + parts.join(' \u00b7 ') + '\n';
         });
     });
-
     if (compNames.length) {
-        plain += '\nCOMPETITOR INTELLIGENCE\n';
+        prodPlain += '\nCOMPETITOR INTELLIGENCE\n';
         compNames.forEach(name => {
-            plain += name + ' (' + compMentionsByName[name].length + ' mentions)\n';
-            compMentionsByName[name].forEach(cm => {
-                plain += '  - ' + (cm.company ? cm.company + ': ' : '') + (cm.context || cm.mention_type) + '\n';
-            });
+            prodPlain += name + ' (' + compMentionsByName[name].length + ' mentions)\n';
+            compMentionsByName[name].forEach(cm => { prodPlain += '  - ' + (cm.company ? cm.company + ': ' : '') + (cm.context || cm.mention_type) + '\n'; });
         });
     }
 
-    plain += '\nMARKETING INSIGHTS\n';
-    allQuotes.forEach(q => { plain += '  "' + (q.text || '') + '" -- ' + (q.speaker || '') + ', ' + q._co + '\n'; });
-    allObjections.forEach(o => { plain += '  Objection: ' + (o.objection || o.quote || '') + ' -- ' + (o.speaker || o._co) + '\n'; });
-    allSignals.forEach(s => { plain += '  Signal: ' + (s.signal || '') + ' -- ' + s._co + '\n'; });
-
-    plain += '\nPROSPECT HIGHLIGHTS\n';
-    prospects.forEach(([name, p]) => {
-        plain += name + (p.segment ? ' [' + p.segment + ']' : '') + ' - ' + p.features.length + ' features, ' + p.calls.length + ' calls\n';
-        if (p.contacts.length) plain += '  Contacts: ' + p.contacts.map(ct => (ct.name || '') + (ct.title ? ', ' + ct.title : '')).join('; ') + '\n';
-        if (p.features.length) plain += '  Features: ' + p.features.slice(0, 6).join(', ') + (p.features.length > 6 ? ', +' + (p.features.length - 6) + ' more' : '') + '\n';
-    });
+    let mktPlain = 'MARKETING INTELLIGENCE REPORT\nWeek of ' + dateRange + '\n';
+    mktPlain += '\nWHAT THEY\'RE SAYING\n';
+    allQuotes.forEach(q => { mktPlain += '  "' + (q.text || '') + '" -- ' + (q.speaker || '') + ', ' + q._co + '\n'; });
+    allObjections.forEach(o => { mktPlain += '  Objection: ' + (o.objection || o.quote || '') + ' -- ' + (o.speaker || o._co) + '\n'; });
+    mktPlain += '\nBUYING SIGNALS & TIMELINE\n';
+    allSignals.forEach(s => { mktPlain += '  - ' + (s.signal || '') + (s.interpretation ? ' (' + s.interpretation + ')' : '') + ' -- ' + s._co + '\n'; });
+    allTimelines.filter(t => t.timeline).forEach(t => { mktPlain += '  ' + t.company + ': ' + t.timeline + '\n'; });
+    if (allTerminology.length) {
+        mktPlain += '\nTERMINOLOGY\n';
+        allTerminology.forEach(t => {
+            if (typeof t === 'string') mktPlain += '  - ' + t + '\n';
+            else mktPlain += '  - "' + (t.prospect_term || '') + '" not "' + (t.standard_term || '') + '" (' + (t._co || '') + ')\n';
+        });
+    }
 
     // ==================== RENDER ====================
     const wrap = document.getElementById('reports-view');
-    wrap.innerHTML = buildReportConfigBar() + html +
-        '<div class="email-card" style="display:none">' + emailH + '</div>';
-    wrap.dataset.plainText = plain;
+    wrap.innerHTML =
+        '<div class="rpt-panel" id="product-panel">' +
+            '<div class="rpt-panel-hdr">Product Intelligence Report</div>' +
+            buildPanelConfigBar('product-panel', prodSections, PROD_SECTION_LABELS) +
+            prodH +
+            '<div class="email-card" style="display:none">' + prodEmail + '</div>' +
+        '</div>' +
+        '<div class="rpt-divider"></div>' +
+        '<div class="rpt-panel" id="marketing-panel">' +
+            '<div class="rpt-panel-hdr">Marketing Intelligence Report</div>' +
+            buildPanelConfigBar('marketing-panel', mktSections, MKT_SECTION_LABELS) +
+            mktH +
+            '<div class="email-card" style="display:none">' + mktEmail + '</div>' +
+        '</div>';
+    document.getElementById('product-panel').dataset.plainText = prodPlain;
+    document.getElementById('marketing-panel').dataset.plainText = mktPlain;
 }
 
 // ---- Report actions ----
-async function generateReport(btn) {
+async function generatePanel(panelId, btn) {
     if (!await checkActionPassword('Generate report')) return;
     buildReport();
     btn.textContent = 'Updated!';
@@ -2501,8 +2515,8 @@ async function generateReport(btn) {
     setTimeout(() => { btn.textContent = 'Generate'; btn.classList.remove('done'); }, 2000);
 }
 
-function copyReportHTML(viewId, btn) {
-    const card = document.querySelector('#' + viewId + ' .email-card');
+function copyReportHTML(panelId, btn) {
+    const card = document.querySelector('#' + panelId + ' .email-card');
     if (!card) return;
     const html = card.innerHTML;
     const blob = new Blob([html], { type: 'text/html' });
@@ -2515,8 +2529,8 @@ function copyReportHTML(viewId, btn) {
     });
 }
 
-function copyReportPlain(viewId, btn) {
-    const plain = document.getElementById(viewId).dataset.plainText;
+function copyReportPlain(panelId, btn) {
+    const plain = document.getElementById(panelId).dataset.plainText;
     if (!plain) return;
     navigator.clipboard.writeText(plain).then(() => {
         btn.textContent = 'Copied!';
