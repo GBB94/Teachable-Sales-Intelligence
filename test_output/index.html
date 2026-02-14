@@ -3368,47 +3368,31 @@ function buildCompetitors() {
     });
     html += '</div>';
 
-    // ========== COMPETITOR MIX ==========
+    // ========== COMPETITOR MIX BAR ==========
     if (sortedComps.length > 0) {
         html += '<div class="seg-mix">';
         html += '<div class="seg-section-title">Competitor Mix</div>';
-        if (activeMentionCount >= 10 && sortedComps.length >= 4) {
-            // Stacked bar for high-volume data
-            html += '<div class="seg-mix-bar">';
-            sortedComps.forEach(([name, data]) => {
-                const pct = activeMentionCount > 0 ? (data.mentions.length / activeMentionCount * 100) : 0;
-                const color = compColor(name);
-                const shortName = name.split(' ').slice(0, 2).join(' ');
-                const label = pct >= 12 ? (shortName + ' ' + Math.round(pct) + '%') : (pct >= 6 ? Math.round(pct) + '%' : '');
-                html += '<div class="seg-mix-seg" data-pct="' + pct.toFixed(1) + '" style="background:' + color + '" title="' + esc(name) + ': ' + Math.round(pct) + '% (' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + ')">';
-                html += '<span>' + esc(label) + '</span>';
-                html += '</div>';
-            });
+        html += '<div class="seg-mix-bar">';
+        sortedComps.forEach(([name, data]) => {
+            const pct = activeMentionCount > 0 ? (data.mentions.length / activeMentionCount * 100) : 0;
+            const color = compColor(name);
+            const shortName = name.split(' ').slice(0, 2).join(' ');
+            const label = pct >= 12 ? (shortName + ' ' + Math.round(pct) + '%') : (pct >= 6 ? Math.round(pct) + '%' : '');
+            html += '<div class="seg-mix-seg" data-pct="' + pct.toFixed(1) + '" style="background:' + color + '" title="' + esc(name) + ': ' + Math.round(pct) + '% (' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + ')">';
+            html += '<span>' + esc(label) + '</span>';
             html += '</div>';
-            html += '<div class="seg-mix-legend">';
-            sortedComps.forEach(([name, data]) => {
-                const pct = activeMentionCount > 0 ? Math.round(data.mentions.length / activeMentionCount * 100) : 0;
-                const color = compColor(name);
-                html += '<div class="seg-mix-legend-item">' +
-                    '<span class="seg-mix-dot" style="background:' + color + '"></span>' +
-                    esc(name) + ' ' + pct + '%' +
-                '</div>';
-            });
-            html += '</div>';
-        } else {
-            // Compact list for low-volume data
-            html += '<div class="comp-mix-list">';
-            sortedComps.forEach(([name, data]) => {
-                const pct = activeMentionCount > 0 ? (data.mentions.length / activeMentionCount * 100) : 0;
-                const color = compColor(name);
-                html += '<div class="comp-mix-row">' +
-                    '<span class="comp-mix-row-name">' + esc(name) + '</span>' +
-                    '<span class="comp-mix-row-count">' + data.mentions.length + '</span>' +
-                    '<div class="comp-mix-row-bar"><div style="width:' + pct.toFixed(1) + '%;background:' + color + '"></div></div>' +
-                '</div>';
-            });
-            html += '</div>';
-        }
+        });
+        html += '</div>';
+        html += '<div class="seg-mix-legend">';
+        sortedComps.forEach(([name, data]) => {
+            const pct = activeMentionCount > 0 ? Math.round(data.mentions.length / activeMentionCount * 100) : 0;
+            const color = compColor(name);
+            html += '<div class="seg-mix-legend-item">' +
+                '<span class="seg-mix-dot" style="background:' + color + '"></span>' +
+                esc(name) + ' ' + pct + '%' +
+            '</div>';
+        });
+        html += '</div>';
         html += '</div>';
     }
 
