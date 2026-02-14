@@ -670,6 +670,12 @@ body {
     line-height: 1;
 }
 .seg-card:hover .seg-card-dismiss { opacity: 1; }
+.seg-card.clickable { cursor: pointer; }
+.seg-card.clickable:hover { box-shadow: 0 0 12px 2px color-mix(in srgb, var(--seg-color, #4a7cff) 25%, transparent); }
+@keyframes compDetailFlash {
+    0% { background-color: rgba(74, 124, 255, 0.12); }
+    100% { background-color: transparent; }
+}
 .seg-card-dismiss:hover { color: #f87171; border-color: #f87171; background: #2a1a1a; }
 /* Unverified competitor card state */
 .seg-card.unverified {
@@ -3306,7 +3312,7 @@ function buildCompetitors() {
             : '';
         const badge = isVerified ? '' : '<span class="seg-card-unverified-badge">Unverified</span>';
         const dismissX = '<button class="seg-card-dismiss" onclick="event.stopPropagation();dismissCompetitor(\'' + esc(name).replace(/'/g, "\\'") + '\')" title="Dismiss competitor">&#10005;</button>';
-        html += '<div class="seg-card' + (isVerified ? '' : ' unverified') + '" style="--seg-color:' + color + '">' +
+        html += '<div class="seg-card clickable' + (isVerified ? '' : ' unverified') + '" style="--seg-color:' + color + '" onclick="scrollToCompDetail(\'' + esc(name).replace(/'/g, "\\'") + '\')">' +
             dismissX +
             '<div class="seg-card-name">' + esc(name) + badge + '</div>' +
             '<div class="seg-card-stat">' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + '</div>' +
@@ -3447,6 +3453,23 @@ function buildExcludedSection(byCompExcluded, visibleCount) {
 function toggleExcludedList() {
     const list = document.getElementById('comp-excluded-list');
     if (list) list.classList.toggle('open');
+}
+
+function scrollToCompDetail(name) {
+    const card = document.querySelector('.comp-detail-card[data-comp-name="' + CSS.escape(name) + '"]');
+    if (!card) return;
+    // Expand if collapsed
+    if (card.classList.contains('collapsed')) {
+        card.classList.remove('collapsed');
+    }
+    // Smooth scroll with 20px offset above the card
+    const y = card.getBoundingClientRect().top + window.scrollY - 20;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+    // Flash highlight after scroll settles
+    setTimeout(() => {
+        card.style.animation = 'compDetailFlash 0.6s ease-out';
+        card.addEventListener('animationend', () => { card.style.animation = ''; }, { once: true });
+    }, 400);
 }
 
 async function dismissCompetitor(name) {

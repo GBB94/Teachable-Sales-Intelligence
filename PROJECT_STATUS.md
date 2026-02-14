@@ -110,6 +110,7 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Competitor overview cards: hover-reveal dismiss X button (top-right, turns red on hover, password-protected)
 - [x] Unverified competitor state: unknown competitors shown with reduced opacity, dashed border, "Unverified" badge, sorted to end of grid
 - [x] Pending analysis banner restyled: muted blue-gray background with blue left-border accent, pulsing count badge (replaces bright orange inline-styled banner)
+- [x] Card-to-details navigation: clicking overview card smooth-scrolls to detail section, auto-expands if collapsed, flash highlight on arrival, hover glow effect
 
 ## What's In Progress
 
