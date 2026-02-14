@@ -116,6 +116,11 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Details section polish: 16px mention gaps, left indent, rgba separator lines, 200ms expand/collapse animation
 - [x] Colored type tags on detail cards: DIRECT (blue), LMS (green), DIY (gold), ADJACENT (purple), MARKETPLACE (red)
 - [x] Segment comparison heat map: replaced dot indicators with color-intensity cells (rgba blue, opacity scales with count), numbers in light blue, 2px cell gaps, legend below
+- [x] Feature tag capping: max 4 visible tags per call card, "+N more" expander. Smaller muted tags (11px, gray, no border)
+- [x] Hover-only exclude button on call cards (opacity 0→1 on card hover)
+- [x] Compact pending calls: single-line rows with PENDING badge, 60% opacity, gray left border
+- [x] Segment label redesign: muted uppercase label above call title, segment color drives left border accent on card
+- [x] Week header segment breakdown: colored dots with count + abbreviation (PT&D, CE&C, etc.) per week
 
 ## What's In Progress
 

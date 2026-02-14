@@ -262,18 +262,23 @@ body {
 
 /* Feature tag pills */
 .feat-tag {
-    display: inline-block; font-size: max(0.85rem, 13px); font-weight: 500;
-    padding: 0.2rem 0.6rem; border-radius: 10px;
-    background: #1a1d35; color: #7c8aff;
-    border: 1px solid #252a4a;
+    display: inline-block; font-size: 11px; font-weight: 500;
+    padding: 2px 8px; border-radius: 4px;
+    background: rgba(255,255,255,0.04); color: #6b7280;
+    border: none;
 }
-/* Segment pill (for By Call view) */
-.seg-pill {
-    display: inline-block; font-size: max(0.75rem, 12px); font-weight: 500;
-    padding: 0.15rem 0.5rem; border-radius: 8px;
-    background: #1a2520; color: #6bc79a;
-    border: 1px solid #253a30;
-    margin-left: 0.3rem; vertical-align: middle;
+.feat-tag-more {
+    display: inline-block; font-size: 11px; font-weight: 500;
+    padding: 2px 8px; border-radius: 4px; cursor: pointer;
+    background: none; color: #555a6e; border: none;
+    font-family: 'DM Sans', sans-serif;
+}
+.feat-tag-more:hover { color: #9a9db0; }
+/* Segment label (above call title) */
+.seg-label {
+    display: block; font-size: 0.65rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--seg-label-color, #6b7084); margin-bottom: 0.15rem;
 }
 /* Company pill (for By Feature view) */
 .co-pill-wrap {
@@ -503,7 +508,9 @@ body {
     padding: 0.2rem 0.6rem; border-radius: 6px;
     background: transparent; border: 1px solid #2a2d40; color: #6b7084;
     cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    opacity: 0;
 }
+.card:hover .excl-btn { opacity: 1; }
 .excl-btn:hover { border-color: #ff4a4a; color: #ff4a4a; }
 .card.excluded .excl-btn { display: none; }
 .incl-btn {
@@ -514,6 +521,28 @@ body {
 }
 .incl-btn:hover { border-color: #4ade80; color: #4ade80; }
 .card.excluded .incl-btn { display: inline-block; }
+/* Compact pending call cards */
+.card.pending-compact { opacity: 0.6; border-left: 3px solid #3a3d4e; }
+.card.pending-compact .card-hdr { padding: 0.5rem 1rem; align-items: center; }
+.card.pending-compact .card-hdr .name { font-size: 0.9rem; font-weight: 500; }
+.pending-badge-sm {
+    font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; color: #fb923c; background: #2a2010;
+    padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.4rem;
+    vertical-align: middle;
+}
+/* Week header segment dots */
+.week-seg-dots {
+    display: inline-flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;
+}
+.week-seg-dot {
+    display: inline-flex; align-items: center; gap: 0.2rem;
+    font-size: 0.75rem; color: #6b7084;
+}
+.week-seg-dot::before {
+    content: ''; display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--dot-color, #4a7cff); flex-shrink: 0;
+}
 
 /* Scan for more calls button */
 .scan-row {
@@ -1401,6 +1430,32 @@ function weekLabel(weekStart) {
     return range;
 }
 
+const SEG_ABBREV = {
+    'continuing education & credentialing': 'CE&C',
+    'professional training & development': 'PT&D',
+    'coaches & consultants': 'C&C',
+    'course creators & digital educators': 'CC&E',
+    'industry associations & membership orgs': 'Assoc',
+    'academic & higher education': 'Acad',
+    'corporate education & customer training': 'Corp',
+    'health, wellness & fitness': 'H&W',
+    'government & public sector education': 'Gov'
+};
+
+// Muted segment label colors (desaturated for By Call view)
+const SEG_LABEL_COLORS = {
+    'continuing education & credentialing': '#7a9ab8',
+    'professional training & development': '#8aaa8a',
+    'coaches & consultants': '#9a8aaa',
+    'course creators & digital educators': '#aa8a9a',
+    'industry associations & membership orgs': '#aa9a7a',
+    'academic & higher education': '#7aaaa0',
+    'corporate education & customer training': '#aa8a6a',
+    'health, wellness & fitness': '#7aaa8a',
+    'government & public sector education': '#8a8a9a',
+    'needs_review': '#aa9a60'
+};
+
 // ---- Calls view (grouped by week) ----
 function buildCalls() {
     const mentions = activeMentions();
@@ -1428,10 +1483,31 @@ function buildCalls() {
     let html = '';
     for (const [, week] of weeks) {
         const totalFeatures = week.calls.reduce((sum, c) => sum + (byCall[c.id] || []).length, 0);
+        // Segment breakdown for week header
+        const weekSegs = {};
+        week.calls.forEach(c => {
+            if (c.segment) {
+                const sl = c.segment.toLowerCase();
+                if (!weekSegs[sl]) weekSegs[sl] = { count: 0, name: c.segment };
+                weekSegs[sl].count++;
+            }
+        });
+        let segDotsHTML = '';
+        const segEntries = Object.values(weekSegs).sort((a, b) => b.count - a.count);
+        if (segEntries.length > 0) {
+            segDotsHTML = '<span class="week-seg-dots">';
+            segEntries.forEach(s => {
+                const abbr = SEG_ABBREV[s.name.toLowerCase()] || s.name.split(' ').slice(0, 2).join(' ');
+                const color = segColor(s.name);
+                segDotsHTML += '<span class="week-seg-dot" style="--dot-color:' + color + '">' + s.count + ' ' + esc(abbr) + '</span>';
+            });
+            segDotsHTML += '</span>';
+        }
         html += '<div class="week-hdr">' +
             '<span class="week-label">' + esc(weekLabel(week.start)) + '</span>' +
             '<span class="week-meta">' + week.calls.length + ' call' + (week.calls.length > 1 ? 's' : '') +
             ' &middot; ' + totalFeatures + ' feature' + (totalFeatures > 1 ? 's' : '') + '</span>' +
+            segDotsHTML +
         '</div>';
 
     week.calls.forEach(c => {
@@ -1439,8 +1515,18 @@ function buildCalls() {
         const features = [...new Set(callMentions.map(m => m.keyword))];
         const isPending = c.pending_analysis && callMentions.length === 0;
 
-        let tags = features.map(f => '<span class="feat-tag">' + esc(f) + '</span>').join('');
-        if (isPending) tags = '<span class="feat-tag" style="background:#3a2a10;color:#fb923c;border-color:#5a3a15">Pending Analysis</span>';
+        const TAG_CAP = 4;
+        let tags = '';
+        if (!isPending) {
+            const visibleFeats = features.slice(0, TAG_CAP);
+            const extraCount = features.length - TAG_CAP;
+            tags = visibleFeats.map(f => '<span class="feat-tag">' + esc(f) + '</span>').join('');
+            if (extraCount > 0) {
+                const hiddenTags = features.slice(TAG_CAP).map(f => '<span class="feat-tag">' + esc(f) + '</span>').join('');
+                tags += '<span class="feat-tag-extra" style="display:none">' + hiddenTags + '</span>';
+                tags += '<button class="feat-tag-more" onclick="event.stopPropagation();toggleTagMore(this)">+' + extraCount + ' more</button>';
+            }
+        }
         const extAttendees = extractCompany(c.attendees);
 
         let mHTML = '';
@@ -1490,30 +1576,52 @@ function buildCalls() {
 
         sectionsHTML += '</div>';
 
-        const segPill = c.segment ? '<span class="seg-pill">' + esc(c.segment) + '</span>' : '';
-        const displayTitle = esc(c.title) + (extAttendees ? '<span style="color:#9a9db0;font-weight:400"> &mdash; ' + esc(extAttendees) + '</span>' : '') + segPill;
+        const segLabelColor = SEG_LABEL_COLORS[(c.segment || '').toLowerCase()] || '#6b7084';
+        const segLabel = c.segment ? '<span class="seg-label" style="--seg-label-color:' + segLabelColor + '">' + esc(c.segment) + '</span>' : '';
+        const displayTitle = esc(c.title) + (extAttendees ? '<span style="color:#9a9db0;font-weight:400"> &mdash; ' + esc(extAttendees) + '</span>' : '');
 
         const isExcluded = excludedCalls.has(c.id);
         const featureCountLabel = isPending ? 'pending' : callMentions.length + ' feature' + (callMentions.length > 1 ? 's' : '');
-        html += '<div class="card' + (isExcluded ? ' excluded' : '') + (isPending ? ' pending' : '') + '" data-callid="' + esc(c.id) + '" data-segment="' + esc((c.segment || '').toLowerCase()) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + (c.segment || '') + ' ' + callMentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '">' +
-            '<div class="card-hdr" onclick="toggleCard(this)">' +
-                '<div class="left"><span class="arrow">&#9654;</span>' +
-                    '<div class="name-block">' +
-                        '<div class="name">' + displayTitle + '</div>' +
-                        '<div class="hdr-tags">' + tags + '</div>' +
+        const cardBorderStyle = c.segment ? 'border-left:3px solid ' + segLabelColor : '';
+
+        if (isPending) {
+            // Compact single-line pending card
+            html += '<div class="card pending-compact" data-callid="' + esc(c.id) + '" data-segment="' + esc((c.segment || '').toLowerCase()) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '')).toLowerCase()) + '">' +
+                '<div class="card-hdr" onclick="toggleCard(this)">' +
+                    '<div class="left"><span class="arrow">&#9654;</span>' +
+                        '<div class="name-block">' +
+                            segLabel +
+                            '<div class="name">' + displayTitle + '<span class="pending-badge-sm">Pending</span></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="right">' +
+                        '<button class="excl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Exclude</button>' +
+                        '<div class="card-date">' + (c.date || '') + '</div>' +
                     '</div>' +
                 '</div>' +
-                '<div class="right">' +
-                    '<button class="excl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Exclude</button>' +
-                    '<button class="incl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Include</button>' +
-                    '<div class="card-date">' + c.date + '<br>' + c.duration + ' min &middot; ' + featureCountLabel + '</div>' +
+                '<div class="mentions">' + mHTML + sectionsHTML + '</div></div>';
+        } else {
+            html += '<div class="card' + (isExcluded ? ' excluded' : '') + '" data-callid="' + esc(c.id) + '" data-segment="' + esc((c.segment || '').toLowerCase()) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + (c.segment || '') + ' ' + callMentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '"' + (cardBorderStyle ? ' style="' + cardBorderStyle + '"' : '') + '>' +
+                '<div class="card-hdr" onclick="toggleCard(this)">' +
+                    '<div class="left"><span class="arrow">&#9654;</span>' +
+                        '<div class="name-block">' +
+                            segLabel +
+                            '<div class="name">' + displayTitle + '</div>' +
+                            '<div class="hdr-tags">' + tags + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="right">' +
+                        '<button class="excl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Exclude</button>' +
+                        '<button class="incl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Include</button>' +
+                        '<div class="card-date">' + c.date + '<br>' + c.duration + ' min &middot; ' + featureCountLabel + '</div>' +
+                    '</div>' +
                 '</div>' +
-            '</div>' +
-            '<div class="mentions">' +
-                actionBar +
-                mHTML +
-                sectionsHTML +
-            '</div></div>';
+                '<div class="mentions">' +
+                    actionBar +
+                    mHTML +
+                    sectionsHTML +
+                '</div></div>';
+        }
     }); // end week.calls.forEach
     } // end for weeks
 
@@ -2407,6 +2515,15 @@ function toggleCard(el) {
 
 function toggleSection(el) {
     el.classList.toggle('open');
+}
+
+function toggleTagMore(btn) {
+    const extra = btn.parentElement.querySelector('.feat-tag-extra');
+    if (!extra) return;
+    if (!btn.dataset.orig) btn.dataset.orig = btn.textContent;
+    const showing = extra.style.display !== 'none';
+    extra.style.display = showing ? 'none' : 'inline';
+    btn.textContent = showing ? btn.dataset.orig : 'show less';
 }
 
 // ---- Two-step scan flow ----
