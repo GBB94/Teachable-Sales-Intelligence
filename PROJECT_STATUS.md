@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
-**Last updated:** 2026-02-14
-**Updated by:** Opus 4.6 (session 9)
+**Last updated:** 2026-02-15
+**Updated by:** Opus 4.6 (session 10)
 
 ---
 
@@ -126,6 +126,7 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Segment tags on competitor mentions: colored segment badge inline with each mention entry (company → segment → type → date)
 - [x] Prospect-first titles on By Call tab: generic titles ("Connect With Teachable", "Teachable Followup") swapped for prospect/company name, original title as muted subtitle
 - [x] New Since Last Visit system: localStorage tracks last dashboard visit, blue dot indicators on new cards, "NEW" badges on new competitor mentions, "N new" pill in header, "New Since Last Visit" date filter option
+- [x] Feature detail breakout panel: detail content renders below the full 2-column row (not inside the card), preventing adjacent card height stretching. Only one detail panel open at a time. Same-row card click swaps content; different-row click collapses old + opens new. Timestamp badges, speaker quotes (truncated at 200 chars with "show full"), "Show N more" for 3+ mentions.
 
 ## What's In Progress
 

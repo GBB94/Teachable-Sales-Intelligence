@@ -61,13 +61,26 @@ body {
     display: flex; align-items: center; gap: 0.6rem;
     margin-bottom: 1.25rem;
 }
-.filter-row .search-box { width: 280px; min-width: 160px; flex-shrink: 1; }
+.filter-row .search-box { width: 320px; min-width: 220px; flex-shrink: 1; position: relative; }
 .filter-row input {
-    width: 100%; padding: 0.4rem 0.65rem;
+    width: 100%; padding: 0.5rem 4.5rem 0.5rem 0.75rem;
     background: #14161e; border: 1px solid #2a2d40; border-radius: 6px;
     color: #d0d3db; font-family: 'DM Sans', sans-serif; font-size: max(0.82rem, 13px);
     outline: none; transition: border-color 0.15s;
 }
+.search-result-count {
+    position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: #555a6e; pointer-events: none;
+    font-family: 'JetBrains Mono', monospace;
+}
+.search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    font-size: 14px; color: #555a6e; background: none; border: none;
+    cursor: pointer; padding: 0 4px; line-height: 1;
+}
+.search-clear:hover { color: #9a9db0; }
+.card.search-dimmed { opacity: 0.15; pointer-events: none; transition: opacity 0.15s; }
+.cat-section.search-dimmed { opacity: 0.15; transition: opacity 0.15s; }
 .filter-row input:focus { border-color: #4a7cff; }
 .filter-row input::placeholder { color: #555a6e; }
 
@@ -190,19 +203,83 @@ body {
     font-size: max(1rem, 13px); font-weight: 600; color: #d0d3db;
 }
 .cat-count {
-    font-size: max(0.8rem, 13px); color: #555a6e;
-    font-family: 'JetBrains Mono', monospace; margin-left: auto;
+    font-size: max(0.8rem, 13px); color: #4b5563;
+    font-family: 'JetBrains Mono', monospace; margin-left: 12px;
 }
 .cat-cards {
-    columns: 2 480px;
-    column-gap: 0.5rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
     padding: 0.6rem 0 0 1rem;
 }
 .cat-section.collapsed .cat-cards { display: none; }
 .cat-cards .card {
-    break-inside: avoid;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
 }
+.feat-row {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem; align-items: start;
+}
+@media (max-width: 1200px) { .feat-row { grid-template-columns: 1fr; } }
+
+/* Feature detail panel (breakout below row) */
+.feat-detail { display: none; }
+.feat-detail.open {
+    display: block;
+    background: #1a1d27;
+    border: 1px solid rgba(59,130,246,0.15);
+    border-left: 3px solid rgba(59,130,246,0.3);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px 0;
+    animation: featDetailSlide 0.15s ease-out;
+}
+@keyframes featDetailSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.feat-detail-entry { margin-bottom: 12px; }
+.feat-detail-entry:last-child { margin-bottom: 0; }
+.feat-detail-ts {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    background: rgba(59,130,246,0.1); color: #7da0e0;
+    padding: 2px 6px; border-radius: 4px;
+    display: inline-block; margin-bottom: 4px; text-decoration: none;
+}
+.feat-detail-ts:hover { background: rgba(59,130,246,0.2); }
+.feat-detail-meta {
+    font-size: 12px; color: #9ca3af; margin-bottom: 4px;
+}
+.feat-detail-meta .sep { color: #4b5563; }
+.feat-detail-quote {
+    border-left: 2px solid rgba(255,255,255,0.06);
+    padding-left: 10px; margin-top: 4px;
+}
+.feat-detail-quote .spk {
+    font-size: 12px; font-weight: 600; color: #6b7280;
+}
+.feat-detail-quote .qtxt {
+    font-size: 12px; color: #9ca3af; line-height: 1.6;
+}
+.feat-detail-quote .q-toggle {
+    font-size: 11px; color: #4a7cff; cursor: pointer;
+    background: none; border: none; font-family: inherit;
+    margin-left: 4px;
+}
+.feat-detail-quote .q-toggle:hover { text-decoration: underline; }
+.feat-detail-more {
+    font-size: 12px; color: #4a7cff; cursor: pointer;
+    background: none; border: none; font-family: inherit;
+    margin-top: 8px; padding: 0;
+}
+.feat-detail-more:hover { text-decoration: underline; }
+.feat-detail-extra { display: none; }
+.feat-detail-extra.open { display: block; }
+
+/* Active feature card highlight */
+.card.feat-active {
+    background: #1a1d27;
+    border-color: rgba(59,130,246,0.2);
+}
+.card.feat-active .card-hdr .arrow { transform: rotate(90deg); }
 
 /* ---- Calls list (single column, generous padding) ---- */
 #calls-view {
@@ -248,12 +325,23 @@ body {
     display: flex; align-items: flex-start; gap: 0.6rem; flex-shrink: 0;
 }
 
-/* Count pill (replaces tiny bar chart) */
+/* Count pill with proportional bar */
 .cnt-pill {
-    font-family: 'JetBrains Mono', monospace; font-size: max(0.85rem, 13px);
-    font-weight: 600; color: #b0b4c8;
-    background: #1a1d30; border: 1px solid #252a4a; border-radius: 12px;
-    padding: 0.2rem 0.65rem; white-space: nowrap;
+    position: relative; white-space: nowrap;
+    padding: 0.2rem 0 0.45rem 0; background: none; border: none;
+}
+.cnt-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+    font-weight: 700; color: #b0b4c8;
+}
+.cnt-label {
+    font-size: 11px; font-weight: 400; color: #555a6e;
+    margin-left: 0.2rem;
+}
+.cnt-bar {
+    position: absolute; bottom: 0; left: 0; height: 3px;
+    background: rgba(59,130,246,0.15); border-radius: 2px;
+    transition: width 0.3s;
 }
 
 /* Header tags (visible without expanding) */
@@ -301,16 +389,19 @@ body {
     position: relative; display: inline-block;
 }
 .co-pill {
-    display: inline-block; font-size: max(0.85rem, 13px); font-weight: 500;
-    padding: 0.2rem 0.6rem; border-radius: 10px;
-    background: #1a2a1e; color: #6bc77a;
-    border: 1px solid #254a30; cursor: default;
+    display: inline-block; font-size: 10px; font-weight: 500;
+    padding: 2px 8px; border-radius: 4px;
+    background: rgba(34,197,94,0.08); color: #4a8c6a;
+    border: 1px solid rgba(34,197,94,0.12); cursor: default;
 }
 .co-pill .co-cnt { color: #4a8a55; font-weight: 400; margin-left: 0.2rem; }
 .co-more {
-    display: inline-block; font-size: max(0.78rem, 12px); color: #555a6e;
-    padding: 0.2rem 0.3rem; cursor: default; position: relative;
+    display: inline-block; font-size: 10px; color: #6b7280;
+    padding: 2px 4px; cursor: pointer; background: none; border: none;
+    font-family: 'DM Sans', sans-serif;
 }
+.co-more:hover { color: #9a9db0; }
+.co-extra { display: none; }
 .co-tooltip {
     display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
     transform: translateX(-50%); background: #1e2130; color: #c8ccd8;
@@ -318,7 +409,7 @@ body {
     font-size: max(0.78rem, 12px); white-space: nowrap; z-index: 100;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: none;
 }
-.co-pill-wrap:hover .co-tooltip, .co-more:hover .co-tooltip { display: block; }
+.co-pill-wrap:hover .co-tooltip { display: block; }
 
 /* Call card right-side meta (date + duration) */
 .card-date {
@@ -436,7 +527,13 @@ body {
 .copy-btn.copied { background: #1a3a2a; border-color: #2d5a3d; color: #4ade80; }
 
 /* ---- Reports tab ---- */
-#reports-view { max-width: 860px; }
+#reports-view {
+    display: flex; gap: 24px; align-items: flex-start;
+}
+@media (max-width: 1400px) {
+    #reports-view { flex-direction: column; gap: 48px; }
+    #reports-view .rpt-panel { min-width: 0; }
+}
 .report-config {
     display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;
 }
@@ -452,30 +549,34 @@ body {
 .report-generate-muted {
     font-size: 0.82rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
     padding: 0.4rem 1rem; border-radius: 8px;
-    background: #1e2130; border: 1px solid #2a2d40; color: #9a9db0;
+    background: #e5e7eb; border: none; color: #0f1117;
     cursor: pointer; transition: all 0.15s;
 }
-.report-generate-muted:hover { background: #252840; color: #d0d3db; border-color: #3a3f5c; }
-.report-generate-muted.done { background: #1a3a2a; color: #4ade80; border-color: #2d5a3d; }
+.report-generate-muted:hover { background: #f0f1f4; }
+.report-generate-muted.done { background: #1a3a2a; color: #4ade80; border: 1px solid #2d5a3d; }
 .report-export-row { display: flex; gap: 0.4rem; margin-left: auto; }
 
 /* Report panels */
-.rpt-panel { margin-bottom: 3rem; }
+.rpt-panel {
+    flex: 1; min-width: 480px;
+    background: #16181f; border: 1px solid rgba(255,255,255,0.04); border-radius: 10px;
+    padding: 1.5rem;
+}
 .rpt-panel-hdr {
     font-size: 1.1rem; font-weight: 700; color: #e5e7eb; margin-bottom: 0.75rem;
     letter-spacing: -0.01em;
 }
-.rpt-divider {
-    height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent);
-    margin: 2rem 0 2.5rem;
+.rpt-panel-empty {
+    color: #555a6e; font-size: 0.9rem; text-align: center; padding: 3rem 1rem;
 }
 
 /* Report sections — dark theme */
 .rpt-section {
-    background: #16181f; border: 1px solid rgba(255,255,255,0.04); border-radius: 10px;
-    padding: 1.25rem 1.5rem; margin-bottom: 0.75rem;
-    transition: opacity 0.2s ease, max-height 0.2s ease;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 1.25rem 0; margin-bottom: 0;
+    transition: opacity 0.2s ease;
 }
+.report-config + .rpt-section { border-top: none; }
 .rpt-section.hidden { display: none; }
 .rpt-section-hdr {
     font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase;
@@ -562,8 +663,8 @@ body {
 
 /* Recap block */
 .rpt-recap-block {
-    border-left: 3px solid #4a7cff; border-radius: 0 6px 6px 0;
-    padding: 0.75rem 1rem; background: rgba(74,124,255,0.04);
+    border-left: 3px solid rgba(59,130,246,0.3); border-radius: 0 6px 6px 0;
+    padding: 0.75rem 1rem; background: none;
     color: #b0b4c0; font-size: 0.88rem; line-height: 1.7;
 }
 .report-btn {
@@ -651,6 +752,82 @@ body {
 }
 .incl-btn:hover { border-color: #4ade80; color: #4ade80; }
 .card.excluded .incl-btn { display: inline-block; }
+
+/* Card exit / enter animations */
+@keyframes cardExitAnim {
+    0%   { opacity:1; transform:scale(1); max-height:600px; margin-bottom:0.75rem; padding:0; }
+    100% { opacity:0; transform:scale(0.95); max-height:0; margin-bottom:0; padding:0; }
+}
+.card.card-exiting {
+    animation: cardExitAnim 300ms ease forwards;
+    overflow: hidden;
+    pointer-events: none;
+}
+@keyframes cardEnterAnim {
+    0%   { opacity:0; transform:scale(0.95); }
+    100% { opacity:1; transform:scale(1); }
+}
+.card.card-entering { animation: cardEnterAnim 300ms ease forwards; }
+
+/* Toast container */
+.toast-container {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column-reverse; gap: 8px;
+    z-index: 10001; pointer-events: none;
+}
+@keyframes toastIn { 0%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
+@keyframes toastOut { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(12px)} }
+.toast {
+    pointer-events: auto;
+    display: flex; align-items: center; gap: 0.75rem;
+    background: #1e2130; border: 1px solid #2a2d40; border-radius: 8px;
+    padding: 0.6rem 1rem; max-width: 420px; position: relative; overflow: hidden;
+    animation: toastIn 200ms ease forwards;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+.toast.toast-exiting { animation: toastOut 200ms ease forwards; }
+.toast-msg { font-size: 13px; color: #e5e7eb; flex: 1; min-width: 0; }
+.toast-msg span { font-weight: 600; }
+.toast-undo {
+    font-size: 13px; font-weight: 600; color: #4a7cff; background: none; border: none;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap;
+    text-decoration: none; padding: 0;
+}
+.toast-undo:hover { text-decoration: underline; }
+.toast-dismiss {
+    font-size: 16px; color: #555a6e; background: none; border: none;
+    cursor: pointer; line-height: 1; padding: 0 0 0 0.25rem;
+}
+.toast-dismiss:hover { color: #9a9db0; }
+@keyframes toastCountdown { 0%{width:100%} 100%{width:0%} }
+.toast-progress {
+    position: absolute; bottom: 0; left: 0; height: 2px;
+    background: #4a7cff; border-radius: 0 0 0 8px;
+}
+
+/* Excluded chip */
+.excluded-chip {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.78rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    padding: 0.3rem 0.7rem; border-radius: 6px;
+    background: #14161e; border: 1px solid #2a2d40; color: #9a9db0;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.excluded-chip:hover { border-color: #ff4a4a; color: #ff6b6b; }
+.excluded-chip.active { border-color: #ff4a4a; color: #ff6b6b; background: rgba(255,74,74,0.08); }
+.excluded-count {
+    font-family: 'JetBrains Mono', monospace; font-weight: 700;
+}
+
+/* Restore button (in excluded filter view) */
+.restore-btn {
+    font-size: 0.75rem; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: 0.2rem 0.6rem; border-radius: 6px;
+    background: transparent; border: 1px solid #2a5a3a; color: #4ade80;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.restore-btn:hover { border-color: #4ade80; background: rgba(74,222,128,0.08); }
+
 /* Compact pending call cards */
 .card.pending-compact { opacity: 0.6; border-left: 3px solid #3a3d4e; }
 .card.pending-compact .card-hdr { padding: 0.5rem 1rem; align-items: center; }
@@ -829,15 +1006,15 @@ body {
 
 /* ---- Responsive breakpoints ---- */
 
-/* Large screens 1400px+ : feature cards can do 3 columns */
+/* Large screens 1400px+ : keep feature cards at 2 columns */
 @media (min-width: 1400px) {
-    .cat-cards { columns: 3; }
+    .feat-row { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* Narrow screens under 900px : single column everything */
 @media (max-width: 900px) {
     .wrap { padding: 1.5rem clamp(0.75rem, 3vw, 2rem); }
-    .cat-cards { columns: 1; }
+    .feat-row { grid-template-columns: 1fr; }
     .mentions { padding: 0 1rem 0.85rem 1.5rem; }
     #calls-view .mentions { padding: 0 1rem 1rem 1.5rem; }
 }
@@ -1181,7 +1358,7 @@ body {
         <div class="tab" data-tab="reports" onclick="switchTab('reports')">Reports</div>
     </div>
     <div class="filter-row" id="filter-row">
-        <div class="search-box"><input id="q" placeholder="Search..." oninput="filter(this.value)"></div>
+        <div class="search-box"><input id="q" placeholder="Search..." oninput="filter(this.value)"><span class="search-result-count" id="search-result-count"></span><button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none">&times;</button></div>
         <div class="dd-wrap" id="date-dd">
             <button class="dd-btn" onclick="toggleDD('date-dd')"><span id="date-label">All Time</span><span class="dd-arrow">&#9660;</span></button>
             <div class="dd-panel" id="date-panel"></div>
@@ -1202,6 +1379,7 @@ body {
             <button class="dd-btn" onclick="toggleDD('comp-type-dd')"><span id="comp-type-label">All Types</span><span class="dd-arrow">&#9660;</span></button>
             <div class="dd-panel" id="comp-type-panel"></div>
         </div>
+        <button class="excluded-chip" id="excluded-chip" onclick="toggleExcludedFilter()" style="display:none"><span class="excluded-count" id="excluded-count">0</span> Excluded</button>
         <button class="expand-btn" id="expand-btn" onclick="toggleExpandAll()" style="display:none">Collapse All</button>
         <button class="scan-btn" id="sync-sheets-btn" onclick="syncToSheets(this)" style="display:none">Sync to Sheets</button>
         <div style="flex:1"></div>
@@ -1213,6 +1391,8 @@ body {
     <div id="competitors-view" style="display:none"></div>
     <div id="reports-view" style="display:none"></div>
 </div>
+
+<div class="toast-container" id="toast-container"></div>
 
 <!-- Scan modal -->
 <div class="scan-overlay" id="scan-overlay" onclick="if(event.target===this)closeScanModal()">
@@ -1306,6 +1486,9 @@ let currentTab = 'features';
 let excludedCalls = new Set();
 let excludedCompetitors = new Set((DATA.excluded_competitors || []).map(n => n.toLowerCase()));
 let activeDateRange = 'all';
+let showExcludedOnly = false;
+let toastStack = [];
+let toastIdCounter = 0;
 
 // Parse hash: #calls&exclude=id1,id2 or #features&exclude=id1,id2
 function parseHash() {
@@ -1389,18 +1572,131 @@ function activeMentions() {
 
 function toggleExclude(callId) {
     if (excludedCalls.has(callId)) {
-        excludedCalls.delete(callId);
+        // Restore path
+        restoreCall(callId);
     } else {
-        excludedCalls.add(callId);
+        // Exclude path
+        excludeCall(callId);
     }
+}
+
+function excludeCall(callId) {
+    excludedCalls.add(callId);
     updateHash();
-    // Update the card's visual state
-    const card = document.querySelector('#calls-view .card[data-callid="' + callId + '"]');
-    if (card) card.classList.toggle('excluded', excludedCalls.has(callId));
-    // Rebuild other views and stats
     buildFeatures();
     buildReport();
     updateStats();
+
+    const card = document.querySelector('#calls-view .card[data-callid="' + callId + '"]');
+    if (card) {
+        card.classList.add('card-exiting');
+        card.addEventListener('animationend', function handler() {
+            card.removeEventListener('animationend', handler);
+            buildCalls();
+            updateExcludedChip();
+        }, { once: true });
+    } else {
+        buildCalls();
+        updateExcludedChip();
+    }
+
+    // Find call title for toast
+    const call = DATA.calls.find(c => c.id === callId);
+    const title = call ? (call.title || 'Untitled') : 'call';
+    const truncTitle = title.length > 40 ? title.slice(0, 37) + '...' : title;
+    showToast('Excluded <span>"' + esc(truncTitle) + '"</span>', function() {
+        restoreCall(callId);
+    });
+}
+
+function restoreCall(callId) {
+    excludedCalls.delete(callId);
+    updateHash();
+    buildFeatures();
+    buildReport();
+    updateStats();
+    buildCalls();
+    updateExcludedChip();
+
+    // Animate restored card in
+    const card = document.querySelector('#calls-view .card[data-callid="' + callId + '"]');
+    if (card) {
+        card.classList.add('card-entering');
+        card.addEventListener('animationend', function handler() {
+            card.removeEventListener('animationend', handler);
+            card.classList.remove('card-entering');
+        }, { once: true });
+    }
+}
+
+// ---- Toast system ----
+function showToast(message, undoCallback, durationMs) {
+    durationMs = durationMs || 5000;
+    var id = ++toastIdCounter;
+    var container = document.getElementById('toast-container');
+
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.dataset.toastId = id;
+    el.innerHTML =
+        '<div class="toast-msg">' + message + '</div>' +
+        '<button class="toast-undo" data-tid="' + id + '">Undo</button>' +
+        '<button class="toast-dismiss" data-tid="' + id + '">&times;</button>' +
+        '<div class="toast-progress" style="animation:toastCountdown ' + durationMs + 'ms linear forwards"></div>';
+
+    el.querySelector('.toast-undo').addEventListener('click', function() {
+        if (undoCallback) undoCallback();
+        dismissToast(id);
+    });
+    el.querySelector('.toast-dismiss').addEventListener('click', function() {
+        dismissToast(id);
+    });
+
+    container.appendChild(el);
+
+    var timer = setTimeout(function() { dismissToast(id); }, durationMs);
+    toastStack.push({ id: id, el: el, timer: timer });
+
+    // Cap visible toasts at 4
+    while (toastStack.length > 4) {
+        dismissToast(toastStack[0].id);
+    }
+    return id;
+}
+
+function dismissToast(id) {
+    var idx = toastStack.findIndex(function(t) { return t.id === id; });
+    if (idx === -1) return;
+    var entry = toastStack[idx];
+    clearTimeout(entry.timer);
+    toastStack.splice(idx, 1);
+    entry.el.classList.add('toast-exiting');
+    entry.el.addEventListener('animationend', function() {
+        if (entry.el.parentNode) entry.el.parentNode.removeChild(entry.el);
+    }, { once: true });
+}
+
+// ---- Excluded chip ----
+function updateExcludedChip() {
+    var chip = document.getElementById('excluded-chip');
+    var count = document.getElementById('excluded-count');
+    if (currentTab === 'calls' && excludedCalls.size > 0) {
+        chip.style.display = '';
+        count.textContent = excludedCalls.size;
+        chip.classList.toggle('active', showExcludedOnly);
+    } else {
+        chip.style.display = 'none';
+        if (showExcludedOnly) {
+            showExcludedOnly = false;
+            buildCalls();
+        }
+    }
+}
+
+function toggleExcludedFilter() {
+    showExcludedOnly = !showExcludedOnly;
+    buildCalls();
+    updateExcludedChip();
 }
 
 function esc(s) {
@@ -1502,7 +1798,62 @@ function getCompany(m, callMap) {
     return '';
 }
 
-function buildFeatureCard(kw, mentions, callMap, companies) {
+// ---- Feature detail panel globals ----
+let _featMentions = {};  // featIdx -> sorted mentions array
+let _featCallMap = {};   // single callMap reference
+let _featIdx = 0;        // auto-incrementing feature index
+
+function buildFeatDetailHTML(idx) {
+    const mentions = _featMentions[idx];
+    if (!mentions || mentions.length === 0) return '<div style="padding:8px;color:#555a6e;font-size:12px">No mentions.</div>';
+    const callMap = _featCallMap;
+    const MAX_VISIBLE = 3;
+    const visible = mentions.slice(0, MAX_VISIBLE);
+    const extra = mentions.slice(MAX_VISIBLE);
+
+    function entryHTML(m) {
+        const call = callMap[m.call_id];
+        const callTitle = m.call_title || (call ? call.title : '');
+        const callDate = m.call_date || (call ? call.date : '');
+        const fullText = m.text || '';
+        const truncated = fullText.length > 200;
+        const displayText = truncated ? fullText.slice(0, 200) + '…' : fullText;
+
+        let tsHTML = '';
+        if (m.link) {
+            tsHTML = '<a class="feat-detail-ts" href="' + esc(m.link) + '" target="_blank">' + esc(m.ts || '0:00') + '</a>';
+        } else if (m.transcript) {
+            tsHTML = '<a class="feat-detail-ts" href="' + esc(m.transcript) + '" target="_blank">' + esc(m.ts || 'open') + '</a>';
+        } else {
+            tsHTML = '<span class="feat-detail-ts">' + esc(m.ts || '--') + '</span>';
+        }
+
+        let quoteHTML = '<span class="qtxt" data-full="' + esc(fullText) + '" data-short="' + esc(displayText) + '">"' + esc(displayText) + '"</span>';
+        if (truncated) {
+            quoteHTML += ' <button class="q-toggle" onclick="toggleFeatQuote(this)">show full</button>';
+        }
+
+        return '<div class="feat-detail-entry">' +
+            tsHTML +
+            '<div class="feat-detail-meta">' + esc(callTitle) + ' <span class="sep">&middot;</span> ' + esc(callDate) + '</div>' +
+            '<div class="feat-detail-quote"><span class="spk">' + esc(m.speaker || '') + ':</span> ' + quoteHTML + '</div>' +
+        '</div>';
+    }
+
+    let html = '';
+    visible.forEach(m => { html += entryHTML(m); });
+
+    if (extra.length > 0) {
+        html += '<div class="feat-detail-extra">';
+        extra.forEach(m => { html += entryHTML(m); });
+        html += '</div>';
+        html += '<button class="feat-detail-more" onclick="toggleFeatMoreMentions(this)">Show ' + extra.length + ' more mention' + (extra.length > 1 ? 's' : '') + '</button>';
+    }
+
+    return html;
+}
+
+function buildFeatureCard(kw, mentions, callMap, companies, maxMentions, featIdx) {
     const mSorted = mentions.sort((a, b) => (b.call_date || '').localeCompare(a.call_date || ''));
 
     // Group mentions by company
@@ -1528,37 +1879,41 @@ function buildFeatureCard(kw, mentions, callMap, companies) {
     const coEntries = Object.entries(coMap)
         .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]));
 
-    // Build company pills (cap at 3 visible)
-    const MAX_PILLS = 3;
+    // Build company pills (cap at 2 visible, inline expand for overflow)
+    const MAX_PILLS = 2;
     const visible = coEntries.slice(0, MAX_PILLS);
     const overflow = coEntries.slice(MAX_PILLS);
 
     let pillsHTML = '';
-    visible.forEach(([co, data]) => {
+    const buildPill = ([co, data]) => {
         const cntBadge = data.count > 1 ? '<span class="co-cnt">(' + data.count + ')</span>' : '';
         const contacts = [...data.contacts];
         const tooltip = contacts.length > 0
             ? '<span class="co-tooltip">' + contacts.map(c => esc(c)).join(', ') + '</span>'
             : '';
-        pillsHTML += '<span class="co-pill-wrap"><span class="co-pill">' + esc(co) + cntBadge + '</span>' + tooltip + '</span>';
-    });
+        return '<span class="co-pill-wrap"><span class="co-pill">' + esc(co) + cntBadge + '</span>' + tooltip + '</span>';
+    };
+    visible.forEach(entry => { pillsHTML += buildPill(entry); });
 
     if (overflow.length > 0) {
-        const overflowTip = overflow.map(([co, data]) => {
-            const contacts = [...data.contacts];
-            return contacts.length > 0 ? contacts.join(', ') + ' (' + esc(co) + ')' : esc(co);
-        }).join('; ');
-        pillsHTML += '<span class="co-more">+' + overflow.length + ' more<span class="co-tooltip">' + esc(overflowTip) + '</span></span>';
+        let extraPills = '';
+        overflow.forEach(entry => { extraPills += buildPill(entry); });
+        pillsHTML += '<span class="co-extra">' + extraPills + '</span>';
+        pillsHTML += '<button class="co-more" onclick="event.stopPropagation();toggleCoMore(this)">+' + overflow.length + ' more</button>';
     }
 
-    let mHTML = '';
-    mSorted.forEach(m => { mHTML += mentionHTML(m, false); });
+    // Store mentions for detail panel (no inline mentions HTML)
+    _featMentions[featIdx] = mSorted;
 
-    const countLabel = mentions.length === 1 ? '1 mention' : mentions.length + ' mentions';
+    const count = mentions.length;
+    const countWord = count === 1 ? 'mention' : 'mentions';
+    const barPct = (count >= 2 && maxMentions > 0) ? Math.round((count / maxMentions) * 100) : 0;
+    const barHTML = barPct > 0 ? '<span class="cnt-bar" style="width:' + barPct + '%"></span>' : '';
+    const countLabel = '<span class="cnt-num">' + count + '</span> <span class="cnt-label">' + countWord + '</span>' + barHTML;
 
     const callIds = [...new Set(mentions.map(m => m.call_id))];
-    return '<div class="card" data-companies="' + esc((companies || []).join(',').toLowerCase()) + '" data-callids="' + esc(callIds.join(',')) + '" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + ' ' + esc(Object.keys(coMap).join(' ').toLowerCase()) + '">' +
-        '<div class="card-hdr" onclick="toggleCard(this)">' +
+    return '<div class="card" data-feat-idx="' + featIdx + '" data-companies="' + esc((companies || []).join(',').toLowerCase()) + '" data-callids="' + esc(callIds.join(',')) + '" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + ' ' + esc(Object.keys(coMap).join(' ').toLowerCase()) + '">' +
+        '<div class="card-hdr" onclick="toggleFeatureDetail(this)">' +
             '<div class="left"><span class="arrow">&#9654;</span>' +
                 '<div class="name-block">' +
                     '<div class="name">' + esc(kw) + '</div>' +
@@ -1567,10 +1922,14 @@ function buildFeatureCard(kw, mentions, callMap, companies) {
             '</div>' +
             '<div class="right"><span class="cnt-pill">' + countLabel + '</span></div>' +
         '</div>' +
-        '<div class="mentions">' + mHTML + '</div></div>';
+    '</div>';
 }
 
 function buildFeatures() {
+    // Reset feature detail globals
+    _featMentions = {};
+    _featIdx = 0;
+
     // Pending analysis banner
     const pendingCalls = DATA.calls.filter(c => c.pending_analysis);
     const oldBanner = document.getElementById('pending-banner');
@@ -1594,6 +1953,7 @@ function buildFeatures() {
 
     const callMap = {};
     DATA.calls.forEach(c => { callMap[c.id] = c; });
+    _featCallMap = callMap;
 
     // Collect all companies for filter and tag each mention
     const allCompanies = new Set();
@@ -1638,11 +1998,23 @@ function buildFeatures() {
         const catCompanies = new Set();
         catData.features.forEach(f => f.mentions.forEach(m => { if (m._company) catCompanies.add(m._company); }));
 
-        let cardsHTML = '';
-        catData.features.forEach(f => {
+        // Compute max mentions in this category for proportional bar
+        const maxMentions = Math.max(...catData.features.map(f => f.mentions.length));
+
+        // Build individual card HTML strings
+        const cards = catData.features.map(f => {
             const cardCompanies = new Set(f.mentions.map(m => m._company).filter(Boolean));
-            cardsHTML += buildFeatureCard(f.keyword, f.mentions, callMap, [...cardCompanies]);
+            return buildFeatureCard(f.keyword, f.mentions, callMap, [...cardCompanies], maxMentions, _featIdx++);
         });
+
+        // Pair into row groups of 2 with a shared detail panel
+        let cardsHTML = '';
+        for (let i = 0; i < cards.length; i += 2) {
+            cardsHTML += '<div class="feat-row-group"><div class="feat-row">';
+            cardsHTML += cards[i];
+            if (cards[i + 1]) cardsHTML += cards[i + 1];
+            cardsHTML += '</div><div class="feat-detail"></div></div>';
+        }
 
         const displayName = isNR ? 'Needs Review' : catName;
         const nrClass = isNR ? ' needs-review' : '';
@@ -1729,10 +2101,25 @@ function buildCalls() {
     });
 
     const dateIds = activeCallIds();
-    // Show calls that have mentions OR are pending analysis
-    const callList = DATA.calls
-        .filter(c => (byCall[c.id] || c.pending_analysis) && dateIds.has(c.id))
-        .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    // In excluded-only mode, show only excluded calls; otherwise hide excluded
+    let callList;
+    if (showExcludedOnly) {
+        // Show all excluded calls that pass date filter (even without mentions for pending)
+        const allByCall = {};
+        DATA.mentions.forEach(m => {
+            if (!allByCall[m.call_id]) allByCall[m.call_id] = [];
+            allByCall[m.call_id].push(m);
+        });
+        callList = DATA.calls
+            .filter(c => excludedCalls.has(c.id) && dateIds.has(c.id) && (allByCall[c.id] || c.pending_analysis))
+            .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        // Use allByCall for card rendering in excluded mode
+        Object.assign(byCall, allByCall);
+    } else {
+        callList = DATA.calls
+            .filter(c => (byCall[c.id] || c.pending_analysis) && dateIds.has(c.id) && !excludedCalls.has(c.id))
+            .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    }
 
     // Group into weeks
     const weeks = new Map(); // weekKey -> { start, calls[] }
@@ -1854,9 +2241,14 @@ function buildCalls() {
         const cardBorderStyle = c.segment ? 'border-left:3px solid ' + segLabelColor : '';
         const isNew = isNewCall(c);
 
+        // Mode-aware button rendering
+        const actionBtnHTML = showExcludedOnly
+            ? '<button class="restore-btn" onclick="event.stopPropagation(); restoreCall(\'' + esc(c.id) + '\')">Restore</button>'
+            : '<button class="excl-btn" onclick="event.stopPropagation(); excludeCall(\'' + esc(c.id) + '\')">Exclude</button>';
+
         if (isPending) {
             // Compact single-line pending card
-            html += '<div class="card pending-compact" data-callid="' + esc(c.id) + '" data-segment="' + esc((c.segment || '').toLowerCase()) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '')).toLowerCase()) + '">' +
+            html += '<div class="card pending-compact' + (showExcludedOnly ? ' excluded' : '') + '" data-callid="' + esc(c.id) + '" data-segment="' + esc((c.segment || '').toLowerCase()) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '')).toLowerCase()) + '">' +
                 '<div class="card-hdr" onclick="toggleCard(this)">' +
                     '<div class="left"><span class="arrow">&#9654;</span>' +
                         '<div class="name-block">' +
@@ -1865,13 +2257,13 @@ function buildCalls() {
                         '</div>' +
                     '</div>' +
                     '<div class="right">' +
-                        '<button class="excl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Exclude</button>' +
+                        actionBtnHTML +
                         '<div class="card-date">' + (c.date || '') + '</div>' +
                     '</div>' +
                 '</div>' +
                 '<div class="mentions">' + mHTML + sectionsHTML + '</div></div>';
         } else {
-            html += '<div class="card' + (isExcluded ? ' excluded' : '') + '" data-callid="' + esc(c.id) + '" data-segment="' + esc((c.segment || '').toLowerCase()) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + (c.segment || '') + ' ' + callMentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '"' + (cardBorderStyle ? ' style="' + cardBorderStyle + '"' : '') + '>' +
+            html += '<div class="card' + (showExcludedOnly ? ' excluded' : '') + '" data-callid="' + esc(c.id) + '" data-segment="' + esc((c.segment || '').toLowerCase()) + '" data-search="' + esc((c.title + ' ' + (c.attendees || '') + ' ' + features.join(' ') + ' ' + (c.segment || '') + ' ' + callMentions.map(m => m.speaker + ' ' + m.text).join(' ')).toLowerCase()) + '"' + (cardBorderStyle ? ' style="' + cardBorderStyle + '"' : '') + '>' +
                 (isNew ? '<span class="new-dot"></span>' : '') +
                 '<div class="card-hdr" onclick="toggleCard(this)">' +
                     '<div class="left"><span class="arrow">&#9654;</span>' +
@@ -1882,8 +2274,7 @@ function buildCalls() {
                         '</div>' +
                     '</div>' +
                     '<div class="right">' +
-                        '<button class="excl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Exclude</button>' +
-                        '<button class="incl-btn" onclick="event.stopPropagation(); toggleExclude(\'' + esc(c.id) + '\')">Include</button>' +
+                        actionBtnHTML +
                         '<div class="card-date">' + c.date + '<br>' + c.duration + ' min &middot; ' + featureCountLabel + '</div>' +
                     '</div>' +
                 '</div>' +
@@ -1904,7 +2295,10 @@ function buildCalls() {
         '</button>' +
     '</div>';
 
-    document.getElementById('calls-view').innerHTML = html || '<div style="padding:2rem;color:#3a3d4e;text-align:center">No calls with feature requests found.</div>';
+    const emptyMsg = showExcludedOnly
+        ? '<div style="padding:2rem;color:#3a3d4e;text-align:center">No excluded calls.</div>'
+        : '<div style="padding:2rem;color:#3a3d4e;text-align:center">No calls with feature requests found.</div>';
+    document.getElementById('calls-view').innerHTML = html || emptyMsg;
     document.getElementById('calls-view').dataset.scanCmd = scanCmd;
 }
 
@@ -2495,7 +2889,6 @@ function buildReport() {
             prodH +
             '<div class="email-card" style="display:none">' + prodEmail + '</div>' +
         '</div>' +
-        '<div class="rpt-divider"></div>' +
         '<div class="rpt-panel" id="marketing-panel">' +
             '<div class="rpt-panel-hdr">Marketing Intelligence Report</div>' +
             buildPanelConfigBar('marketing-panel', mktSections, MKT_SECTION_LABELS) +
@@ -2798,6 +3191,73 @@ function toggleCard(el) {
     el.parentElement.classList.toggle('open');
 }
 
+function toggleFeatureDetail(hdr) {
+    const card = hdr.parentElement;
+    const idx = card.dataset.featIdx;
+    const rowGroup = card.closest('.feat-row-group');
+    if (!rowGroup) return;
+    const detail = rowGroup.querySelector('.feat-detail');
+    if (!detail) return;
+
+    const isActive = card.classList.contains('feat-active');
+
+    // Check for any currently open detail panel on the page
+    const openDetail = document.querySelector('.feat-detail.open');
+    const openCard = document.querySelector('.card.feat-active');
+
+    if (isActive) {
+        // Same card re-clicked — collapse
+        card.classList.remove('feat-active');
+        detail.classList.remove('open');
+        detail.innerHTML = '';
+        return;
+    }
+
+    // Check if the open panel is in a different row group
+    if (openDetail && openDetail !== detail) {
+        // Different row — collapse old
+        openDetail.classList.remove('open');
+        openDetail.innerHTML = '';
+        if (openCard) openCard.classList.remove('feat-active');
+    } else if (openCard && openCard !== card) {
+        // Same row, different card — just swap active state (no collapse animation)
+        openCard.classList.remove('feat-active');
+    }
+
+    // Expand new
+    card.classList.add('feat-active');
+    detail.innerHTML = buildFeatDetailHTML(idx);
+    detail.classList.add('open');
+}
+
+function toggleFeatMoreMentions(btn) {
+    const detail = btn.closest('.feat-detail');
+    if (!detail) return;
+    const extra = detail.querySelector('.feat-detail-extra');
+    if (!extra) return;
+    const showing = extra.classList.contains('open');
+    extra.classList.toggle('open');
+    if (showing) {
+        btn.textContent = btn.dataset.orig || 'Show more';
+    } else {
+        if (!btn.dataset.orig) btn.dataset.orig = btn.textContent;
+        btn.textContent = 'Show less';
+    }
+}
+
+function toggleFeatQuote(btn) {
+    const qtxt = btn.parentElement.querySelector('.qtxt');
+    if (!qtxt) return;
+    const isFull = btn.textContent === 'less';
+    if (isFull) {
+        qtxt.textContent = '"' + qtxt.dataset.short + '"';
+        btn.textContent = 'show full';
+    } else {
+        qtxt.textContent = '"' + qtxt.dataset.full + '"';
+        btn.textContent = 'less';
+    }
+}
+
 function toggleSection(el) {
     el.classList.toggle('open');
 }
@@ -2809,6 +3269,15 @@ function toggleTagMore(btn) {
     const showing = extra.style.display !== 'none';
     extra.style.display = showing ? 'none' : 'inline';
     btn.textContent = showing ? btn.dataset.orig : 'show less';
+}
+
+function toggleCoMore(btn) {
+    const extra = btn.parentElement.querySelector('.co-extra');
+    if (!extra) return;
+    if (!btn.dataset.orig) btn.dataset.orig = btn.textContent;
+    const showing = extra.style.display !== 'none';
+    extra.style.display = showing ? 'none' : 'inline';
+    btn.textContent = showing ? btn.dataset.orig : 'less';
 }
 
 // ---- Two-step scan flow ----
@@ -3991,6 +4460,8 @@ function switchTab(tab) {
     document.getElementById('expand-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('sync-sheets-btn').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('analyze-btn').style.display = tab === 'calls' ? '' : 'none';
+    if (tab !== 'calls') showExcludedOnly = false;
+    updateExcludedChip();
     document.getElementById('q').value = '';
     closeAllDD();
     filter('');
@@ -4000,22 +4471,40 @@ function switchTab(tab) {
 
 function filter(q) {
     const low = q.toLowerCase();
+    const countEl = document.getElementById('search-result-count');
+    const clearBtn = document.getElementById('search-clear');
     if (currentTab === 'features') {
+        let visibleCount = 0;
+        let totalCount = 0;
         document.querySelectorAll('#features-view .cat-section').forEach(sec => {
             const catMatch = !low || (sec.dataset.cat || '').includes(low);
             let anyCardVisible = false;
             sec.querySelectorAll('.card').forEach(c => {
+                totalCount++;
                 const vis = !low || catMatch || c.dataset.search.includes(low);
-                c.style.display = vis ? '' : 'none';
-                if (vis) anyCardVisible = true;
+                c.classList.toggle('search-dimmed', !vis);
+                c.style.display = '';
+                if (vis) { anyCardVisible = true; visibleCount++; }
             });
-            sec.style.display = anyCardVisible ? '' : 'none';
+            sec.classList.toggle('search-dimmed', !anyCardVisible);
+            sec.style.display = '';
         });
+        if (low && countEl) countEl.textContent = visibleCount + ' of ' + totalCount;
+        else if (countEl) countEl.textContent = '';
     } else {
         document.querySelectorAll('#calls-view .card').forEach(c => {
             c.style.display = !low || c.dataset.search.includes(low) ? '' : 'none';
         });
+        if (countEl) countEl.textContent = '';
     }
+    if (clearBtn) clearBtn.style.display = low ? '' : 'none';
+}
+
+function clearSearch() {
+    const input = document.getElementById('q');
+    input.value = '';
+    filter('');
+    input.focus();
 }
 
 function updateNeedsReviewBanner() {
