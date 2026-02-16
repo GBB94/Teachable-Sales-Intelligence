@@ -1,0 +1,13 @@
+{
+  "default_sequence_id": "",
+  "segment_sequences": {
+    "Continuing Education & Credentialing": "",
+    "Professional Training & Development": "",
+    "Course Creators & Digital Educators": "",
+    "Coaches & Consultants": "",
+    "Government & Public Sector Education": ""
+  },
+  "fallback_sequence_id": "",
+  "dedup_check": true,
+  "dry_run": true
+}

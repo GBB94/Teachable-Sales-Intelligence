@@ -26,8 +26,9 @@ __pycache__/
 data/
 !data/.gitkeep
 
-# Explicitly track Clay config
+# Explicitly track Clay + Mixmax configs
 !lib/clay/config.json
+!lib/mixmax/config.json
 
 # Competitors config
 !competitors.json

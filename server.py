@@ -341,6 +341,9 @@ def clay_verify_password():
 
 @app.route('/api/clay/snapshot', methods=['POST'])
 def clay_generate_snapshot():
+    auth_err = _require_clay_token()
+    if auth_err:
+        return auth_err
     from lib.clay import generate_snapshot
     result = generate_snapshot()
     if "error" in result:
@@ -464,6 +467,70 @@ def clay_reload_config():
     from lib.clay.scoring import get_config
     reload_config()
     return jsonify({"message": "Config reloaded", "config": get_config()}), 200
+
+
+# ---------------------------------------------------------------------------
+# Mixmax Integration (intelligence-driven email campaigns)
+# ---------------------------------------------------------------------------
+
+@app.route('/api/mixmax/sequences', methods=['GET'])
+def mixmax_sequences():
+    """List available Mixmax sequences."""
+    from lib.mixmax import get_sequences
+    result = get_sequences()
+    if "error" in result:
+        return jsonify(result), 503
+    return jsonify(result), 200
+
+
+@app.route('/api/mixmax/prepare', methods=['POST'])
+def mixmax_prepare():
+    """Prepare enrollment: validate, dedup, map variables. No side effects."""
+    from lib.mixmax import prepare_enrollment
+    body = request.get_json(force=True)
+    contacts = body.get("contacts", [])
+    seed_intelligence = body.get("seed_intelligence", {})
+    enrichment_facts = body.get("enrichment_facts")
+    sequence_id = body.get("sequence_id")
+    campaign_id = body.get("campaign_id")
+    if not contacts:
+        return jsonify({"error": "No contacts provided"}), 400
+    if not seed_intelligence:
+        return jsonify({"error": "No seed_intelligence provided"}), 400
+    result = prepare_enrollment(
+        contacts=contacts,
+        seed_intelligence=seed_intelligence,
+        enrichment_facts=enrichment_facts,
+        sequence_id=sequence_id,
+        campaign_id=campaign_id,
+    )
+    return jsonify(result), 200
+
+
+@app.route('/api/mixmax/enroll', methods=['POST'])
+def mixmax_enroll():
+    """Enroll a prepared batch into Mixmax. Requires auth token."""
+    auth_err = _require_clay_token()
+    if auth_err:
+        return auth_err
+    from lib.mixmax import enroll_contacts
+    body = request.get_json(force=True)
+    prepared_id = body.get("prepared_id", "")
+    if not prepared_id:
+        return jsonify({"error": "Missing prepared_id"}), 400
+    result = enroll_contacts(prepared_id)
+    if "error" in result:
+        return jsonify(result), 400
+    return jsonify(result), 200
+
+
+@app.route('/api/mixmax/history', methods=['GET'])
+def mixmax_history():
+    """Return enrollment history from the sent ledger."""
+    from lib.mixmax import get_enrollment_history
+    limit = request.args.get("limit", 100, type=int)
+    result = get_enrollment_history(limit=limit)
+    return jsonify(result), 200
 
 
 # ---------------------------------------------------------------------------

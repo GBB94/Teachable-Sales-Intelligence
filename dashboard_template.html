@@ -1805,23 +1805,44 @@ function updateProspSelectionInfo() {
     }
 }
 
-function ensureClayToken() {
+function ensureClayToken(actionLabel) {
     if (window._clayToken) return Promise.resolve(true);
+    const label = actionLabel || 'This action';
     return new Promise(resolve => {
-        const area = document.getElementById('prosp-confirm-area');
-        if (!area) { resolve(false); return; }
-        area.innerHTML = '<div class="prosp-confirm-inline" style="flex-wrap:wrap;gap:8px">' +
-            '<span style="width:100%">Authentication required for Clay exports.</span>' +
-            '<input type="password" id="prosp-inline-pw" placeholder="Enter password" autocomplete="off" ' +
-            'style="flex:1;background:#0f1117;border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 10px;color:#e5e7eb;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;outline:none" ' +
-            'onkeydown="if(event.key===\'Enter\')document.getElementById(\'prosp-inline-pw-btn\').click()">' +
-            '<button class="prosp-yes" id="prosp-inline-pw-btn">Confirm</button>' +
-            '<button class="prosp-cancel" onclick="document.getElementById(\'prosp-confirm-area\').innerHTML=\'\'">Cancel</button>' +
-            '<div id="prosp-inline-pw-err" style="width:100%;font-size:0.75rem;color:rgba(220,80,80,0.9);min-height:1em"></div></div>';
-        setTimeout(() => { const inp = document.getElementById('prosp-inline-pw'); if (inp) inp.focus(); }, 50);
-        document.getElementById('prosp-inline-pw-btn').onclick = async function() {
-            const pw = document.getElementById('prosp-inline-pw').value;
+        // Remove any existing gate
+        const old = document.getElementById('clay-pw-overlay');
+        if (old) old.remove();
+        // Build overlay + card
+        const overlay = document.createElement('div');
+        overlay.id = 'clay-pw-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.5);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center';
+        overlay.innerHTML =
+            '<div style="width:460px;background:#16181f;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:36px;box-shadow:0 16px 40px rgba(0,0,0,0.4);text-align:center;font-family:\'DM Sans\',sans-serif;animation:pwFadeIn 0.2s ease">' +
+                '<div class="pw-lock-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#e5e7eb"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>' +
+                '<div style="font-size:18px;font-weight:600;color:#e5e7eb">Password required</div>' +
+                '<div style="font-size:14px;color:#6b7084;margin:6px 0 24px">' + label + ' requires authentication to continue.</div>' +
+                '<div style="display:flex;gap:0.5rem">' +
+                    '<input type="password" id="clay-pw-input" placeholder="Enter password" autocomplete="off" class="pw-input">' +
+                    '<button id="clay-pw-confirm" class="pw-confirm">Confirm</button>' +
+                '</div>' +
+                '<div id="clay-pw-err" style="font-size:13px;color:#8c5555;margin-top:10px;min-height:1.2em"></div>' +
+            '</div>';
+        document.body.appendChild(overlay);
+        const inp = document.getElementById('clay-pw-input');
+        const btn = document.getElementById('clay-pw-confirm');
+        const errEl = document.getElementById('clay-pw-err');
+        setTimeout(() => inp.focus(), 50);
+        // Close on backdrop click
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) { overlay.remove(); resolve(false); } });
+        // Close on Escape
+        const escHandler = function(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); resolve(false); } };
+        document.addEventListener('keydown', escHandler);
+        // Enter to submit
+        inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') btn.click(); });
+        btn.onclick = async function() {
+            const pw = inp.value;
             if (!pw) return;
+            btn.disabled = true; btn.textContent = '...';
             try {
                 const res = await fetch('/api/clay/verify-password', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -1830,25 +1851,29 @@ function ensureClayToken() {
                 const data = await res.json();
                 if (res.ok && data.valid) {
                     window._clayToken = data.token;
-                    area.innerHTML = '';
+                    overlay.remove();
+                    document.removeEventListener('keydown', escHandler);
                     resolve(true);
                 } else {
-                    document.getElementById('prosp-inline-pw-err').textContent = res.status === 503 ? 'Not configured on server.' : 'Incorrect password.';
-                    document.getElementById('prosp-inline-pw').value = '';
-                    document.getElementById('prosp-inline-pw').focus();
+                    errEl.textContent = res.status === 503 ? 'Not configured on server.' : 'Incorrect password.';
+                    inp.value = ''; inp.focus();
+                    btn.disabled = false; btn.textContent = 'Confirm';
                 }
             } catch(e) {
-                document.getElementById('prosp-inline-pw-err').textContent = 'Connection error.';
+                errEl.textContent = 'Connection error.';
+                btn.disabled = false; btn.textContent = 'Confirm';
             }
         };
     });
 }
 
 async function generateSnapshot(btn) {
+    const authed = await ensureClayToken('Generate Snapshot');
+    if (!authed) return;
     btn.classList.add('generating');
     btn.textContent = 'Generating...';
     try {
-        const res = await fetch('/api/clay/snapshot', {method: 'POST'});
+        const res = await fetch('/api/clay/snapshot', {method: 'POST', headers: {'Authorization': 'Bearer ' + window._clayToken}});
         const data = await res.json();
         if (res.ok) {
             showToast('Snapshot generated successfully.');
@@ -1876,7 +1901,7 @@ function prospExportSeeds() {
 }
 
 async function prospDoExport() {
-    if (!(await ensureClayToken())) return;
+    if (!(await ensureClayToken('Export Seeds'))) return;
     const area = document.getElementById('prosp-confirm-area');
     if (area) area.innerHTML = '<div class="prosp-confirm-inline"><span style="animation:scanPulse 1.2s ease-in-out infinite">Exporting...</span></div>';
     try {
@@ -1900,7 +1925,7 @@ async function prospDoExport() {
 }
 
 async function prospPushExcludes(btn) {
-    if (!(await ensureClayToken())) return;
+    if (!(await ensureClayToken('Push Exclude List')) ) return;
     btn.disabled = true;
     btn.textContent = 'Pushing...';
     try {
@@ -1918,7 +1943,7 @@ async function prospPushExcludes(btn) {
 }
 
 async function prospPushReengagements(btn) {
-    if (!(await ensureClayToken())) return;
+    if (!(await ensureClayToken('Push Re-engagements')) ) return;
     btn.disabled = true;
     btn.textContent = 'Pushing...';
     try {
