@@ -11,8 +11,11 @@ Zach McCall on the Teachable sales team. He runs demos and discovery calls with 
 
 ## Files in this project
 
-### fireflies_retriever.py (core library)
-The main module. Contains:
+### fireflies_retriever.py (backward-compatibility wrapper)
+Re-exports `FirefliesRetriever` and `CallFilter` from `client.py` for backward compatibility. The actual implementation lives in `client.py`.
+
+### client.py (core library)
+The main Fireflies module. Contains:
 - `CallFilter` dataclass for filtering calls by date, owner, attendee, keywords, duration
 - `Call` dataclass with `.to_hubspot_note()` method for generating structured notes
 - `FeatureRequest` dataclass with timestamp + deep link fields
@@ -49,7 +52,7 @@ Speaker matching is case-insensitive substring. It also resolves speaker names t
 Uses normalized matching that treats hyphens, underscores, and spaces as equivalent. So "followup" matches "follow-up", "follow up", "follow_up".
 
 ### Pagination
-Keeps fetching from the API until the requested number of *filtered* results are collected (not raw results). Has a 10x safety cap.
+Keeps fetching from the API until the requested number of *filtered* results are collected (not raw results). Soft cap: `limit * 20`. Hard cap: 500 raw calls (`HARD_CAP_RAW` in `client.py`).
 
 ### Timestamps and deep links
 Every feature mention captures `start_time` from the Fireflies sentence data and builds a deep link: `transcript_url?t=<seconds>`. This lets the dashboard link directly to that moment in the recording.

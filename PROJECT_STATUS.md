@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
-**Last updated:** 2026-02-15
-**Updated by:** Opus 4.6 (session 10)
+**Last updated:** 2026-02-16
+**Updated by:** Opus 4.6 (session 11)
 
 ---
 
@@ -10,7 +10,7 @@
 Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude to extract features and insights, generates dashboards and reports for product and marketing teams. Feature data syncs to Google Sheets for product team tracking.
 
 **Repo:** https://github.com/GBB94/Teachable-Sales-Intelligence (private)
-**Local:** `/Users/zachmccall/call-puller/`
+**Local:** repo root (the directory containing `server.py` and `dashboard_template.html`)
 
 ---
 
@@ -127,6 +127,19 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Prospect-first titles on By Call tab: generic titles ("Connect With Teachable", "Teachable Followup") swapped for prospect/company name, original title as muted subtitle
 - [x] New Since Last Visit system: localStorage tracks last dashboard visit, blue dot indicators on new cards, "NEW" badges on new competitor mentions, "N new" pill in header, "New Since Last Visit" date filter option
 - [x] Feature detail breakout panel: detail content renders below the full 2-column row (not inside the card), preventing adjacent card height stretching. Only one detail panel open at a time. Same-row card click swaps content; different-row click collapses old + opens new. Timestamp badges, speaker quotes (truncated at 200 chars with "show full"), "Show N more" for 3+ mentions.
+- [x] Clay.com v3 integration (lib/clay/): ICP snapshot generation, seed scoring, exclude list management, re-engagement detection, webhook-based export to Clay tables
+- [x] Prospecting tab: sortable seed table, score bars, domain confidence indicators, inline export confirm, 3-card status panel (excludes, re-engagements, credit estimate)
+- [x] Domain resolution pipeline: company_domain + domain_confidence (high/low/unresolved) in analysis, aggregation, and UI
+- [x] Company aggregation: mention.company > marketing_data.company > title inference priority, self-company exclusion (Teachable)
+- [x] Token-based auth: password gate on Generate Snapshot + all Clay/Mixmax write endpoints; read endpoints unauthenticated
+- [x] Atomic snapshot writes via tempfile + os.replace()
+- [x] Auto-snapshot generation after analyze_features.py inject (fail-soft)
+- [x] Mixmax integration (lib/mixmax/): intelligence-driven email campaigns with prepare/enroll split
+- [x] Mixmax mapper: hypothesis vs fact distinction — pre-built competitor_sentence and pain_point_sentence
+- [x] Mixmax sent ledger: JSONL append-only file for cross-sequence dedup
+- [x] Mixmax dry_run: true by default — no emails sent until explicitly enabled
+- [x] Server binds to 127.0.0.1 (localhost only, not 0.0.0.0)
+- [x] Null-safe duration parsing from Fireflies API (handles duration: null)
 
 ## What's In Progress
 
@@ -162,14 +175,17 @@ Fireflies API
 retrieve_calls.py (pull + filter + approve)
     |
     v
-analyze_features.py (Claude extracts features + categories + segments)
+analyze_features.py (Claude extracts features + categories + segments + marketing_data)
     |
     v
 features.json  <-- CANONICAL DATA FILE
     |
-    +---> dashboard_template.html (interactive dashboard, 5 tabs)
+    +---> dashboard_template.html (interactive dashboard, 6 tabs)
+    |       By Feature | By Call | Personas | Competitors | Reports | Prospecting
     +---> sync_to_sheets.py (Google Sheets sync)
     +---> generate_reports.py (Friday cron)
+    +---> lib/clay/ (ICP snapshot, seed scoring, exclude lists, Clay webhook export)
+    +---> lib/mixmax/ (intelligence-driven email campaigns, prepare/enroll workflow)
 ```
 
 ---
@@ -186,10 +202,10 @@ sales-intelligence/
   models.py                  # Data models, HubSpot note template
   client.py                  # Fireflies API client
   exports.py                 # JSON/CSV/dashboard export functions
-  dashboard_template.html    # HTML template with 6 tabs
+  dashboard_template.html    # HTML template with 6 tabs (By Feature, By Call, Personas, Competitors, Reports, Prospecting)
   categories.json            # 10 feature category definitions
   segments.json              # 9 prospect segment definitions
-  competitors.json           # 18 canonical competitors (5 types), with short_description
+  competitors.json           # 19 canonical competitors (5 types), with short_description
   CLAUDE.md                  # Auto-loaded instructions for Claude Code
   README.md                  # Setup instructions, workflow docs
   PROJECT_STATUS.md          # This file — read first, update at session end
@@ -198,7 +214,24 @@ sales-intelligence/
   .gitignore                 # Excludes credentials/, *.json (except categories.json), test_output/
   .feature_blacklist         # Excluded feature keywords
   .feature_names             # Canonical feature name cache
+  lib/
+    clay/                    # Clay.com v3 integration
+      __init__.py            # Public API: generate_snapshot, get_seed_companies, exports
+      transforms.py          # Company aggregation, ICP snapshot, seed selection, scoring
+      scoring.py             # Score calculation with signals, boosts, max_score
+      config.json            # Scoring config (signals, segment/feature boosts, credit controls)
+      client.py              # Clay webhook HTTP client
+      validator.py           # Payload validation for seeds/excludes/re-engagements
+    mixmax/                  # Mixmax integration (intelligence-driven email campaigns)
+      __init__.py            # Public API: prepare_enrollment, enroll_contacts, get_sequences
+      client.py              # Mixmax REST API HTTP client (X-API-Token auth)
+      mapper.py              # Intelligence-to-variables mapper (hypothesis vs fact)
+      ledger.py              # JSONL sent ledger for cross-sequence dedup
+      config.json            # Segment-to-sequence routing, dry_run default true
   credentials/               # OAuth credentials + cached token (gitignored)
+  data/
+    last_snapshot.json       # Latest ICP snapshot (gitignored)
+    mixmax_sent_ledger.jsonl # Mixmax enrollment ledger (gitignored)
   test_output/
     index.html               # Generated dashboard with embedded data (served by Flask + Netlify)
     features.json            # Canonical data artifact

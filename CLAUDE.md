@@ -6,7 +6,7 @@ Read `PROJECT_STATUS.md` at the start of every session for current project state
 
 ## Working Directory
 
-Always work in `/Users/zachmccall/call-puller/`. Never use temp directories.
+Always work in the repo root (the directory containing `server.py` and `dashboard_template.html`). Never use temp directories.
 
 ## Session Hygiene
 
