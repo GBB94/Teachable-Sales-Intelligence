@@ -571,6 +571,8 @@ Add a "marketing_data" object per call in the top-level JSON output:
   "marketing_data": {
     "<call_id>": {
       "company": "Company Name",
+      "company_domain": "example.com (the company's website domain — infer from context, email domains, or explicit mention. Omit www. prefix)",
+      "domain_confidence": "high | low | unresolved (high = explicitly stated or clearly from email domain; low = inferred from context; unresolved = could not determine)",
       "company_description": "Brief description based on what was said in the call",
       "industry": "Only if mentioned",
       "contacts": [
@@ -638,6 +640,13 @@ Add a "marketing_data" object per call in the top-level JSON output:
       "timeline": "Q3 rollout mentioned" or null
     }
   }
+
+DOMAIN RESOLUTION GUIDANCE for company_domain:
+- Look for email addresses in attendee lists (e.g. jane@acmecorp.com → acmecorp.com)
+- Look for explicit website mentions in the transcript
+- If the company name is well-known, you may infer the domain (e.g. "Nike" → nike.com) — mark as "high"
+- If you can only guess from context, mark as "low"
+- If you truly cannot determine the domain, set company_domain to null and domain_confidence to "unresolved"
 
 For each call, extract:
 1. CONTACTS: Name, title (only if stated), role in buying decision (only if clear)
@@ -836,7 +845,7 @@ def cmd_inject(args):
         "total_mentions": len(all_mentions),
         "unique_calls": len(all_call_ids),
         "unique_features": len(all_keywords),
-        "generated": data.get("stats", {}).get("generated", ""),
+        "generated": date.today().isoformat(),
     }
     if recap_text:
         data["recap"] = recap_text
@@ -855,7 +864,14 @@ def cmd_inject(args):
         for call in calls:
             call_id = call.get("id", "")
             if call_id in marketing_data_by_call:
-                call["marketing_data"] = marketing_data_by_call[call_id]
+                mdata = marketing_data_by_call[call_id]
+                call["marketing_data"] = mdata
+                # Promote domain fields to top-level for easy access in aggregation
+                if isinstance(mdata, dict):
+                    if mdata.get("company_domain"):
+                        call["company_domain"] = mdata["company_domain"]
+                    if mdata.get("domain_confidence"):
+                        call["domain_confidence"] = mdata["domain_confidence"]
 
     # Store per-call segment data on each call object
     segment_errors = []
@@ -1051,6 +1067,20 @@ def cmd_inject(args):
             print(f"Sheet sync: {result['rows_added']} added, {result['rows_updated']} updated")
         except Exception as e:
             print(f"Sheet sync failed: {e}")
+
+    # Auto-generate Clay snapshot (pass DATA directly to avoid re-parsing HTML)
+    if not args.skip_snapshot:
+        try:
+            from lib.clay import generate_snapshot
+            print("Auto-generating Clay snapshot...")
+            result = generate_snapshot(data=data)
+            if "error" in result:
+                print(f"  Warning: snapshot generation failed: {result['error']}")
+            else:
+                seed_count = len(result.get("seed_companies", []))
+                print(f"  Snapshot generated: {seed_count} seeds, {len(result.get('segments', []))} segments")
+        except Exception as e:
+            print(f"  Warning: snapshot generation failed: {e}")
 
 
 def cmd_normalize(args):
@@ -1520,6 +1550,8 @@ def main():
                           help="JSON file mapping feature names to category names")
     p_inject.add_argument("--sync-sheets", action="store_true",
                           help="Sync to Google Sheet after injecting features")
+    p_inject.add_argument("--skip-snapshot", action="store_true",
+                          help="Skip auto-generating Clay snapshot after inject")
 
     # Validate
     p_validate = sub.add_parser("validate",

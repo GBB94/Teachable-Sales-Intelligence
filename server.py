@@ -12,7 +12,9 @@ Usage:
 import json
 import os
 import re
+import secrets
 import sys
+import time
 import webbrowser
 from datetime import datetime, timezone
 
@@ -46,11 +48,30 @@ app = Flask(__name__)
 # In-memory cache of the last preview fetch so /process can use the Call objects
 # without re-fetching from Fireflies.
 _preview_cache = {}  # call_id -> Call object
+_clay_tokens = {}    # token -> expiry timestamp
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+def _clean_expired_tokens():
+    """Remove expired tokens from the store."""
+    now = time.time()
+    expired = [t for t, exp in _clay_tokens.items() if exp < now]
+    for t in expired:
+        del _clay_tokens[t]
+
+
+def _require_clay_token():
+    """Validate Authorization: Bearer header. Returns None if valid, or (response, 401)."""
+    _clean_expired_tokens()
+    auth = request.headers.get('Authorization', '')
+    if not auth.startswith('Bearer '):
+        return jsonify({"error": "Missing or invalid Authorization header"}), 401
+    token = auth[7:]
+    if token not in _clay_tokens:
+        return jsonify({"error": "Invalid or expired token"}), 401
+    return None
 def _empty_data():
     return {
         "stats": {
@@ -295,6 +316,154 @@ def sync_sheets():
     except Exception as e:
         print(f"[sync-sheets] Error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Clay.com Integration (v3 — ICP Intelligence)
+# ---------------------------------------------------------------------------
+
+@app.route('/api/clay/verify-password', methods=['POST'])
+def clay_verify_password():
+    """Verify the Clay dashboard password and issue a session token."""
+    expected = os.getenv('CLAY_DASHBOARD_PASSWORD', '')
+    if not expected:
+        return jsonify({"valid": False, "error": "No password configured"}), 503
+    body = request.get_json(force=True)
+    password = body.get("password", "")
+    if password != expected:
+        return jsonify({"valid": False}), 401
+    _clean_expired_tokens()
+    token = secrets.token_hex(32)
+    _clay_tokens[token] = time.time() + 3600  # 1 hour TTL
+    return jsonify({"valid": True, "token": token}), 200
+
+# --- Generate and inspect ---
+
+@app.route('/api/clay/snapshot', methods=['POST'])
+def clay_generate_snapshot():
+    from lib.clay import generate_snapshot
+    result = generate_snapshot()
+    if "error" in result:
+        return jsonify(result), 500
+    clean = {k: v for k, v in result.items() if not k.startswith("_")}
+    return jsonify(clean), 200
+
+
+@app.route('/api/clay/snapshot', methods=['GET'])
+def clay_get_snapshot():
+    from lib.clay import get_snapshot
+    result = get_snapshot()
+    if "error" in result:
+        return jsonify(result), 404
+    return jsonify(result), 200
+
+
+@app.route('/api/clay/segments', methods=['GET'])
+def clay_segments():
+    from lib.clay import get_segment_analysis
+    result = get_segment_analysis()
+    if "error" in result:
+        return jsonify(result), 404
+    return jsonify(result), 200
+
+
+@app.route('/api/clay/features', methods=['GET'])
+def clay_features():
+    from lib.clay import get_feature_rankings
+    result = get_feature_rankings()
+    if "error" in result:
+        return jsonify(result), 404
+    return jsonify(result), 200
+
+
+@app.route('/api/clay/competitors', methods=['GET'])
+def clay_competitors():
+    from lib.clay import get_competitor_landscape
+    result = get_competitor_landscape()
+    if "error" in result:
+        return jsonify(result), 404
+    return jsonify(result), 200
+
+
+@app.route('/api/clay/seeds', methods=['GET'])
+def clay_seeds():
+    from lib.clay import get_seed_companies
+    result = get_seed_companies()
+    if "error" in result:
+        return jsonify(result), 404
+    return jsonify(result), 200
+
+
+@app.route('/api/clay/reengagements', methods=['GET'])
+def clay_reengagements():
+    from lib.clay import get_re_engagements
+    result = get_re_engagements()
+    if "error" in result:
+        return jsonify(result), 404
+    return jsonify(result), 200
+
+
+# --- Export (push to Clay) ---
+
+@app.route('/api/clay/export-seeds', methods=['POST'])
+def clay_export_seeds():
+    auth_err = _require_clay_token()
+    if auth_err:
+        return auth_err
+    from lib.clay import export_seeds
+    body = request.get_json(silent=True) or {}
+    seed_ids = body.get("seed_ids")
+    result = export_seeds(seed_ids=seed_ids)
+    status_code = 200 if result.get("success") else 400
+    if result.get("errors") and any("not configured" in str(e.get("error", "")).lower() for e in result["errors"]):
+        status_code = 503
+    return jsonify(result), status_code
+
+
+@app.route('/api/clay/export-excludes', methods=['POST'])
+def clay_export_excludes():
+    auth_err = _require_clay_token()
+    if auth_err:
+        return auth_err
+    from lib.clay import export_exclude_list
+    result = export_exclude_list()
+    status_code = 200 if result.get("success") else 400
+    return jsonify(result), status_code
+
+
+@app.route('/api/clay/export-reengagements', methods=['POST'])
+def clay_export_reengagements():
+    auth_err = _require_clay_token()
+    if auth_err:
+        return auth_err
+    from lib.clay import export_re_engagements
+    result = export_re_engagements()
+    status_code = 200 if result.get("success") else 400
+    return jsonify(result), status_code
+
+
+# --- Utilities ---
+
+@app.route('/api/clay/test-connectivity', methods=['POST'])
+def clay_test_connectivity():
+    from lib.clay.client import ClayClient
+    client = ClayClient()
+    results = {}
+    for entity_type, env_key in [("seeds", "CLAY_WEBHOOK_SEEDS"), ("excludes", "CLAY_WEBHOOK_EXCLUDES"), ("reengagement", "CLAY_WEBHOOK_REENGAGEMENT")]:
+        url = os.getenv(env_key, "")
+        if url:
+            results[entity_type] = client.test_connectivity(url)
+        else:
+            results[entity_type] = {"reachable": False, "error": f"{env_key} not configured"}
+    return jsonify(results), 200
+
+
+@app.route('/api/clay/reload-config', methods=['POST'])
+def clay_reload_config():
+    from lib.clay import reload_config
+    from lib.clay.scoring import get_config
+    reload_config()
+    return jsonify({"message": "Config reloaded", "config": get_config()}), 200
 
 
 # ---------------------------------------------------------------------------

@@ -918,6 +918,92 @@ body {
 }
 .pw-shake { animation: pwShake 0.35s ease; }
 
+/* ---- Prospecting tab ---- */
+.tab-lock { width: 12px; height: 12px; vertical-align: -1px; margin-left: 4px; opacity: 0.5; }
+.prosp-card { background: #14161e; border: 1px solid #1e2130; border-radius: 10px; padding: 1.25rem 1.5rem; }
+.prosp-card-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.prosp-card-hdr h3 { font-size: 1rem; font-weight: 700; color: #f0f1f4; margin: 0; }
+.prosp-card-hdr .prosp-ts { font-size: 0.75rem; color: #6b7084; }
+.prosp-stats-row { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
+.prosp-stat { display: flex; flex-direction: column; gap: 2px; }
+.prosp-stat .n { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 700; color: #f0f1f4; }
+.prosp-stat .l { font-size: 0.7rem; color: #6b7084; text-transform: uppercase; letter-spacing: 0.05em; }
+.prosp-generate-btn {
+    background: #4a7cff; color: #fff; border: none; border-radius: 8px;
+    padding: 10px 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: background 0.15s;
+}
+.prosp-generate-btn:hover { background: #5d8aff; }
+.prosp-generate-btn.generating { animation: scanPulse 1.2s ease-in-out infinite; pointer-events: none; }
+.prosp-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.prosp-table th {
+    text-align: left; text-transform: uppercase; font-size: 0.7rem; font-weight: 600;
+    color: #6b7084; letter-spacing: 0.05em; padding: 8px 10px;
+    border-bottom: 1px solid #1e2130; cursor: pointer; user-select: none; white-space: nowrap;
+}
+.prosp-table th:hover { color: #9ea2b4; }
+.prosp-table td { padding: 10px; color: #d0d3db; border-bottom: 1px solid rgba(30,33,48,0.5); }
+.prosp-table tr:hover td { background: rgba(255,255,255,0.02); }
+.cb-cell { width: 36px; text-align: center; }
+.cb-cell input[type="checkbox"] { accent-color: #4a7cff; cursor: pointer; }
+.prosp-score-track { width: 60px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06); display: inline-block; vertical-align: middle; }
+.prosp-score-fill { height: 100%; border-radius: 3px; }
+.prosp-score-val { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-left: 6px; }
+.prosp-table-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 10px; font-size: 0.8rem; color: #6b7084;
+}
+.prosp-export-btn {
+    background: #4a7cff; color: #fff; border: none; border-radius: 6px;
+    padding: 8px 16px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: background 0.15s;
+}
+.prosp-export-btn:hover { background: #5d8aff; }
+.prosp-export-btn:disabled { opacity: 0.4; pointer-events: none; }
+.prosp-confirm-inline {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(217,171,72,0.08); border: 1px solid rgba(217,171,72,0.2);
+    border-radius: 8px; padding: 10px 14px; margin-top: 8px; font-size: 0.82rem; color: #d9ab48;
+}
+.prosp-confirm-inline button {
+    background: none; border: 1px solid rgba(217,171,72,0.3); border-radius: 5px;
+    padding: 4px 12px; font-size: 0.78rem; cursor: pointer; font-family: 'DM Sans', sans-serif;
+}
+.prosp-confirm-inline .prosp-yes { color: #d9ab48; }
+.prosp-confirm-inline .prosp-yes:hover { background: rgba(217,171,72,0.12); }
+.prosp-confirm-inline .prosp-cancel { color: #6b7084; border-color: rgba(255,255,255,0.08); }
+.prosp-confirm-inline .prosp-cancel:hover { background: rgba(255,255,255,0.04); }
+.prosp-status-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.prosp-status-card { background: #14161e; border: 1px solid #1e2130; border-radius: 10px; padding: 1.25rem 1.5rem; }
+.prosp-status-card h4 { font-size: 0.85rem; font-weight: 700; color: #f0f1f4; margin: 0 0 0.5rem; }
+.prosp-status-card .prosp-status-num { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700; color: #f0f1f4; }
+.prosp-status-card .prosp-status-label { font-size: 0.72rem; color: #6b7084; margin-top: 2px; }
+.prosp-push-btn {
+    background: rgba(255,255,255,0.04); color: #9ea2b4; border: 1px solid #1e2130;
+    border-radius: 6px; padding: 6px 14px; font-size: 0.78rem; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; margin-top: 0.75rem; transition: background 0.15s;
+}
+.prosp-push-btn:hover { background: rgba(255,255,255,0.08); color: #d0d3db; }
+.prosp-push-btn:disabled { opacity: 0.4; pointer-events: none; }
+.prosp-status-badge {
+    display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 2px 8px;
+    border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.prosp-status-badge.new { background: rgba(74,124,255,0.12); color: #6b9aff; }
+.prosp-status-badge.exported { background: rgba(52,199,89,0.12); color: #34c759; }
+.prosp-empty { text-align: center; padding: 3rem 1rem; color: #555a6e; font-size: 0.9rem; }
+.prosp-stale-banner {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.15);
+    border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem;
+    font-size: 0.82rem; color: #d4a017;
+}
+.prosp-section { margin-bottom: 1.25rem; }
+@media (max-width: 900px) {
+    .prosp-status-cards { grid-template-columns: 1fr; }
+    .prosp-stats-row { flex-wrap: wrap; }
+}
+
 /* ---- Scan modal overlay ---- */
 .scan-overlay {
     display: none; position: fixed; inset: 0; z-index: 9999;
@@ -1356,6 +1442,7 @@ body {
         <div class="tab" data-tab="personas" onclick="switchTab('personas')">Personas</div>
         <div class="tab" data-tab="competitors" onclick="switchTab('competitors')">Competitors</div>
         <div class="tab" data-tab="reports" onclick="switchTab('reports')">Reports</div>
+        <div class="tab" data-tab="prospecting" onclick="switchTab('prospecting')">Prospecting <svg class="tab-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
     </div>
     <div class="filter-row" id="filter-row">
         <div class="search-box"><input id="q" placeholder="Search..." oninput="filter(this.value)"><span class="search-result-count" id="search-result-count"></span><button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none">&times;</button></div>
@@ -1390,6 +1477,7 @@ body {
     <div id="personas-view" style="display:none"></div>
     <div id="competitors-view" style="display:none"></div>
     <div id="reports-view" style="display:none"></div>
+    <div id="prospecting-view" style="display:none"></div>
 </div>
 
 <div class="toast-container" id="toast-container"></div>
@@ -1482,6 +1570,372 @@ document.getElementById('pw-input').addEventListener('keydown', function(e) {
     else this.classList.remove('pw-input-error');
 });
 
+// ---- Prospecting tab state & logic ----
+let _prospSnapshotData = null;
+let _prospSeedData = null;
+let _prospSelectedSeeds = new Set();
+let _prospSortCol = 'score';
+let _prospSortAsc = false;
+window._clayToken = null;
+
+function renderProspPasswordGate(msg) {
+    const errMsg = msg || '';
+    return '<div style="display:flex;align-items:center;justify-content:center;min-height:320px">' +
+        '<div style="background:#16181f;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:2.5rem;width:340px;text-align:center">' +
+        '<svg style="width:32px;height:32px;margin-bottom:12px;opacity:0.4" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>' +
+        '<div style="color:#e5e7eb;font-weight:600;margin-bottom:4px">This view is protected</div>' +
+        '<div style="color:#4b5563;font-size:0.82rem;margin-bottom:1.25rem">Enter the dashboard password to continue</div>' +
+        '<input type="password" id="prosp-pw-input" placeholder="Enter password" autocomplete="off" ' +
+        'style="width:100%;box-sizing:border-box;background:#0f1117;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;color:#e5e7eb;font-size:0.9rem;font-family:\'DM Sans\',sans-serif;outline:none;margin-bottom:8px" ' +
+        'onkeydown="if(event.key===\'Enter\')prospSubmitPassword()">' +
+        '<div id="prosp-pw-error" style="font-size:0.78rem;min-height:1.2rem;margin-bottom:8px;color:rgba(220,80,80,0.9)">' + errMsg + '</div>' +
+        '<button onclick="prospSubmitPassword()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#e5e7eb;color:#0f1117;font-weight:600;font-size:0.88rem;cursor:pointer;font-family:\'DM Sans\',sans-serif">Confirm</button>' +
+        '</div></div>';
+}
+
+async function prospSubmitPassword() {
+    const input = document.getElementById('prosp-pw-input');
+    const error = document.getElementById('prosp-pw-error');
+    if (!input || !input.value) return;
+    try {
+        const res = await fetch('/api/clay/verify-password', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({password: input.value})
+        });
+        const data = await res.json();
+        if (res.ok && data.valid) {
+            window._clayToken = data.token;
+            buildProspecting();
+        } else if (res.status === 503) {
+            document.getElementById('prospecting-view').innerHTML =
+                '<div class="prosp-empty" style="padding:3rem">Prospecting is not configured. Set CLAY_DASHBOARD_PASSWORD in .env.</div>';
+        } else {
+            error.textContent = 'Incorrect password. Try again.';
+            input.style.borderColor = 'rgba(220,80,80,0.4)';
+            input.value = '';
+            input.focus();
+            // shake
+            const card = input.closest('div[style*="background:#16181f"]');
+            if (card) { card.style.animation = 'pwShake 0.35s ease'; setTimeout(() => card.style.animation = '', 350); }
+        }
+    } catch(e) {
+        error.textContent = 'Connection error.';
+    }
+}
+
+async function buildProspecting() {
+    const view = document.getElementById('prospecting-view');
+    view.innerHTML = '<div class="prosp-empty" style="padding:3rem;text-align:center"><span style="display:inline-block;animation:scanPulse 1.2s ease-in-out infinite;color:#6b7084">Loading...</span></div>';
+    try {
+        const [snapRes, seedRes] = await Promise.all([
+            fetch('/api/clay/snapshot').then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch('/api/clay/seeds').then(r => r.ok ? r.json() : null).catch(() => null)
+        ]);
+        _prospSnapshotData = snapRes;
+        _prospSeedData = seedRes;
+    } catch(e) {
+        _prospSnapshotData = null;
+        _prospSeedData = null;
+    }
+    let staleBanner = '';
+    const snap = _prospSnapshotData;
+    if (snap && !snap.error && snap.generated_at && snap.data_generated_at) {
+        const snapDate = new Date(snap.generated_at);
+        const dataDate = new Date(snap.data_generated_at);
+        if (dataDate > snapDate) {
+            staleBanner = '<div class="prosp-stale-banner"><span>&#9888;</span> Call data has been updated since the last snapshot. Generate a new snapshot to see updated seeds.</div>';
+        }
+    }
+    view.innerHTML = staleBanner +
+        '<div class="prosp-section">' + renderSnapshotControls() + '</div>' +
+        '<div class="prosp-section">' + renderSeedTable() + '</div>' +
+        '<div class="prosp-section">' + renderStatusPanel() + '</div>';
+}
+
+function renderSnapshotControls() {
+    const snap = _prospSnapshotData;
+    if (!snap || snap.error) {
+        return '<div class="prosp-card"><div class="prosp-card-hdr"><h3>ICP Snapshot</h3></div>' +
+            '<div class="prosp-empty">No snapshot generated yet.</div>' +
+            '<div style="margin-top:1rem"><button class="prosp-generate-btn" onclick="generateSnapshot(this)">Generate Snapshot</button></div></div>';
+    }
+    const seeds = snap.seed_companies || [];
+    const segments = snap.segments || [];
+    const features = snap.feature_rankings || [];
+    const ts = snap.generated_at ? new Date(snap.generated_at).toLocaleString() : '';
+    return '<div class="prosp-card"><div class="prosp-card-hdr"><h3>ICP Snapshot</h3><span class="prosp-ts">' + ts + '</span></div>' +
+        '<div class="prosp-stats-row">' +
+        '<div class="prosp-stat"><span class="n">' + seeds.length + '</span><span class="l">Seed Companies</span></div>' +
+        '<div class="prosp-stat"><span class="n">' + segments.length + '</span><span class="l">Segments</span></div>' +
+        '<div class="prosp-stat"><span class="n">' + features.length + '</span><span class="l">Features Tracked</span></div>' +
+        '</div>' +
+        '<button class="prosp-generate-btn" onclick="generateSnapshot(this)">Regenerate Snapshot</button></div>';
+}
+
+function renderSeedTable() {
+    const data = _prospSeedData;
+    if (!data || data.error || !data.seeds || !data.seeds.length) {
+        return '<div class="prosp-card"><div class="prosp-card-hdr"><h3>Seed Companies</h3></div>' +
+            '<div class="prosp-empty">Generate a snapshot first to see seed companies.</div></div>';
+    }
+    const seeds = sortSeeds(data.seeds);
+    const totalCredits = data.credit_estimate || 0;
+    const totalSeeds = data.seed_count || seeds.length;
+    const allChecked = seeds.every(s => _prospSelectedSeeds.has(s.company_id || s.company));
+    let rows = '';
+    seeds.forEach(s => {
+        const id = s.company_id || s.company;
+        const checked = _prospSelectedSeeds.has(id) ? 'checked' : '';
+        const score = s.score || 0;
+        const barColor = score >= 70 ? '#34c759' : score >= 40 ? '#d9ab48' : '#555a6e';
+        const barWidth = Math.min(100, Math.max(0, score)) + '%';
+        const badge = s.previously_exported
+            ? '<span class="prosp-status-badge exported">Exported</span>'
+            : '<span class="prosp-status-badge new">New</span>';
+        const conf = s.domain_confidence || 'unresolved';
+        let domainDisplay;
+        if (s.domain && s.domain !== '(unknown)') {
+            const confColor = conf === 'high' ? '#d0d3db' : conf === 'low' ? '#d9ab48' : '#d0d3db';
+            domainDisplay = '<span style="color:' + confColor + '">' + s.domain + '</span>' +
+                (conf === 'low' ? '<span style="color:#d9ab48;font-size:0.65rem;margin-left:4px" title="Inferred from context">\u26a0</span>' : '');
+        } else {
+            domainDisplay = '<span style="color:rgba(220,80,80,0.5)">(unresolved)</span>';
+        }
+        rows += '<tr>' +
+            '<td class="cb-cell"><input type="checkbox" ' + checked + ' onchange="prospToggleSeed(\'' + id.replace(/'/g, "\\'") + '\', this.checked)"></td>' +
+            '<td>' + (s.company || '') + '</td>' +
+            '<td style="color:#6b7084">' + domainDisplay + '</td>' +
+            '<td>' + (s.segment || '') + '</td>' +
+            '<td><span class="prosp-score-track"><span class="prosp-score-fill" style="width:' + barWidth + ';background:' + barColor + '"></span></span><span class="prosp-score-val" style="color:' + barColor + '">' + score + '</span></td>' +
+            '<td style="text-align:center;font-family:\'JetBrains Mono\',monospace;font-size:0.8rem">' + (s.call_count || 0) + '</td>' +
+            '<td>' + badge + '</td></tr>';
+    });
+    const selCount = _prospSelectedSeeds.size;
+    const estCredits = totalSeeds > 0 ? Math.round(selCount * (totalCredits / totalSeeds)) : 0;
+    return '<div class="prosp-card"><div class="prosp-card-hdr"><h3>Seed Companies</h3></div>' +
+        '<table class="prosp-table"><thead><tr>' +
+        '<th class="cb-cell"><input type="checkbox" ' + (allChecked && seeds.length ? 'checked' : '') + ' onchange="prospToggleAll(this.checked)"></th>' +
+        '<th onclick="prospSort(\'company\')">Company ' + sortArrow('company') + '</th>' +
+        '<th onclick="prospSort(\'domain\')">Domain ' + sortArrow('domain') + '</th>' +
+        '<th onclick="prospSort(\'segment\')">Segment ' + sortArrow('segment') + '</th>' +
+        '<th onclick="prospSort(\'score\')">Score ' + sortArrow('score') + '</th>' +
+        '<th onclick="prospSort(\'call_count\')">Calls ' + sortArrow('call_count') + '</th>' +
+        '<th>Status</th>' +
+        '</tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<div class="prosp-table-footer"><span id="prosp-sel-info">' + selCount + ' of ' + totalSeeds + ' selected' + (selCount ? ' &middot; ~' + estCredits + ' credits' : '') + '</span>' +
+        '<button class="prosp-export-btn" ' + (selCount ? '' : 'disabled') + ' onclick="prospExportSeeds()">Export to Clay</button></div>' +
+        '<div id="prosp-confirm-area"></div></div>';
+}
+
+function renderStatusPanel() {
+    const snap = _prospSnapshotData;
+    if (!snap || snap.error) {
+        return '<div class="prosp-status-cards">' +
+            '<div class="prosp-status-card"><h4>Exclude List</h4><div class="prosp-status-num">&mdash;</div></div>' +
+            '<div class="prosp-status-card"><h4>Re-engagement Alerts</h4><div class="prosp-status-num">&mdash;</div></div>' +
+            '<div class="prosp-status-card"><h4>Credit Estimate</h4><div class="prosp-status-num">&mdash;</div></div></div>';
+    }
+    const excludes = snap.exclude_list || [];
+    const reengagements = snap.re_engagement_alerts || [];
+    const credits = snap.estimated_credit_impact || {};
+    const stages = credits.stages || {};
+    let stageHtml = '';
+    Object.entries(stages).forEach(([k, v]) => {
+        stageHtml += '<div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#9ea2b4;margin-top:4px"><span>' + k.replace(/_/g, ' ') + '</span><span style="font-family:\'JetBrains Mono\',monospace">' + v + '</span></div>';
+    });
+    const budget = credits.warning ? '<div style="font-size:0.75rem;color:#d4a017;margin-top:6px">' + credits.warning + '</div>' : '';
+    return '<div class="prosp-status-cards">' +
+        '<div class="prosp-status-card"><h4>Exclude List</h4><div class="prosp-status-num">' + excludes.length + '</div><div class="prosp-status-label">domains to exclude</div>' +
+        '<button class="prosp-push-btn" onclick="prospPushExcludes(this)" ' + (excludes.length ? '' : 'disabled') + '>Push to Clay</button></div>' +
+        '<div class="prosp-status-card"><h4>Re-engagement Alerts</h4><div class="prosp-status-num">' + reengagements.length + '</div><div class="prosp-status-label">companies flagged</div>' +
+        '<button class="prosp-push-btn" onclick="prospPushReengagements(this)" ' + (reengagements.length ? '' : 'disabled') + '>Push to Clay</button></div>' +
+        '<div class="prosp-status-card"><h4>Credit Estimate</h4><div class="prosp-status-num">' + (credits.total_estimated || 0) + '</div><div class="prosp-status-label">total credits</div>' +
+        stageHtml + budget + '</div></div>';
+}
+
+function sortSeeds(seeds) {
+    const col = _prospSortCol;
+    const asc = _prospSortAsc;
+    return [...seeds].sort((a, b) => {
+        let va = a[col] ?? '', vb = b[col] ?? '';
+        if (typeof va === 'number' && typeof vb === 'number') return asc ? va - vb : vb - va;
+        va = String(va).toLowerCase(); vb = String(vb).toLowerCase();
+        return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+}
+
+function sortArrow(col) {
+    if (_prospSortCol !== col) return '';
+    return _prospSortAsc ? ' &#9650;' : ' &#9660;';
+}
+
+function prospSort(col) {
+    if (_prospSortCol === col) _prospSortAsc = !_prospSortAsc;
+    else { _prospSortCol = col; _prospSortAsc = col === 'company' || col === 'domain' || col === 'segment'; }
+    buildProspecting();
+}
+
+function prospToggleAll(checked) {
+    if (!_prospSeedData || !_prospSeedData.seeds) return;
+    _prospSeedData.seeds.forEach(s => {
+        const id = s.company_id || s.company;
+        if (checked) _prospSelectedSeeds.add(id); else _prospSelectedSeeds.delete(id);
+    });
+    updateProspSelectionInfo();
+}
+
+function prospToggleSeed(id, checked) {
+    if (checked) _prospSelectedSeeds.add(id); else _prospSelectedSeeds.delete(id);
+    updateProspSelectionInfo();
+}
+
+function updateProspSelectionInfo() {
+    const selCount = _prospSelectedSeeds.size;
+    const totalSeeds = (_prospSeedData && _prospSeedData.seed_count) || 0;
+    const totalCredits = (_prospSeedData && _prospSeedData.credit_estimate) || 0;
+    const estCredits = totalSeeds > 0 ? Math.round(selCount * (totalCredits / totalSeeds)) : 0;
+    const info = document.getElementById('prosp-sel-info');
+    if (info) info.innerHTML = selCount + ' of ' + totalSeeds + ' selected' + (selCount ? ' &middot; ~' + estCredits + ' credits' : '');
+    const btn = document.querySelector('.prosp-export-btn');
+    if (btn) btn.disabled = !selCount;
+    const allCb = document.querySelector('.prosp-table thead input[type="checkbox"]');
+    if (allCb && _prospSeedData && _prospSeedData.seeds) {
+        allCb.checked = _prospSeedData.seeds.length > 0 && _prospSeedData.seeds.every(s => _prospSelectedSeeds.has(s.company_id || s.company));
+    }
+}
+
+function ensureClayToken() {
+    if (window._clayToken) return Promise.resolve(true);
+    return new Promise(resolve => {
+        const area = document.getElementById('prosp-confirm-area');
+        if (!area) { resolve(false); return; }
+        area.innerHTML = '<div class="prosp-confirm-inline" style="flex-wrap:wrap;gap:8px">' +
+            '<span style="width:100%">Authentication required for Clay exports.</span>' +
+            '<input type="password" id="prosp-inline-pw" placeholder="Enter password" autocomplete="off" ' +
+            'style="flex:1;background:#0f1117;border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 10px;color:#e5e7eb;font-size:0.82rem;font-family:\'DM Sans\',sans-serif;outline:none" ' +
+            'onkeydown="if(event.key===\'Enter\')document.getElementById(\'prosp-inline-pw-btn\').click()">' +
+            '<button class="prosp-yes" id="prosp-inline-pw-btn">Confirm</button>' +
+            '<button class="prosp-cancel" onclick="document.getElementById(\'prosp-confirm-area\').innerHTML=\'\'">Cancel</button>' +
+            '<div id="prosp-inline-pw-err" style="width:100%;font-size:0.75rem;color:rgba(220,80,80,0.9);min-height:1em"></div></div>';
+        setTimeout(() => { const inp = document.getElementById('prosp-inline-pw'); if (inp) inp.focus(); }, 50);
+        document.getElementById('prosp-inline-pw-btn').onclick = async function() {
+            const pw = document.getElementById('prosp-inline-pw').value;
+            if (!pw) return;
+            try {
+                const res = await fetch('/api/clay/verify-password', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({password: pw})
+                });
+                const data = await res.json();
+                if (res.ok && data.valid) {
+                    window._clayToken = data.token;
+                    area.innerHTML = '';
+                    resolve(true);
+                } else {
+                    document.getElementById('prosp-inline-pw-err').textContent = res.status === 503 ? 'Not configured on server.' : 'Incorrect password.';
+                    document.getElementById('prosp-inline-pw').value = '';
+                    document.getElementById('prosp-inline-pw').focus();
+                }
+            } catch(e) {
+                document.getElementById('prosp-inline-pw-err').textContent = 'Connection error.';
+            }
+        };
+    });
+}
+
+async function generateSnapshot(btn) {
+    btn.classList.add('generating');
+    btn.textContent = 'Generating...';
+    try {
+        const res = await fetch('/api/clay/snapshot', {method: 'POST'});
+        const data = await res.json();
+        if (res.ok) {
+            showToast('Snapshot generated successfully.');
+            await buildProspecting();
+        } else {
+            showToast('Error: ' + (data.error || 'Snapshot generation failed.'));
+        }
+    } catch(e) {
+        showToast('Connection error generating snapshot.');
+    }
+    btn.classList.remove('generating');
+    btn.textContent = 'Generate Snapshot';
+}
+
+function prospExportSeeds() {
+    const area = document.getElementById('prosp-confirm-area');
+    if (!area) return;
+    const selCount = _prospSelectedSeeds.size;
+    const totalSeeds = (_prospSeedData && _prospSeedData.seed_count) || 0;
+    const totalCredits = (_prospSeedData && _prospSeedData.credit_estimate) || 0;
+    const estCredits = totalSeeds > 0 ? Math.round(selCount * (totalCredits / totalSeeds)) : 0;
+    area.innerHTML = '<div class="prosp-confirm-inline"><span>Push ' + selCount + ' seeds to Clay? Est. ~' + estCredits + ' credits.</span>' +
+        '<button class="prosp-yes" onclick="prospDoExport()">Confirm Export</button>' +
+        '<button class="prosp-cancel" onclick="document.getElementById(\'prosp-confirm-area\').innerHTML=\'\'">Cancel</button></div>';
+}
+
+async function prospDoExport() {
+    if (!(await ensureClayToken())) return;
+    const area = document.getElementById('prosp-confirm-area');
+    if (area) area.innerHTML = '<div class="prosp-confirm-inline"><span style="animation:scanPulse 1.2s ease-in-out infinite">Exporting...</span></div>';
+    try {
+        const res = await fetch('/api/clay/export-seeds', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window._clayToken},
+            body: JSON.stringify({seed_ids: [..._prospSelectedSeeds]})
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast('Exported ' + (data.sent || _prospSelectedSeeds.size) + ' seeds to Clay.');
+            _prospSelectedSeeds.clear();
+            await buildProspecting();
+        } else {
+            showToast('Export issue: ' + (data.error || data.errors?.map(e => e.error).join(', ') || 'Unknown error'));
+        }
+    } catch(e) {
+        showToast('Connection error during export.');
+    }
+    if (area) area.innerHTML = '';
+}
+
+async function prospPushExcludes(btn) {
+    if (!(await ensureClayToken())) return;
+    btn.disabled = true;
+    btn.textContent = 'Pushing...';
+    try {
+        const res = await fetch('/api/clay/export-excludes', {
+            method: 'POST',
+            headers: {'Authorization': 'Bearer ' + window._clayToken}
+        });
+        const data = await res.json();
+        showToast(res.ok && data.success ? 'Exclude list pushed to Clay.' : 'Push result: ' + (data.error || JSON.stringify(data.errors || '')));
+    } catch(e) {
+        showToast('Connection error pushing excludes.');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Push to Clay';
+}
+
+async function prospPushReengagements(btn) {
+    if (!(await ensureClayToken())) return;
+    btn.disabled = true;
+    btn.textContent = 'Pushing...';
+    try {
+        const res = await fetch('/api/clay/export-reengagements', {
+            method: 'POST',
+            headers: {'Authorization': 'Bearer ' + window._clayToken}
+        });
+        const data = await res.json();
+        showToast(res.ok && data.success ? 'Re-engagements pushed to Clay.' : 'Push result: ' + (data.error || JSON.stringify(data.errors || '')));
+    } catch(e) {
+        showToast('Connection error pushing re-engagements.');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Push to Clay';
+}
+// ---- End Prospecting tab ----
+
 let currentTab = 'features';
 let excludedCalls = new Set();
 let excludedCompetitors = new Set((DATA.excluded_competitors || []).map(n => n.toLowerCase()));
@@ -1500,7 +1954,7 @@ function parseHash() {
             p.slice(8).split(',').filter(Boolean).forEach(id => excludedCalls.add(id));
         } else if (p.startsWith('range=')) {
             activeDateRange = p.slice(6);
-        } else if (['features', 'calls', 'personas', 'competitors', 'reports'].includes(p)) {
+        } else if (['features', 'calls', 'personas', 'competitors', 'reports', 'prospecting'].includes(p)) {
             tab = p;
         } else if (p === 'product' || p === 'marketing') {
             tab = 'reports';
@@ -4446,13 +4900,16 @@ function switchTab(tab) {
     currentTab = tab;
     updateHash();
     const isReport = (tab === 'reports');
+    const isProsp = (tab === 'prospecting');
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.getElementById('features-view').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('calls-view').style.display = tab === 'calls' ? '' : 'none';
     document.getElementById('personas-view').style.display = tab === 'personas' ? '' : 'none';
     document.getElementById('competitors-view').style.display = tab === 'competitors' ? '' : 'none';
     document.getElementById('reports-view').style.display = tab === 'reports' ? '' : 'none';
-    document.querySelector('.search-box').style.display = (isReport || tab === 'personas' || tab === 'competitors') ? 'none' : '';
+    document.getElementById('prospecting-view').style.display = isProsp ? '' : 'none';
+    document.getElementById('filter-row').style.display = isProsp ? 'none' : '';
+    document.querySelector('.search-box').style.display = (isReport || isProsp || tab === 'personas' || tab === 'competitors') ? 'none' : '';
     document.getElementById('co-dd').style.display = (tab === 'features' || tab === 'personas') ? '' : 'none';
     document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls' || tab === 'personas' || tab === 'competitors') ? '' : 'none';
     document.getElementById('comp-filter-dd').style.display = tab === 'competitors' ? '' : 'none';
@@ -4467,6 +4924,7 @@ function switchTab(tab) {
     filter('');
     if (tab === 'personas') buildPersonas();
     if (tab === 'competitors') buildCompetitors();
+    if (tab === 'prospecting') buildProspecting();
 }
 
 function filter(q) {

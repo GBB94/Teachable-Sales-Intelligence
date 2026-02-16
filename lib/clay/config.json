@@ -1,0 +1,72 @@
+{
+  "version": "2.0",
+  "max_score": 100,
+  "signals": [
+    {
+      "name": "feature_mentions",
+      "description": "Points per feature requested",
+      "points_per_unit": 8,
+      "cap": 40,
+      "field": "features_requested.length"
+    },
+    {
+      "name": "call_count",
+      "description": "Points per call",
+      "points_per_unit": 12,
+      "cap": 36,
+      "field": "call_count"
+    },
+    {
+      "name": "competitor_mentions",
+      "description": "Actively evaluating alternatives",
+      "points_per_unit": 10,
+      "cap": 10,
+      "field": "competitors_mentioned.length",
+      "min_threshold": 1
+    },
+    {
+      "name": "recency",
+      "description": "Recent activity bonus",
+      "points_per_unit": 15,
+      "cap": 15,
+      "condition": "last_call_date within 14 days"
+    }
+  ],
+  "segment_boosts": {
+    "Continuing Education & Credentialing": 10,
+    "Professional Training & Development": 5
+  },
+  "feature_boosts": {
+    "Certificate Automation": 5,
+    "SCORM Compliance": 5,
+    "Compliance Reporting": 3,
+    "Custom Branding & White Labeling": 3
+  },
+  "snapshot_config": {
+    "max_seed_companies": 10,
+    "min_seed_score": 30,
+    "min_calls_for_seed": 1,
+    "diversify_segments": true,
+    "max_seeds_per_segment": 3
+  },
+  "credit_controls": {
+    "ocean_limit_per_seed": 10,
+    "expected_pass_rate": 0.35,
+    "dm_search_rate": 0.8,
+    "dm_found_rate": 0.6,
+    "monthly_credit_budget": 2000
+  },
+  "exclude_config": {
+    "active_days": 90
+  },
+  "re_engagement": {
+    "score_delta_threshold": 20,
+    "enabled": true,
+    "suppress_on_config_change": true
+  },
+  "suggested_filter_config": {
+    "default_industries": [],
+    "default_keywords": [],
+    "default_company_sizes": ["11-50", "51-200", "201-500"]
+  }
+}

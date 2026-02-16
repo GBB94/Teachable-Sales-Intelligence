@@ -22,6 +22,16 @@ __pycache__/
 !test_output/index.html
 !test_output/_headers
 
+# Clay data directory
+data/
+!data/.gitkeep
+
+# Explicitly track Clay config
+!lib/clay/config.json
+
+# Competitors config
+!competitors.json
+
 # Credentials
 credentials/
 
