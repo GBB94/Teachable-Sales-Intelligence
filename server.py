@@ -546,4 +546,4 @@ if __name__ == '__main__':
     print()
 
     webbrowser.open(f'http://localhost:{PORT}')
-    app.run(host='0.0.0.0', port=PORT, debug=False)
+    app.run(host='127.0.0.1', port=PORT, debug=False)

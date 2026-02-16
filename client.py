@@ -378,7 +378,7 @@ class FirefliesRetriever:
                         id=raw_call["id"],
                         title=raw_call.get("title", "Untitled"),
                         date=date_iso,
-                        duration=raw_call.get("duration", 0),
+                        duration=int(raw_call.get("duration") or 0),
                         organizer_email=raw_call.get("organizer_email"),
                         attendees=raw_call.get("meeting_attendees", []),
                         transcript_url=raw_call.get("transcript_url"),
