@@ -999,25 +999,8 @@ body {
     font-size: 0.82rem; color: #d4a017;
 }
 .prosp-section { margin-bottom: 1.25rem; }
-.prosp-email-btn { background:rgba(74,124,255,0.08); border:1px solid rgba(74,124,255,0.2); border-radius:6px; cursor:pointer; padding:4px 10px; color:#6b9aff; font-size:0.72rem; font-family:'DM Sans',sans-serif; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; white-space:nowrap; }
-.prosp-email-btn:hover { background:rgba(74,124,255,0.15); border-color:rgba(74,124,255,0.35); color:#8db4ff; }
-.prosp-email-btn svg { flex-shrink:0; }
-.prosp-draft-panel { background:#12141b; border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:20px; margin:8px 0 12px; animation:pwFadeIn 0.15s ease; }
-.prosp-draft-panel h4 { font-size:0.9rem; color:#e5e7eb; margin:0 0 14px; font-weight:600; }
-.prosp-email-card { background:#16181f; border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:16px; margin-bottom:12px; }
-.prosp-email-card:last-child { margin-bottom:0; }
-.prosp-email-stage { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:#6b7084; margin-bottom:6px; }
-.prosp-email-subject { font-size:0.85rem; font-weight:600; color:#d0d3db; margin-bottom:10px; }
-.prosp-email-body { font-size:0.82rem; color:#9ea2b4; white-space:pre-wrap; line-height:1.55; font-family:'DM Sans',sans-serif; }
-.prosp-email-actions { display:flex; gap:8px; margin-top:10px; align-items:center; }
-.prosp-copy-btn { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:5px 12px; font-size:0.75rem; color:#9ea2b4; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
-.prosp-copy-btn:hover { background:rgba(255,255,255,0.08); color:#d0d3db; }
-.prosp-email-evidence { margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.04); }
-.prosp-evidence-item { font-size:0.72rem; color:#6b7084; margin-bottom:6px; line-height:1.4; }
-.prosp-evidence-item .ev-feat { color:#6b9aff; }
-.prosp-evidence-item .ev-quote { color:#9ea2b4; font-style:italic; }
-.prosp-email-warning { font-size:0.72rem; color:#d4a017; margin-top:6px; }
-.prosp-email-disclaimer { font-size:0.72rem; color:#555a6e; margin-top:14px; font-style:italic; }
+.prosp-brief-btn { background:rgba(74,124,255,0.08); border:1px solid rgba(74,124,255,0.2); border-radius:6px; cursor:pointer; padding:4px 10px; color:#6b9aff; font-size:0.72rem; font-family:'DM Sans',sans-serif; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; white-space:nowrap; }
+.prosp-brief-btn:hover { background:rgba(74,124,255,0.15); border-color:rgba(74,124,255,0.35); color:#8db4ff; }
 @media (max-width: 900px) {
     .prosp-status-cards { grid-template-columns: 1fr; }
     .prosp-stats-row { flex-wrap: wrap; }
@@ -1729,7 +1712,7 @@ function renderSeedTable() {
             '<td><span class="prosp-score-track"><span class="prosp-score-fill" style="width:' + barWidth + ';background:' + barColor + '"></span></span><span class="prosp-score-val" style="color:' + barColor + '">' + score + '</span></td>' +
             '<td style="text-align:center;font-family:\'JetBrains Mono\',monospace;font-size:0.8rem">' + (s.call_count || 0) + '</td>' +
             '<td>' + badge + '</td>' +
-            '<td><button class="prosp-email-btn" onclick="prospDraftEmails(\'' + id.replace(/'/g, "\\'") + '\', this)" title="Draft emails"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Draft</button></td></tr>';
+            '<td><button class="prosp-brief-btn" onclick="copyIntelligenceBrief(\'' + id.replace(/'/g, "\\'") + '\')" title="Copy intelligence brief"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Draft</button></td></tr>';
     });
     const selCount = _prospSelectedSeeds.size;
     const estCredits = totalSeeds > 0 ? Math.round(selCount * (totalCredits / totalSeeds)) : 0;
@@ -1746,7 +1729,6 @@ function renderSeedTable() {
         '</tr></thead><tbody>' + rows + '</tbody></table>' +
         '<div class="prosp-table-footer"><span id="prosp-sel-info">' + selCount + ' of ' + totalSeeds + ' selected' + (selCount ? ' &middot; ~' + estCredits + ' credits' : '') + '</span>' +
         '<button class="prosp-export-btn" ' + (selCount ? '' : 'disabled') + ' onclick="prospExportSeeds()">Export to Clay</button></div>' +
-        '<div id="prosp-draft-area"></div>' +
         '<div id="prosp-confirm-area"></div></div>';
 }
 
@@ -1803,6 +1785,10 @@ function prospToggleAll(checked) {
     _prospSeedData.seeds.forEach(s => {
         const id = s.company_id || s.company;
         if (checked) _prospSelectedSeeds.add(id); else _prospSelectedSeeds.delete(id);
+    });
+    // Sync all row checkboxes
+    document.querySelectorAll('.prosp-table tbody input[type="checkbox"]').forEach(cb => {
+        cb.checked = checked;
     });
     updateProspSelectionInfo();
 }
@@ -1981,117 +1967,174 @@ async function prospPushReengagements(btn) {
     btn.disabled = false;
     btn.textContent = 'Push to Clay';
 }
-let _prospDraftOpenId = null;
+function copyIntelligenceBrief(seedId) {
+    if (!_prospSnapshotData || !_prospSnapshotData.seed_companies) return;
+    var seed = _prospSnapshotData.seed_companies.find(function(s) { return (s.company_id || s.company) === seedId; });
+    if (!seed) { showToast('Seed not found.'); return; }
 
-async function prospDraftEmails(companyId, btn) {
-    const ok = await ensureClayToken('Draft Emails');
-    if (!ok) return;
-    const area = document.getElementById('prosp-draft-area');
-    if (!area) return;
-    // Toggle off if same seed clicked
-    if (_prospDraftOpenId === companyId) {
-        area.innerHTML = '';
-        _prospDraftOpenId = null;
-        return;
-    }
-    _prospDraftOpenId = companyId;
-    area.innerHTML = '<div class="prosp-draft-panel"><div style="color:#6b7084;font-size:0.82rem;animation:scanPulse 1.2s ease-in-out infinite">Generating emails...</div></div>';
-    try {
-        const res = await fetch('/api/outreach/generate-emails', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({seed_ids: [companyId], sender_name: 'Zach'})
+    var mentions = (typeof DATA !== 'undefined' && DATA.mentions) || [];
+    var calls = (typeof DATA !== 'undefined' && DATA.calls) || [];
+    var summaries = (typeof DATA !== 'undefined' && DATA.company_summaries) || {};
+    var companyName = seed.company_name || seed.company || '';
+
+    // Feature lines with quotes
+    var featureLines = (seed.features_requested || []).map(function(f) {
+        var quote = mentions.find(function(m) {
+            return m.keyword === f && m.text && (m.company || '').toLowerCase() === companyName.toLowerCase();
         });
-        const data = await res.json();
-        if (!res.ok || data.error) {
-            area.innerHTML = '<div class="prosp-draft-panel"><div style="color:rgba(220,80,80,0.7);font-size:0.82rem">' + (data.error || 'Failed to generate emails.') + '</div></div>';
-            return;
+        var q = quote ? ': "' + quote.text.substring(0, 200) + '"' : '';
+        return '- ' + f + q;
+    }).join('\n');
+
+    // Competitor lines from call data
+    var compLines = [];
+    var seenComps = {};
+    for (var ci = 0; ci < calls.length; ci++) {
+        var call = calls[ci];
+        var callRelevant = mentions.some(function(m) {
+            return m.call_id === call.id && (m.company || '').toLowerCase() === companyName.toLowerCase();
+        });
+        if (!callRelevant) continue;
+        var cms = call.competitor_mentions || [];
+        for (var cmi = 0; cmi < cms.length; cmi++) {
+            var cm = cms[cmi];
+            var cname = cm.competitor || '';
+            if (!cname || seenComps[cname]) continue;
+            seenComps[cname] = true;
+            var ctx = cm.context ? ': "' + cm.context.substring(0, 200) + '"' : '';
+            compLines.push('- ' + cname + ' (' + (cm.mention_type || 'mentioned') + ')' + ctx);
         }
-        if (!data.campaigns || !data.campaigns.length) {
-            area.innerHTML = '<div class="prosp-draft-panel"><div style="color:#6b7084;font-size:0.82rem">No campaigns generated.</div></div>';
-            return;
+        var mkt = call.marketing_data;
+        if (mkt && mkt.competitors_mentioned) {
+            for (var mci = 0; mci < mkt.competitors_mentioned.length; mci++) {
+                var mcm = mkt.competitors_mentioned[mci];
+                var mcname = (typeof mcm === 'object' ? (mcm.name || mcm.competitor || '') : String(mcm));
+                if (!mcname || seenComps[mcname]) continue;
+                seenComps[mcname] = true;
+                var mctx = (typeof mcm === 'object' && mcm.context) ? ': "' + mcm.context.substring(0, 200) + '"' : '';
+                compLines.push('- ' + mcname + ' (mentioned)' + mctx);
+            }
         }
-        const campaign = data.campaigns[0];
-        area.innerHTML = renderDraftPanel(campaign);
-    } catch(e) {
-        area.innerHTML = '<div class="prosp-draft-panel"><div style="color:rgba(220,80,80,0.7);font-size:0.82rem">Connection error.</div></div>';
     }
-}
 
-function renderDraftPanel(campaign) {
-    const p = campaign.profile;
-    let html = '<div class="prosp-draft-panel">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">';
-    html += '<h4 style="margin:0">Draft Emails: ' + (p.company_name || p.segment) + '</h4>';
-    html += '<button class="prosp-copy-btn" onclick="prospCopyAllEmails()">Copy All</button>';
-    html += '</div>';
-
-    campaign.emails.forEach((email, idx) => {
-        const dayLabel = email.send_day === 0 ? 'Day 0' : 'Day ' + email.send_day;
-        html += '<div class="prosp-email-card" id="prosp-email-' + idx + '">';
-        html += '<div class="prosp-email-stage">Stage ' + email.stage + ' &middot; ' + dayLabel + '</div>';
-        html += '<div class="prosp-email-subject">' + escapeHtml(email.subject) + '</div>';
-        html += '<div class="prosp-email-body">' + escapeHtml(email.body) + '</div>';
-
-        // Validation warnings
-        if (email.validation && email.validation.warnings && email.validation.warnings.length) {
-            email.validation.warnings.forEach(w => {
-                html += '<div class="prosp-email-warning">\u26a0 ' + escapeHtml(w) + '</div>';
-            });
+    // Company summary
+    var summary = '';
+    for (var si = 0; si < calls.length; si++) {
+        var scall = calls[si];
+        var sRelevant = mentions.some(function(m) {
+            return m.call_id === scall.id && (m.company || '').toLowerCase() === companyName.toLowerCase();
+        });
+        if (sRelevant && summaries[scall.id]) {
+            summary = summaries[scall.id];
+            break;
         }
+    }
 
-        // Actions
-        html += '<div class="prosp-email-actions">';
-        html += '<button class="prosp-copy-btn" onclick="prospCopyEmail(' + idx + ')">Copy</button>';
-        html += '<span style="font-size:0.7rem;color:#555a6e">' + email.notes + '</span>';
-        html += '</div>';
+    // Feature-to-problem mappings (only include this seed's features)
+    var problemMap = {
+        'Certificate Automation': 'scaling credential delivery without manual bottlenecks / automating certificate issuance with verification and expiration tracking',
+        'Compliance Reporting': 'proving learner completion to accreditation bodies / pulling audit-ready completion data without manual assembly',
+        'Video Scrub Prevention': 'ensuring learners actually complete required content, not just click through it',
+        'SCORM Compliance': 'content that works across LMS platforms without breaking',
+        'Custom Branding & White Labeling': 'delivering training under your own brand, not your vendor\'s',
+        'White Label Platform': 'delivering training under your own brand, not your vendor\'s',
+        'Headless / API Access': 'integrating the learning platform into existing systems and workflows',
+        'Third-party Integration': 'connecting training data to CRMs, payment systems, and websites already in place',
+        'Organization Hierarchy / Nesting': 'managing thousands of client organizations without creating admin overhead',
+        'Supervisor Role Access': 'letting managers assign and track training for their teams without admin involvement',
+        'Completion Tracking': 'tracking who completed what, when, and making that data actionable',
+        'Seat Management': 'letting organizations buy seats in bulk and rotate learners through without gaming the system',
+        'Custom Checkout Fields': 'capturing industry-specific data (license numbers, org IDs) at the point of purchase',
+        'Guest Checkout': 'reducing friction so buyers don\'t abandon at the signup wall',
+        'Affiliate / Referral Program': 'building distribution through partner referrals',
+        'Cart / Bundle Checkout': 'letting buyers purchase multiple courses or seats in one transaction',
+        'Organization-level Reporting': 'giving each client org visibility into their own learner progress without admin help',
+        'Multi-language Support': 'delivering the same training in multiple languages without rebuilding courses',
+        'Embedded Course Widget': 'embedding training directly into existing portals without a separate login',
+        'AI Tutor / Copilot Integration': 'scaling personalized learner support without adding headcount',
+        'Hybrid Scheduling': 'coordinating live sessions alongside self-paced content in one place',
+        'Student-Counselor Assignment': 'matching learners with the right coach or counselor automatically',
+        'Landing Pages / Site Builder': 'building sales pages without needing a separate website tool',
+        'Quiz / Assessment Reporting': 'getting question-level performance data across cohorts',
+        'Community Features': 'giving learners a space to discuss and connect without leaving the platform',
+        'Payment Plans / Installments': 'offering flexible payment without third-party billing tools',
+        'Learning Paths': 'guiding learners through multi-course sequences in the right order',
+        'Drip / Timed Content Release': 'releasing content on a controlled timeline instead of all at once',
+        'SSO / SAML': 'letting learners sign in with their existing corporate credentials',
+        'Learner File Upload to Coaches': 'letting learners submit work for review without email back-and-forth',
+        'Reporting Dashboard': 'seeing learner progress and completion data in one place without manual exports',
+        'Reporting Data Export (CSV)': 'pulling raw data for custom analysis or compliance reporting',
+        'Certificate Customization': 'matching certificates to your brand with custom fields and verification',
+        'Continuing Education Credits': 'tracking and awarding CE/CPD credits automatically on completion',
+        'Access Duration / Expiration': 'controlling how long learners have access to training content',
+        'Course Sequencing / Completion Gating': 'requiring learners to finish prerequisites before advancing',
+    };
+    var mappingLines = (seed.features_requested || [])
+        .filter(function(f) { return problemMap[f]; })
+        .map(function(f) { return '- ' + f + ' -> "' + problemMap[f] + '"'; })
+        .join('\n');
 
-        // Evidence
-        if (email.evidence && email.evidence.length) {
-            html += '<div class="prosp-email-evidence">';
-            email.evidence.forEach(ev => {
-                html += '<div class="prosp-evidence-item">';
-                html += '<span class="ev-feat">' + escapeHtml(ev.feature || ev.claim) + '</span>';
-                html += ' &mdash; ' + escapeHtml(ev.source_company);
-                if (ev.source_quote) {
-                    html += '<br><span class="ev-quote">&ldquo;' + escapeHtml(ev.source_quote) + '&rdquo;</span>';
-                }
-                html += '</div>';
-            });
-            html += '</div>';
-        }
+    // Build the self-contained prompt
+    var staticContext = 'Generate a 3-email cold outreach sequence for the prospect profile at the bottom of this message. Follow every rule below exactly.\n' +
+        '\n' +
+        'CONTEXT:\n' +
+        'You are writing cold outreach emails for Zach, who works in sales at Teachable. Teachable is a learning management platform (LMS) for creating, selling, and managing online courses and training programs. It handles course hosting, student management, payments, certificates, and compliance tracking.\n' +
+        '\n' +
+        'These emails target lookalike prospects. The intelligence below comes from real sales calls with SIMILAR companies, not from the recipient\'s company. You must never imply you know anything specific about the recipient. Everything is framed as patterns observed across the segment.\n' +
+        '\n' +
+        'WRITING RULES:\n' +
+        '- Peer-to-peer tone. Sound like someone who works in their industry, not someone selling software.\n' +
+        '- Short sentences. No filler. Every sentence earns its place.\n' +
+        '- Lead with the business problem, never the feature name. Features are proof points in the body, not the hook or subject line.\n' +
+        '- Use hypothesis language: "organizations like yours typically," "a common challenge we hear," "teams scaling X often run into."\n' +
+        '- Under 100 words per email.\n' +
+        '- No em dashes. Use periods or commas.\n' +
+        '- No exclamation marks.\n' +
+        '- No "hope this finds you well," "just checking in," "I\'d love to," "excited to," "thrilled," "amazing."\n' +
+        '- Sign off with just "Zach". No title or company in the body.\n' +
+        '- Don\'t start emails with "I". Vary the openings.\n' +
+        '- Subject lines reference the business problem, not a feature name.\n' +
+        '\n' +
+        'NEVER USE THESE PHRASES:\n' +
+        '"I noticed your team," "I noticed you," "I see you\'re using," "I see that you," "I saw your," "I saw that," "I know you," "I know your team," "your team is struggling with," "you\'re currently using," "you recently," "based on your," "looking at your," "I checked out your," "after reviewing your"\n' +
+        '\n' +
+        'EMAIL STRUCTURE:\n' +
+        '- Stage 1 (Day 0): Establish relevance. Lead with the segment problem. Weave 2-3 pain points together as a pattern. One sentence on how Teachable handles it. Ask for 15 minutes. Make the recipient think "this person understands my world."\n' +
+        '- Stage 2 (Day 3): Provide value. Go deeper on the strongest capability. Something specific not on the marketing site. If competitor data exists, subtle displacement angle using category language ("most LMS platforms," "platforms built for course creators, not compliance teams"), never the competitor\'s name.\n' +
+        '- Stage 3 (Day 7): Soft close. Three sentences max. Restate core value. Include {{Sender Calendar URL}}.\n' +
+        '- Stage 2 and 3 subjects use "Re:" to thread.\n' +
+        '\n' +
+        'MIXMAX VARIABLES: {{first_name}}, {{company}}, {{Sender Calendar URL}}\n';
 
-        html += '</div>';
+    var dynamicContent = '\n' +
+        'FEATURE-TO-PROBLEM MAPPINGS (lead with the problem, not the feature name):\n' +
+        (mappingLines || '(no mappings for these features)') + '\n' +
+        '\n' +
+        'When multiple features point to the same underlying problem, group them. For example, Certificate Automation + Completion Tracking + Video Scrub Prevention = "proving that learners actually completed mandatory training, end to end."\n' +
+        '\n' +
+        'FORMAT: For each email output the stage/day, subject line, body, then a one-line note (not part of the email) explaining the angle and which call evidence supports it.\n' +
+        '\n' +
+        '---\n' +
+        '\n' +
+        'PROSPECT INTELLIGENCE:\n' +
+        '\n' +
+        'SEED PROFILE: ' + companyName + '\n' +
+        'SEGMENT: ' + (seed.segment || '(unassigned)') + '\n' +
+        'SCORE: ' + (seed.score || 0) + '\n' +
+        'CALL COUNT: ' + (seed.call_count || 0) + '\n' +
+        '\n' +
+        'FEATURES REQUESTED:\n' +
+        (featureLines || '(none)') + '\n' +
+        '\n' +
+        'COMPETITORS MENTIONED:\n' +
+        (compLines.join('\n') || '(none)') + '\n' +
+        '\n' +
+        'COMPANY SUMMARY:\n' +
+        (summary || '(no summary available)');
+
+    navigator.clipboard.writeText(staticContext + dynamicContent).then(function() {
+        showToast('Brief copied. Paste into any Claude chat.');
     });
-
-    html += '<div class="prosp-email-disclaimer">' + (campaign.hypothesis_disclaimer || '') + '</div>';
-    html += '</div>';
-
-    // Store emails globally for copy functions
-    window._prospDraftEmails = campaign.emails;
-    return html;
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function prospCopyEmail(idx) {
-    const emails = window._prospDraftEmails;
-    if (!emails || !emails[idx]) return;
-    const e = emails[idx];
-    const text = 'Subject: ' + e.subject + '\n\n' + e.body;
-    navigator.clipboard.writeText(text).then(() => showToast('Email copied to clipboard.'));
-}
-
-function prospCopyAllEmails() {
-    const emails = window._prospDraftEmails;
-    if (!emails) return;
-    const text = emails.map((e, i) =>
-        '--- Stage ' + e.stage + ' (Day ' + e.send_day + ') ---\nSubject: ' + e.subject + '\n\n' + e.body
-    ).join('\n\n');
-    navigator.clipboard.writeText(text).then(() => showToast('All emails copied to clipboard.'));
 }
 
 // ---- End Prospecting tab ----
