@@ -1642,6 +1642,13 @@ async function buildProspecting() {
         _prospSnapshotData = null;
         _prospSeedData = null;
     }
+    // Fall back to baked-in DATA for static deploys (Netlify)
+    if (!_prospSnapshotData && typeof DATA !== 'undefined' && DATA.prospecting_snapshot) {
+        _prospSnapshotData = DATA.prospecting_snapshot;
+    }
+    if (!_prospSeedData && typeof DATA !== 'undefined' && DATA.prospecting_seeds) {
+        _prospSeedData = DATA.prospecting_seeds;
+    }
     let staleBanner = '';
     const snap = _prospSnapshotData;
     if (snap && !snap.error && snap.generated_at && snap.data_generated_at) {

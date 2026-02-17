@@ -111,7 +111,18 @@ def _load_existing_data():
 
 
 def _render_dashboard(data):
-    """Read the template and inject DATA JSON."""
+    """Read the template and inject DATA JSON, including prospecting snapshot."""
+    # Bake prospecting snapshot into DATA so Netlify static deploy works
+    try:
+        from lib.clay import get_snapshot, get_seed_companies
+        snap = get_snapshot()
+        if snap and "error" not in snap:
+            data["prospecting_snapshot"] = snap
+        seeds = get_seed_companies()
+        if seeds and "error" not in seeds:
+            data["prospecting_seeds"] = seeds
+    except Exception:
+        pass  # Snapshot not available, Prospecting tab will show empty state
     with open(TEMPLATE_PATH, 'r') as f:
         template = f.read()
     return template.replace('{{DATA_JSON}}', json.dumps(data))
