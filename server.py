@@ -534,6 +534,39 @@ def mixmax_history():
 
 
 # ---------------------------------------------------------------------------
+# Outreach: Email Campaign Generator
+# ---------------------------------------------------------------------------
+
+@app.route('/api/outreach/generate-emails', methods=['POST'])
+def outreach_generate_emails():
+    """Generate intelligence-driven email sequences for seed profiles."""
+    from lib.outreach import generate_emails
+    from lib.clay import load_last_snapshot
+
+    body = request.get_json(force=True)
+    seed_ids = body.get("seed_ids", [])
+    sequence_length = body.get("sequence_length", 3)
+    sender_name = body.get("sender_name", "Zach")
+    sender_title = body.get("sender_title", "Sales, Teachable")
+
+    # Load dashboard data and snapshot
+    dashboard_data = _load_existing_data()
+    snapshot = load_last_snapshot()
+
+    result = generate_emails(
+        seed_ids=seed_ids or None,
+        dashboard_data=dashboard_data,
+        snapshot=snapshot,
+        sequence_length=sequence_length,
+        sender_name=sender_name,
+        sender_title=sender_title,
+    )
+    if "error" in result:
+        return jsonify(result), 400
+    return jsonify(result), 200
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 if __name__ == '__main__':

@@ -999,6 +999,25 @@ body {
     font-size: 0.82rem; color: #d4a017;
 }
 .prosp-section { margin-bottom: 1.25rem; }
+.prosp-email-btn { background:rgba(74,124,255,0.08); border:1px solid rgba(74,124,255,0.2); border-radius:6px; cursor:pointer; padding:4px 10px; color:#6b9aff; font-size:0.72rem; font-family:'DM Sans',sans-serif; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; white-space:nowrap; }
+.prosp-email-btn:hover { background:rgba(74,124,255,0.15); border-color:rgba(74,124,255,0.35); color:#8db4ff; }
+.prosp-email-btn svg { flex-shrink:0; }
+.prosp-draft-panel { background:#12141b; border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:20px; margin:8px 0 12px; animation:pwFadeIn 0.15s ease; }
+.prosp-draft-panel h4 { font-size:0.9rem; color:#e5e7eb; margin:0 0 14px; font-weight:600; }
+.prosp-email-card { background:#16181f; border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:16px; margin-bottom:12px; }
+.prosp-email-card:last-child { margin-bottom:0; }
+.prosp-email-stage { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:#6b7084; margin-bottom:6px; }
+.prosp-email-subject { font-size:0.85rem; font-weight:600; color:#d0d3db; margin-bottom:10px; }
+.prosp-email-body { font-size:0.82rem; color:#9ea2b4; white-space:pre-wrap; line-height:1.55; font-family:'DM Sans',sans-serif; }
+.prosp-email-actions { display:flex; gap:8px; margin-top:10px; align-items:center; }
+.prosp-copy-btn { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:5px 12px; font-size:0.75rem; color:#9ea2b4; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+.prosp-copy-btn:hover { background:rgba(255,255,255,0.08); color:#d0d3db; }
+.prosp-email-evidence { margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.04); }
+.prosp-evidence-item { font-size:0.72rem; color:#6b7084; margin-bottom:6px; line-height:1.4; }
+.prosp-evidence-item .ev-feat { color:#6b9aff; }
+.prosp-evidence-item .ev-quote { color:#9ea2b4; font-style:italic; }
+.prosp-email-warning { font-size:0.72rem; color:#d4a017; margin-top:6px; }
+.prosp-email-disclaimer { font-size:0.72rem; color:#555a6e; margin-top:14px; font-style:italic; }
 @media (max-width: 900px) {
     .prosp-status-cards { grid-template-columns: 1fr; }
     .prosp-stats-row { flex-wrap: wrap; }
@@ -1709,7 +1728,8 @@ function renderSeedTable() {
             '<td>' + (s.segment || '') + '</td>' +
             '<td><span class="prosp-score-track"><span class="prosp-score-fill" style="width:' + barWidth + ';background:' + barColor + '"></span></span><span class="prosp-score-val" style="color:' + barColor + '">' + score + '</span></td>' +
             '<td style="text-align:center;font-family:\'JetBrains Mono\',monospace;font-size:0.8rem">' + (s.call_count || 0) + '</td>' +
-            '<td>' + badge + '</td></tr>';
+            '<td>' + badge + '</td>' +
+            '<td><button class="prosp-email-btn" onclick="prospDraftEmails(\'' + id.replace(/'/g, "\\'") + '\', this)" title="Draft emails"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Draft</button></td></tr>';
     });
     const selCount = _prospSelectedSeeds.size;
     const estCredits = totalSeeds > 0 ? Math.round(selCount * (totalCredits / totalSeeds)) : 0;
@@ -1722,9 +1742,11 @@ function renderSeedTable() {
         '<th onclick="prospSort(\'score\')">Score ' + sortArrow('score') + '</th>' +
         '<th onclick="prospSort(\'call_count\')">Calls ' + sortArrow('call_count') + '</th>' +
         '<th>Status</th>' +
+        '<th></th>' +
         '</tr></thead><tbody>' + rows + '</tbody></table>' +
         '<div class="prosp-table-footer"><span id="prosp-sel-info">' + selCount + ' of ' + totalSeeds + ' selected' + (selCount ? ' &middot; ~' + estCredits + ' credits' : '') + '</span>' +
         '<button class="prosp-export-btn" ' + (selCount ? '' : 'disabled') + ' onclick="prospExportSeeds()">Export to Clay</button></div>' +
+        '<div id="prosp-draft-area"></div>' +
         '<div id="prosp-confirm-area"></div></div>';
 }
 
@@ -1959,6 +1981,119 @@ async function prospPushReengagements(btn) {
     btn.disabled = false;
     btn.textContent = 'Push to Clay';
 }
+let _prospDraftOpenId = null;
+
+async function prospDraftEmails(companyId, btn) {
+    const ok = await ensureClayToken('Draft Emails');
+    if (!ok) return;
+    const area = document.getElementById('prosp-draft-area');
+    if (!area) return;
+    // Toggle off if same seed clicked
+    if (_prospDraftOpenId === companyId) {
+        area.innerHTML = '';
+        _prospDraftOpenId = null;
+        return;
+    }
+    _prospDraftOpenId = companyId;
+    area.innerHTML = '<div class="prosp-draft-panel"><div style="color:#6b7084;font-size:0.82rem;animation:scanPulse 1.2s ease-in-out infinite">Generating emails...</div></div>';
+    try {
+        const res = await fetch('/api/outreach/generate-emails', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({seed_ids: [companyId], sender_name: 'Zach'})
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+            area.innerHTML = '<div class="prosp-draft-panel"><div style="color:rgba(220,80,80,0.7);font-size:0.82rem">' + (data.error || 'Failed to generate emails.') + '</div></div>';
+            return;
+        }
+        if (!data.campaigns || !data.campaigns.length) {
+            area.innerHTML = '<div class="prosp-draft-panel"><div style="color:#6b7084;font-size:0.82rem">No campaigns generated.</div></div>';
+            return;
+        }
+        const campaign = data.campaigns[0];
+        area.innerHTML = renderDraftPanel(campaign);
+    } catch(e) {
+        area.innerHTML = '<div class="prosp-draft-panel"><div style="color:rgba(220,80,80,0.7);font-size:0.82rem">Connection error.</div></div>';
+    }
+}
+
+function renderDraftPanel(campaign) {
+    const p = campaign.profile;
+    let html = '<div class="prosp-draft-panel">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">';
+    html += '<h4 style="margin:0">Draft Emails: ' + (p.company_name || p.segment) + '</h4>';
+    html += '<button class="prosp-copy-btn" onclick="prospCopyAllEmails()">Copy All</button>';
+    html += '</div>';
+
+    campaign.emails.forEach((email, idx) => {
+        const dayLabel = email.send_day === 0 ? 'Day 0' : 'Day ' + email.send_day;
+        html += '<div class="prosp-email-card" id="prosp-email-' + idx + '">';
+        html += '<div class="prosp-email-stage">Stage ' + email.stage + ' &middot; ' + dayLabel + '</div>';
+        html += '<div class="prosp-email-subject">' + escapeHtml(email.subject) + '</div>';
+        html += '<div class="prosp-email-body">' + escapeHtml(email.body) + '</div>';
+
+        // Validation warnings
+        if (email.validation && email.validation.warnings && email.validation.warnings.length) {
+            email.validation.warnings.forEach(w => {
+                html += '<div class="prosp-email-warning">\u26a0 ' + escapeHtml(w) + '</div>';
+            });
+        }
+
+        // Actions
+        html += '<div class="prosp-email-actions">';
+        html += '<button class="prosp-copy-btn" onclick="prospCopyEmail(' + idx + ')">Copy</button>';
+        html += '<span style="font-size:0.7rem;color:#555a6e">' + email.notes + '</span>';
+        html += '</div>';
+
+        // Evidence
+        if (email.evidence && email.evidence.length) {
+            html += '<div class="prosp-email-evidence">';
+            email.evidence.forEach(ev => {
+                html += '<div class="prosp-evidence-item">';
+                html += '<span class="ev-feat">' + escapeHtml(ev.feature || ev.claim) + '</span>';
+                html += ' &mdash; ' + escapeHtml(ev.source_company);
+                if (ev.source_quote) {
+                    html += '<br><span class="ev-quote">&ldquo;' + escapeHtml(ev.source_quote) + '&rdquo;</span>';
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+
+        html += '</div>';
+    });
+
+    html += '<div class="prosp-email-disclaimer">' + (campaign.hypothesis_disclaimer || '') + '</div>';
+    html += '</div>';
+
+    // Store emails globally for copy functions
+    window._prospDraftEmails = campaign.emails;
+    return html;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function prospCopyEmail(idx) {
+    const emails = window._prospDraftEmails;
+    if (!emails || !emails[idx]) return;
+    const e = emails[idx];
+    const text = 'Subject: ' + e.subject + '\n\n' + e.body;
+    navigator.clipboard.writeText(text).then(() => showToast('Email copied to clipboard.'));
+}
+
+function prospCopyAllEmails() {
+    const emails = window._prospDraftEmails;
+    if (!emails) return;
+    const text = emails.map((e, i) =>
+        '--- Stage ' + e.stage + ' (Day ' + e.send_day + ') ---\nSubject: ' + e.subject + '\n\n' + e.body
+    ).join('\n\n');
+    navigator.clipboard.writeText(text).then(() => showToast('All emails copied to clipboard.'));
+}
+
 // ---- End Prospecting tab ----
 
 let currentTab = 'features';
