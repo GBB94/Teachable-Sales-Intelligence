@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
 **Last updated:** 2026-02-16
-**Updated by:** Opus 4.6 (session 12)
+**Updated by:** Opus 4.6 (session 13)
 
 ---
 
@@ -140,13 +140,12 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 - [x] Mixmax dry_run: true by default — no emails sent until explicitly enabled
 - [x] Server binds to 127.0.0.1 (localhost only, not 0.0.0.0)
 - [x] Null-safe duration parsing from Fireflies API (handles duration: null)
-- [x] Email campaign generator (lib/outreach.py): template-based 3-stage email sequences grounded in call intelligence
-- [x] Outreach safety guardrails: 15 banned phrases (no stalker language), 150-word max per email
-- [x] Intelligence brief assembler: every email claim links back to a specific call ID and verbatim quote
-- [x] Pain point and capability description lookup tables keyed by (segment, feature)
-- [x] Draft Emails button on Prospecting seed table: blue pill button per row, password-gated via ensureClayToken()
-- [x] Draft email panel: 3-stage email cards with subject/body, copy buttons, evidence sidebar, validation warnings
-- [x] `/api/outreach/generate-emails` endpoint — local template generation only, no external API calls
+- [x] Copy Brief button: self-contained prompt copied to clipboard, paste into any Claude chat to generate emails
+- [x] Multi-seed intelligence merging: select 2+ seeds, features ranked by frequency with [N/M seeds] tags, quotes from every source
+- [x] Competitor aggregation across seeds: frequency count, "Patterns" summary for 2+ seed mentions
+- [x] Confidence calibration: prompt tells Claude to match language strength to feature frequency
+- [x] Feature-to-problem mapping: 35 features mapped to business problems, embedded in every Copy Brief
+- [x] Outreach safety guardrails baked into prompt: banned phrases, hypothesis language, 100-word limit, peer-to-peer tone
 
 ## What's In Progress
 
@@ -193,7 +192,6 @@ features.json  <-- CANONICAL DATA FILE
     +---> generate_reports.py (Friday cron)
     +---> lib/clay/ (ICP snapshot, seed scoring, exclude lists, Clay webhook export)
     +---> lib/mixmax/ (intelligence-driven email campaigns, prepare/enroll workflow)
-    +---> lib/outreach.py (template-based email generator with safety guardrails)
 ```
 
 ---
@@ -236,7 +234,6 @@ sales-intelligence/
       mapper.py              # Intelligence-to-variables mapper (hypothesis vs fact)
       ledger.py              # JSONL sent ledger for cross-sequence dedup
       config.json            # Segment-to-sequence routing, dry_run default true
-    outreach.py              # Email campaign generator (3-stage templates, safety guardrails, evidence linking)
   credentials/               # OAuth credentials + cached token (gitignored)
   data/
     last_snapshot.json       # Latest ICP snapshot (gitignored)
