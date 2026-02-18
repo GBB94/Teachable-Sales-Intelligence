@@ -15,6 +15,7 @@ Usage (inside Claude Code):
 """
 
 import argparse
+from datetime import date
 from difflib import get_close_matches
 import hashlib
 import json
@@ -988,7 +989,6 @@ def cmd_inject(args):
             print(f"    {comp}: {count}")
 
     # Track suggested new categories/segments from NEEDS_REVIEW items
-    from datetime import date
     today = date.today().isoformat()
     base_dir = os.path.dirname(os.path.abspath(__file__))
 

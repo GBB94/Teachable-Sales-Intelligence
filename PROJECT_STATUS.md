@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
-**Last updated:** 2026-02-16
-**Updated by:** Opus 4.6 (session 13)
+**Last updated:** 2026-02-18
+**Updated by:** Opus 4.6 (session 14 — analysis workflow run)
 
 ---
 
@@ -151,6 +151,16 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 
 Nothing currently in progress.
 
+### Completed This Session (2026-02-18)
+- [x] CLAUDE.md: Added full Analysis Workflow protocol (Step 0 Triage, Step 1 Analyze, Step 2 Post-analysis)
+- [x] Dashboard wizard rewritten: 3-step extract/paste/inject → CC-prep tool (triage/copy/done)
+- [x] Triage logic: auto-junk <100w, flag suspicious, recognize "Teachable" and rep names in titles
+- [x] Person-name title patterns ("Casey Caston and Zach McCall") added to scan keywords
+- [x] Fixed `datetime.date` import shadowing bug in `analyze_features.py` `cmd_inject()`
+- [x] 5 new calls analyzed: Unite Health (9 features), Charlie Durkin/Coxswain Training (4), Pure Life Ministries (18), DMEMI Fitness Academy (6), Six String Fingerpicking (11)
+- [x] 6 junk calls marked as processed (empty/internal transcripts)
+- [x] All 23 calls now accounted for: 17 analyzed, 6 junk, 0 pending
+
 ---
 
 ## Known Issues
@@ -248,14 +258,15 @@ sales-intelligence/
 
 ## Current Data
 
-- **15 calls** in dashboard (12 analyzed, 2 pending/empty, 1 unanalyzed)
-- **76 feature mentions** across **38 unique features** and **12 analyzed calls**
+- **23 calls** in dashboard (17 analyzed, 6 junk, 0 pending)
+- **124 feature mentions** across **10 categories** and **17 analyzed calls**
 - **10 categories**, zero in "Other" — validated at inject time
 - **9 segments** defined in `segments.json` — validated at inject time
-- **All 12 analyzed calls have segments assigned**
-- **marketing_data** populated on 12 external analyzed calls
-- Companies: Speravita, ESI, Simon & Sabine, LTA Singapore, Dot Compliance, Simon Davey, BADM, Red Rover, Transcend Analytics, Biblical Counseling Org, New York Epoxy
-- Default scan filters: `owners=[zach.mccall, jerome.olaloye, kevin.codde]`, `keywords=followup/follow-up/follow up/teachable`, `days=14`, `limit=10`
+- **All 17 analyzed calls have segments assigned**
+- **marketing_data** populated on all 17 external analyzed calls
+- **16 companies**: BADM, Biblical Counseling Org, Coxswain Training Co., DMEMI Fitness Academy, Dot Compliance, ESI, Land Transport Authority, New York Epoxy, Pure Life Ministries, Red Rover, Simon & Sabine, Simon Davey, Six String Fingerpicking, Speravita, Transcend Analytics, Unite Health
+- **Competitor mentions**: Kajabi (currently_using by Coxswain Training)
+- Default scan filters: `owners=[zach.mccall, jerome.olaloye, kevin.codde]`, `keywords=followup/follow-up/follow up/teachable/zach mccall/jerome olaloye/kevin codde`, `days=14`, `limit=10`
 
 ---
 
