@@ -4122,15 +4122,12 @@ function _triageCalls() {
         }
         const hasProspect = [...speakerSet].some(name => !_INTERNAL_SPEAKERS.has(name));
 
-        // Title signals for prospect calls
+        // Title signals for prospect calls — internal calls won't have "teachable" in the name
         const title = c.title || '';
         const titleLower = title.toLowerCase();
-        const _INTERNAL_NAMES = ['zach mccall', 'jerome olaloye', 'kevin codde',
-            'luke easley', 'lennie zhu', 'sarah dean', 'jonathan corvin-blackburn'];
-        const hasProspectTitle = /\s*<>\s*/.test(title)
-            || /(?:followup|reconnect)/i.test(title)
-            || /connect with teachable/i.test(title)
-            || _INTERNAL_NAMES.some(n => titleLower.includes(n) && titleLower !== n);
+        const _REP_NAMES = ['zach mccall', 'jerome olaloye', 'kevin codde'];
+        const hasProspectTitle = titleLower.includes('teachable')
+            || _REP_NAMES.some(n => titleLower.includes(n));
 
         let warn = '';
         if (!hasProspect && words >= 300 && !hasProspectTitle) {

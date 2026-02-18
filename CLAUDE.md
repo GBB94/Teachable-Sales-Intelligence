@@ -27,11 +27,12 @@ When asked to run analysis on new/pending calls:
 Read pending calls from `test_output/index.html` (the DATA object). Classify each pending/unanalyzed call:
 
 - **Auto-junk** (under 100 words): Empty or failed recordings. Mark as junk — set `pending_analysis: false`, `analyzed: true`, `is_junk: true`. Do not extract features, marketing_data, or segment_data.
-- **Auto-analyze** (300+ words, title matches a prospect pattern): Clearly prospect calls regardless of detected speakers. Fireflies sometimes misattributes prospect speakers as internal names. Recognized title patterns:
+- **Auto-analyze** (300+ words, title matches a prospect pattern): Clearly prospect calls regardless of detected speakers. Fireflies sometimes misattributes prospect speakers as internal names. Rule of thumb: if "Teachable" or a rep name (Zach McCall, Jerome Olaloye, Kevin Codde) appears in the title, it's prospect-facing — internal calls won't have the company name in them. Examples:
   - `Teachable <> Company Name` (standard format)
   - `Teachable Followup` / `Teachable Reconnect` (follow-up format)
   - `Connect with Teachable` (inbound format)
-  - `Person Name and Rep Name` (person-name format, e.g. "Casey Caston and Zach McCall" — title contains an internal rep name alongside a non-internal name)
+  - `Person Name and Zach McCall` (person-name format)
+  - `Teachable Learning Paths/Quizzes` (product demo/discussion)
 - **Flag as suspicious but still analyze** (300+ words, all detected speakers are internal, but title doesn't clearly indicate internal-only): Show a warning like `(⚠ speakers look internal, verify)`. Err on the side of analyzing — a wasted analysis on an internal call is cheap, missing a prospect call is expensive.
 - **Review zone** (100-300 words): Flag for manual check with `(⚠ short transcript, review)`. Still put in ANALYZE list.
 
