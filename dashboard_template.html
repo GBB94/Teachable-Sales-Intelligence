@@ -4079,12 +4079,18 @@ function closeScanModal() {
     document.getElementById('scan-overlay').classList.remove('open');
 }
 
-// ---- Analysis wizard (3-step: extract → paste → inject) ----
+// ---- Analysis wizard (CC-prep: triage → copy → done) ----
 let _analyzeStep = 1;
-let _analyzePromptText = '';
+let _analyzeCCCommand = '';
+
+const _INTERNAL_SPEAKERS = new Set([
+    'zach mccall', 'kevin codde', 'jerome olaloye',
+    'lennie zhu', 'sarah dean', 'jonathan corvin-blackburn',
+    'jonathan corvin blackburn', 'luke easley'
+]);
 
 function renderAnalyzeSteps(current) {
-    const labels = ['Extract', 'Analyze', 'Inject'];
+    const labels = ['Triage', 'Copy', 'Done'];
     return '<div class="analyze-steps">' + labels.map((l, i) => {
         const n = i + 1;
         const cls = n < current ? 'done' : n === current ? 'active' : '';
@@ -4093,57 +4099,133 @@ function renderAnalyzeSteps(current) {
     }).join('') + '</div>';
 }
 
+function _triageCalls() {
+    const analyzed = new Set(DATA.mentions.map(m => m.call_id));
+    const pending = DATA.calls.filter(c => c.pending_analysis || !analyzed.has(c.id));
+    const analyze = [];
+    const junk = [];
+    for (const c of pending) {
+        const text = c.transcript_text || '';
+        const words = text.split(/\s+/).filter(Boolean).length;
+
+        // Auto-junk: under 100 words (empty/failed recordings)
+        if (words < 100) {
+            junk.push({ ...c, _words: words, _reason: words + ' words' });
+            continue;
+        }
+
+        // Extract speakers from transcript lines ("Speaker Name: text")
+        const speakerSet = new Set();
+        for (const line of text.split('\n')) {
+            const m = line.match(/^([^:]+):\s/);
+            if (m) speakerSet.add(m[1].trim().toLowerCase());
+        }
+        const hasProspect = [...speakerSet].some(name => !_INTERNAL_SPEAKERS.has(name));
+
+        // Title signals for prospect calls
+        const title = c.title || '';
+        const titleLower = title.toLowerCase();
+        const _INTERNAL_NAMES = ['zach mccall', 'jerome olaloye', 'kevin codde',
+            'luke easley', 'lennie zhu', 'sarah dean', 'jonathan corvin-blackburn'];
+        const hasProspectTitle = /\s*<>\s*/.test(title)
+            || /(?:followup|reconnect)/i.test(title)
+            || /connect with teachable/i.test(title)
+            || _INTERNAL_NAMES.some(n => titleLower.includes(n) && titleLower !== n);
+
+        let warn = '';
+        if (!hasProspect && words >= 300 && !hasProspectTitle) {
+            warn = '\u26A0 speakers look internal, verify';
+        } else if (words < 300) {
+            warn = '\u26A0 short transcript, review';
+        }
+
+        analyze.push({ ...c, _words: words, _warn: warn });
+    }
+    return { analyze, junk };
+}
+
 async function showAnalyzeModal() {
     if (!await checkActionPassword('Run analysis')) return;
     _analyzeStep = 1;
-    _analyzePromptText = '';
+    _analyzeCCCommand = '';
     const body = document.getElementById('analyze-modal-body');
     const footer = document.getElementById('analyze-modal-footer');
     const info = document.getElementById('analyze-modal-info');
     const btn = document.getElementById('analyze-action-btn');
 
-    // Show loading state
-    footer.style.display = 'none';
-    body.innerHTML = renderAnalyzeSteps(1) + '<div style="text-align:center;padding:2rem 0;color:#8b8fa3"><span style="display:inline-block;animation:scanPulse 1.2s ease-in-out infinite;font-size:1.5rem">&#9696;</span><div style="margin-top:0.75rem">Extracting pending calls\u2026</div></div>';
     document.getElementById('analyze-overlay').classList.add('open');
 
-    try {
-        const res = await fetch('/api/analysis/extract', { method: 'POST' });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        _analyzePromptText = data.prompt;
+    const { analyze, junk } = _triageCalls();
 
-        // Build step 1 content
-        const analyzed = new Set(DATA.mentions.map(m => m.call_id));
-        const pending = DATA.calls.filter(c => c.pending_analysis || !analyzed.has(c.id));
-        let html = renderAnalyzeSteps(1);
-        if (pending.length > 0) {
-            html += '<div class="analyze-pending">' + pending.length + ' call' + (pending.length === 1 ? '' : 's') + ' pending analysis</div>';
-            html += '<div style="margin-bottom:0.75rem;font-size:0.85rem;color:#8b8fa3;max-height:120px;overflow-y:auto">';
-            pending.forEach(c => { html += '<div style="padding:0.2rem 0">' + esc(c.title) + ' <span style="color:#555a6e">(' + c.date + ')</span></div>'; });
-            html += '</div>';
-        } else {
-            html += '<div style="color:#4ade80;font-weight:600;font-size:0.9rem;margin-bottom:0.75rem">All calls analyzed</div>';
-        }
-        html += '<div class="analyze-info">Copy the analysis prompt below, paste into Claude.ai, and bring back the JSON response.</div>';
+    let html = renderAnalyzeSteps(1);
+
+    if (analyze.length === 0 && junk.length === 0) {
+        html += '<div style="color:#4ade80;font-weight:600;font-size:0.95rem;margin-bottom:0.75rem">All calls analyzed</div>';
         body.innerHTML = html;
-
-        // Footer: copy prompt button
-        info.textContent = data.pending_count + ' call' + (data.pending_count === 1 ? '' : 's') + ' to analyze';
-        btn.textContent = 'Copy Analysis Prompt';
+        info.textContent = 'Nothing to do';
+        btn.textContent = 'Close';
         btn.disabled = false;
         btn.className = 'scan-process-btn';
-        btn.onclick = function() {
-            navigator.clipboard.writeText(_analyzePromptText).then(() => {
-                btn.textContent = 'Copied!';
-                btn.classList.add('copied');
-                setTimeout(() => analyzeGoToStep2(), 600);
-            });
-        };
+        btn.onclick = function() { closeAnalyzeModal(); };
         footer.style.display = 'flex';
-    } catch (err) {
-        body.innerHTML = renderAnalyzeSteps(1) + '<div style="color:#ff6b6b;font-size:0.9rem">Extract failed: ' + esc(err.message) + '</div>';
+        return;
     }
+
+    // Build triage summary
+    if (analyze.length > 0) {
+        html += '<div style="font-weight:600;color:#4ade80;font-size:0.85rem;margin-bottom:0.4rem">ANALYZE (' + analyze.length + ')</div>';
+        html += '<div style="margin-bottom:0.75rem;font-size:0.82rem;color:#c5c8d6;max-height:120px;overflow-y:auto">';
+        analyze.forEach(c => {
+            html += '<div style="padding:0.2rem 0">[' + c.id + '] ' + esc(c.title) + ' <span style="color:#8b8fa3">\u2014 ' + c._words + 'w</span>';
+            if (c._warn) html += ' <span style="color:#f0a030;font-size:0.78rem">' + esc(c._warn) + '</span>';
+            html += '</div>';
+        });
+        html += '</div>';
+    }
+    if (junk.length > 0) {
+        html += '<div style="font-weight:600;color:#f0a030;font-size:0.85rem;margin-bottom:0.4rem">JUNK / SKIP (' + junk.length + ')</div>';
+        html += '<div style="margin-bottom:0.75rem;font-size:0.82rem;color:#8b8fa3;max-height:120px;overflow-y:auto">';
+        junk.forEach(c => {
+            html += '<div style="padding:0.2rem 0">[' + c.id + '] ' + esc(c.title) + ' <span style="color:#555a6e">\u2014 ' + c._reason + '</span></div>';
+        });
+        html += '</div>';
+    }
+
+    body.innerHTML = html;
+
+    // Build CC command
+    let cmd = 'Run the analysis workflow per CLAUDE.md.\nTriage already done \u2014 here are the calls:\n\n';
+    if (analyze.length > 0) {
+        cmd += 'ANALYZE (one at a time):\n';
+        analyze.forEach(c => {
+            cmd += '[' + c.id + '] ' + c.title + ' \u2014 ' + c._words + ' words';
+            if (c._warn) cmd += ' (' + c._warn + ')';
+            cmd += '\n';
+        });
+        cmd += '\n';
+    }
+    if (junk.length > 0) {
+        cmd += 'JUNK (mark as processed, no analysis):\n';
+        junk.forEach(c => { cmd += '[' + c.id + '] ' + c.title + ' \u2014 ' + c._words + ' words (' + c._reason + ')\n'; });
+        cmd += '\n';
+    }
+    cmd += 'Process one call at a time. After each: validate --fix, inject, confirm dashboard updated.';
+    _analyzeCCCommand = cmd;
+
+    // Footer
+    const total = analyze.length + junk.length;
+    info.textContent = total + ' pending call' + (total === 1 ? '' : 's');
+    btn.textContent = 'Copy CC Command';
+    btn.disabled = false;
+    btn.className = 'scan-process-btn';
+    btn.onclick = function() {
+        navigator.clipboard.writeText(_analyzeCCCommand).then(() => {
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => analyzeGoToStep2(), 600);
+        });
+    };
+    footer.style.display = 'flex';
 }
 
 function analyzeGoToStep2() {
@@ -4153,98 +4235,19 @@ function analyzeGoToStep2() {
     const btn = document.getElementById('analyze-action-btn');
 
     let html = renderAnalyzeSteps(2);
-    html += '<div style="font-size:0.85rem;color:#8b8fa3;margin-bottom:0.75rem">Paste the JSON response from Claude below:</div>';
-    html += '<textarea class="analyze-textarea" id="analyze-paste-area" placeholder="Paste Claude\'s JSON response here\u2026"></textarea>';
-    html += '<div id="analyze-parse-error" style="color:#ff6b6b;font-size:0.8rem;margin-top:0.5rem;display:none"></div>';
+    html += '<div style="text-align:center;padding:2rem 0">';
+    html += '<div style="font-size:1.5rem;margin-bottom:0.75rem">&#10003;</div>';
+    html += '<div style="color:#c5c8d6;font-size:0.9rem;font-weight:600;margin-bottom:0.5rem">Command copied</div>';
+    html += '<div style="color:#8b8fa3;font-size:0.82rem">Paste into Claude Code and let it run the analysis workflow.</div>';
+    html += '</div>';
     body.innerHTML = html;
 
-    info.textContent = 'Paste JSON, then inject';
-    btn.textContent = 'Inject & Validate';
-    btn.disabled = true;
+    info.textContent = '';
+    btn.textContent = 'Done \u2014 Refresh Dashboard';
+    btn.disabled = false;
     btn.className = 'scan-process-btn';
-    btn.onclick = function() { analyzeGoToStep3(); };
-
-    // Enable button when textarea has content
-    document.getElementById('analyze-paste-area').addEventListener('input', function() {
-        btn.disabled = !this.value.trim();
-        document.getElementById('analyze-parse-error').style.display = 'none';
-    });
-}
-
-async function analyzeGoToStep3() {
-    const textarea = document.getElementById('analyze-paste-area');
-    const errorDiv = document.getElementById('analyze-parse-error');
-    const rawText = textarea.value.trim();
-
-    // Parse JSON — keep textarea content on failure
-    let parsed;
-    try {
-        parsed = JSON.parse(rawText);
-    } catch (e) {
-        errorDiv.textContent = 'Invalid JSON: ' + e.message;
-        errorDiv.style.display = 'block';
-        return;
-    }
-
-    _analyzeStep = 3;
-    const body = document.getElementById('analyze-modal-body');
-    const info = document.getElementById('analyze-modal-info');
-    const btn = document.getElementById('analyze-action-btn');
-
-    // Show loading
-    btn.disabled = true;
-    btn.textContent = 'Injecting\u2026';
-    btn.classList.add('processing');
-    body.innerHTML = renderAnalyzeSteps(3) + '<div style="text-align:center;padding:2rem 0;color:#8b8fa3"><span style="display:inline-block;animation:scanPulse 1.2s ease-in-out infinite;font-size:1.5rem">&#9696;</span><div style="margin-top:0.75rem">Validating and injecting results\u2026</div></div>';
-
-    try {
-        const res = await fetch('/api/analysis/inject', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(parsed)
-        });
-        const result = await res.json();
-        if (result.error) throw new Error(result.error);
-
-        // Build results log
-        let html = renderAnalyzeSteps(4); // all done
-        if (result.success) {
-            html += '<div style="color:#4ade80;font-weight:600;font-size:0.9rem;margin-bottom:0.75rem">Analysis injected successfully</div>';
-        } else {
-            html += '<div style="color:#f0a030;font-weight:600;font-size:0.9rem;margin-bottom:0.75rem">Inject completed with warnings</div>';
-        }
-        let log = '';
-        if (result.validate_output) log += '--- Validate ---\n' + result.validate_output + '\n';
-        if (result.inject_output) log += '--- Inject ---\n' + result.inject_output;
-        html += '<div class="analyze-log">' + esc(log.trim()) + '</div>';
-        body.innerHTML = html;
-
-        // Replace global DATA and rebuild all tabs
-        if (result.data) {
-            DATA = result.data;
-            updateStats();
-            buildFeatures();
-            buildCalls();
-            buildReport();
-            buildPersonas();
-            buildCompetitors();
-            buildProspecting();
-        }
-
-        info.textContent = '';
-        btn.textContent = 'Done';
-        btn.disabled = false;
-        btn.className = 'scan-process-btn';
-        btn.onclick = function() { closeAnalyzeModal(); };
-        showToast('Analysis complete \u2014 dashboard updated');
-    } catch (err) {
-        body.innerHTML = renderAnalyzeSteps(3) + '<div style="color:#ff6b6b;font-size:0.9rem;margin-bottom:0.75rem">Inject failed: ' + esc(err.message) + '</div>';
-        info.textContent = '';
-        btn.textContent = 'Back to Paste';
-        btn.disabled = false;
-        btn.className = 'scan-process-btn';
-        btn.onclick = function() { analyzeGoToStep2(); };
-    }
+    btn.classList.remove('copied');
+    btn.onclick = function() { location.reload(); };
 }
 
 function closeAnalyzeModal() {

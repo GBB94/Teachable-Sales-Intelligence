@@ -63,6 +63,7 @@ BLACKLISTED_FEATURES: List[str] = []
 # ---------------------------------------------------------------------------
 DEFAULT_SCAN_TITLE_KEYWORDS: List[str] = [
     'followup', 'follow-up', 'follow up', 'teachable',
+    'zach mccall', 'jerome olaloye', 'kevin codde',
 ]
 
 
