@@ -13,6 +13,7 @@ import json
 import os
 import re
 import secrets
+import subprocess
 import sys
 import time
 import webbrowser
@@ -269,6 +270,67 @@ def scan_process():
     except Exception as e:
         print(f"[process] Error: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/analysis/extract', methods=['POST'])
+def analysis_extract():
+    """Step 1: Run extract to generate the analysis prompt for pending calls."""
+    try:
+        result = subprocess.run(
+            ['python3', 'analyze_features.py', 'extract', OUTPUT_PATH],
+            capture_output=True, text=True, timeout=30, cwd=REPO_DIR
+        )
+        output = result.stdout
+        pending = 0
+        for line in output.split('\n'):
+            if 'need analysis' in line:
+                m = re.search(r'(\d+) need analysis', line)
+                if m:
+                    pending = int(m.group(1))
+                break
+        return jsonify({"prompt": output, "pending_count": pending})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/analysis/inject', methods=['POST'])
+def analysis_inject():
+    """Step 2: Validate, then inject Claude's analysis JSON."""
+    import tempfile
+
+    body = request.get_json(force=True)
+    if not body:
+        return jsonify({"error": "No JSON body provided"}), 400
+
+    tmp = tempfile.NamedTemporaryFile(
+        mode='w', suffix='.json', delete=False, prefix='analysis_'
+    )
+    json.dump(body, tmp)
+    tmp.close()
+
+    try:
+        # Validate BEFORE inject so bad data doesn't get merged
+        validate_result = subprocess.run(
+            ['python3', 'analyze_features.py', 'validate', tmp.name],
+            capture_output=True, text=True, timeout=30, cwd=REPO_DIR
+        )
+        # Inject
+        inject_result = subprocess.run(
+            ['python3', 'analyze_features.py', 'inject', OUTPUT_PATH, tmp.name],
+            capture_output=True, text=True, timeout=60, cwd=REPO_DIR
+        )
+        # Reload fresh data
+        data = _load_existing_data()
+        return jsonify({
+            "success": inject_result.returncode == 0,
+            "inject_output": inject_result.stdout + inject_result.stderr,
+            "validate_output": validate_result.stdout + validate_result.stderr,
+            "data": data
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        os.unlink(tmp.name)
 
 
 @app.route('/api/exclude-competitor', methods=['POST'])

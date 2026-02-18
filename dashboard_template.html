@@ -1068,6 +1068,21 @@ body {
 .analyze-copy-btn.copied { background: #1a3a2a; color: #4ade80; }
 .analyze-pending { color: #f0a030; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.75rem; }
 
+/* Analysis wizard stepper */
+.analyze-steps { display:flex; gap:0; margin-bottom:1.25rem; }
+.analyze-step { flex:1; display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0; opacity:0.35; }
+.analyze-step.active { opacity:1; }
+.analyze-step.done { opacity:0.6; }
+.analyze-step-num { width:22px; height:22px; border-radius:50%; background:#2a2d40; color:#8b8fa3; font-size:0.72rem; font-weight:700; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; }
+.analyze-step.active .analyze-step-num { background:#4a7cff; color:#fff; }
+.analyze-step.done .analyze-step-num { background:#1a3a2a; color:#4ade80; }
+.analyze-step-label { font-size:0.78rem; color:#8b8fa3; }
+.analyze-step.active .analyze-step-label { color:#f0f1f4; font-weight:600; }
+.analyze-textarea { width:100%; min-height:180px; max-height:40vh; background:#0d0f16; border:1px solid #2a2d40; border-radius:8px; padding:0.75rem 1rem; font-family:'SF Mono','Fira Code',monospace; font-size:0.8rem; color:#c5cad1; resize:vertical; outline:none; box-sizing:border-box; }
+.analyze-textarea:focus { border-color:#4a7cff; }
+.analyze-textarea::placeholder { color:#3a3d50; }
+.analyze-log { background:#0d0f16; border:1px solid #2a2d40; border-radius:8px; padding:0.75rem 1rem; font-family:'SF Mono','Fira Code',monospace; font-size:0.75rem; color:#8b8fa3; max-height:200px; overflow-y:auto; white-space:pre-wrap; line-height:1.5; }
+
 /* Call list items in modal */
 .scan-call {
     display: flex; align-items: flex-start; gap: 0.75rem;
@@ -1502,14 +1517,18 @@ body {
     </div>
 </div>
 
-<!-- Analysis command modal -->
+<!-- Analysis wizard modal -->
 <div class="scan-overlay" id="analyze-overlay" onclick="if(event.target===this)closeAnalyzeModal()">
     <div class="scan-modal">
         <div class="scan-modal-hdr">
-            <h2>Run Analysis</h2>
+            <h2 id="analyze-modal-title">Run Analysis</h2>
             <button class="scan-modal-close" onclick="closeAnalyzeModal()">&times;</button>
         </div>
         <div class="scan-modal-body" id="analyze-modal-body">
+        </div>
+        <div class="scan-modal-footer" id="analyze-modal-footer" style="display:none">
+            <div class="scan-modal-info" id="analyze-modal-info"></div>
+            <button class="scan-process-btn" id="analyze-action-btn" disabled>Next</button>
         </div>
     </div>
 </div>
@@ -1527,7 +1546,7 @@ body {
 </div>
 
 <script>
-const DATA = {{DATA_JSON}};
+let DATA = {{DATA_JSON}};
 const ACTION_PASSWORD = 'sdflkjei';
 let _pwResolve = null;
 function checkActionPassword(actionLabel) {
@@ -4060,39 +4079,177 @@ function closeScanModal() {
     document.getElementById('scan-overlay').classList.remove('open');
 }
 
+// ---- Analysis wizard (3-step: extract → paste → inject) ----
+let _analyzeStep = 1;
+let _analyzePromptText = '';
+
+function renderAnalyzeSteps(current) {
+    const labels = ['Extract', 'Analyze', 'Inject'];
+    return '<div class="analyze-steps">' + labels.map((l, i) => {
+        const n = i + 1;
+        const cls = n < current ? 'done' : n === current ? 'active' : '';
+        const icon = n < current ? '&#10003;' : n;
+        return '<div class="analyze-step ' + cls + '"><span class="analyze-step-num">' + icon + '</span><span class="analyze-step-label">' + l + '</span></div>';
+    }).join('') + '</div>';
+}
+
 async function showAnalyzeModal() {
     if (!await checkActionPassword('Run analysis')) return;
-    const analyzed = new Set(DATA.mentions.map(m => m.call_id));
-    const pending = DATA.calls.filter(c => c.pending_analysis || !analyzed.has(c.id));
+    _analyzeStep = 1;
+    _analyzePromptText = '';
     const body = document.getElementById('analyze-modal-body');
-    const cmd = 'python3 analyze_features.py extract test_output/index.html';
-    let html = '';
-    if (pending.length > 0) {
-        html += '<div class="analyze-pending">' + pending.length + ' call' + (pending.length === 1 ? '' : 's') + ' pending analysis</div>';
-        html += '<div style="margin-bottom:0.75rem;font-size:0.85rem;color:#8b8fa3">';
-        pending.forEach(c => {
-            html += '<div style="padding:0.2rem 0">' + esc(c.title) + ' <span style="color:#555a6e">(' + c.date + ')</span></div>';
-        });
-        html += '</div>';
-    } else {
-        html += '<div style="color:#4ade80;font-weight:600;font-size:0.9rem;margin-bottom:0.75rem">All calls analyzed</div>';
-    }
-    html += '<div style="font-size:0.85rem;color:#8b8fa3;margin-bottom:0.5rem">Run this in Claude Code:</div>';
-    html += '<div class="analyze-cmd">' + esc(cmd) + '</div>';
-    html += '<div class="analyze-info">This will extract pending transcripts for CC to analyze. CC will read the transcripts, extract features, assign segments, and inject results back into the dashboard. After inject, commit and push to update Netlify.</div>';
-    html += '<button class="analyze-copy-btn" onclick="copyAnalyzeCmd(this)">Copy Command</button>';
-    body.innerHTML = html;
+    const footer = document.getElementById('analyze-modal-footer');
+    const info = document.getElementById('analyze-modal-info');
+    const btn = document.getElementById('analyze-action-btn');
+
+    // Show loading state
+    footer.style.display = 'none';
+    body.innerHTML = renderAnalyzeSteps(1) + '<div style="text-align:center;padding:2rem 0;color:#8b8fa3"><span style="display:inline-block;animation:scanPulse 1.2s ease-in-out infinite;font-size:1.5rem">&#9696;</span><div style="margin-top:0.75rem">Extracting pending calls\u2026</div></div>';
     document.getElementById('analyze-overlay').classList.add('open');
+
+    try {
+        const res = await fetch('/api/analysis/extract', { method: 'POST' });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        _analyzePromptText = data.prompt;
+
+        // Build step 1 content
+        const analyzed = new Set(DATA.mentions.map(m => m.call_id));
+        const pending = DATA.calls.filter(c => c.pending_analysis || !analyzed.has(c.id));
+        let html = renderAnalyzeSteps(1);
+        if (pending.length > 0) {
+            html += '<div class="analyze-pending">' + pending.length + ' call' + (pending.length === 1 ? '' : 's') + ' pending analysis</div>';
+            html += '<div style="margin-bottom:0.75rem;font-size:0.85rem;color:#8b8fa3;max-height:120px;overflow-y:auto">';
+            pending.forEach(c => { html += '<div style="padding:0.2rem 0">' + esc(c.title) + ' <span style="color:#555a6e">(' + c.date + ')</span></div>'; });
+            html += '</div>';
+        } else {
+            html += '<div style="color:#4ade80;font-weight:600;font-size:0.9rem;margin-bottom:0.75rem">All calls analyzed</div>';
+        }
+        html += '<div class="analyze-info">Copy the analysis prompt below, paste into Claude.ai, and bring back the JSON response.</div>';
+        body.innerHTML = html;
+
+        // Footer: copy prompt button
+        info.textContent = data.pending_count + ' call' + (data.pending_count === 1 ? '' : 's') + ' to analyze';
+        btn.textContent = 'Copy Analysis Prompt';
+        btn.disabled = false;
+        btn.className = 'scan-process-btn';
+        btn.onclick = function() {
+            navigator.clipboard.writeText(_analyzePromptText).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => analyzeGoToStep2(), 600);
+            });
+        };
+        footer.style.display = 'flex';
+    } catch (err) {
+        body.innerHTML = renderAnalyzeSteps(1) + '<div style="color:#ff6b6b;font-size:0.9rem">Extract failed: ' + esc(err.message) + '</div>';
+    }
 }
+
+function analyzeGoToStep2() {
+    _analyzeStep = 2;
+    const body = document.getElementById('analyze-modal-body');
+    const info = document.getElementById('analyze-modal-info');
+    const btn = document.getElementById('analyze-action-btn');
+
+    let html = renderAnalyzeSteps(2);
+    html += '<div style="font-size:0.85rem;color:#8b8fa3;margin-bottom:0.75rem">Paste the JSON response from Claude below:</div>';
+    html += '<textarea class="analyze-textarea" id="analyze-paste-area" placeholder="Paste Claude\'s JSON response here\u2026"></textarea>';
+    html += '<div id="analyze-parse-error" style="color:#ff6b6b;font-size:0.8rem;margin-top:0.5rem;display:none"></div>';
+    body.innerHTML = html;
+
+    info.textContent = 'Paste JSON, then inject';
+    btn.textContent = 'Inject & Validate';
+    btn.disabled = true;
+    btn.className = 'scan-process-btn';
+    btn.onclick = function() { analyzeGoToStep3(); };
+
+    // Enable button when textarea has content
+    document.getElementById('analyze-paste-area').addEventListener('input', function() {
+        btn.disabled = !this.value.trim();
+        document.getElementById('analyze-parse-error').style.display = 'none';
+    });
+}
+
+async function analyzeGoToStep3() {
+    const textarea = document.getElementById('analyze-paste-area');
+    const errorDiv = document.getElementById('analyze-parse-error');
+    const rawText = textarea.value.trim();
+
+    // Parse JSON — keep textarea content on failure
+    let parsed;
+    try {
+        parsed = JSON.parse(rawText);
+    } catch (e) {
+        errorDiv.textContent = 'Invalid JSON: ' + e.message;
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    _analyzeStep = 3;
+    const body = document.getElementById('analyze-modal-body');
+    const info = document.getElementById('analyze-modal-info');
+    const btn = document.getElementById('analyze-action-btn');
+
+    // Show loading
+    btn.disabled = true;
+    btn.textContent = 'Injecting\u2026';
+    btn.classList.add('processing');
+    body.innerHTML = renderAnalyzeSteps(3) + '<div style="text-align:center;padding:2rem 0;color:#8b8fa3"><span style="display:inline-block;animation:scanPulse 1.2s ease-in-out infinite;font-size:1.5rem">&#9696;</span><div style="margin-top:0.75rem">Validating and injecting results\u2026</div></div>';
+
+    try {
+        const res = await fetch('/api/analysis/inject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(parsed)
+        });
+        const result = await res.json();
+        if (result.error) throw new Error(result.error);
+
+        // Build results log
+        let html = renderAnalyzeSteps(4); // all done
+        if (result.success) {
+            html += '<div style="color:#4ade80;font-weight:600;font-size:0.9rem;margin-bottom:0.75rem">Analysis injected successfully</div>';
+        } else {
+            html += '<div style="color:#f0a030;font-weight:600;font-size:0.9rem;margin-bottom:0.75rem">Inject completed with warnings</div>';
+        }
+        let log = '';
+        if (result.validate_output) log += '--- Validate ---\n' + result.validate_output + '\n';
+        if (result.inject_output) log += '--- Inject ---\n' + result.inject_output;
+        html += '<div class="analyze-log">' + esc(log.trim()) + '</div>';
+        body.innerHTML = html;
+
+        // Replace global DATA and rebuild all tabs
+        if (result.data) {
+            DATA = result.data;
+            updateStats();
+            buildFeatures();
+            buildCalls();
+            buildReport();
+            buildPersonas();
+            buildCompetitors();
+            buildProspecting();
+        }
+
+        info.textContent = '';
+        btn.textContent = 'Done';
+        btn.disabled = false;
+        btn.className = 'scan-process-btn';
+        btn.onclick = function() { closeAnalyzeModal(); };
+        showToast('Analysis complete \u2014 dashboard updated');
+    } catch (err) {
+        body.innerHTML = renderAnalyzeSteps(3) + '<div style="color:#ff6b6b;font-size:0.9rem;margin-bottom:0.75rem">Inject failed: ' + esc(err.message) + '</div>';
+        info.textContent = '';
+        btn.textContent = 'Back to Paste';
+        btn.disabled = false;
+        btn.className = 'scan-process-btn';
+        btn.onclick = function() { analyzeGoToStep2(); };
+    }
+}
+
 function closeAnalyzeModal() {
     document.getElementById('analyze-overlay').classList.remove('open');
-}
-function copyAnalyzeCmd(btn) {
-    navigator.clipboard.writeText('python3 analyze_features.py extract test_output/index.html').then(() => {
-        btn.textContent = 'Copied!';
-        btn.classList.add('copied');
-        setTimeout(() => { btn.textContent = 'Copy Command'; btn.classList.remove('copied'); }, 2000);
-    });
+    document.getElementById('analyze-modal-footer').style.display = 'none';
 }
 
 async function syncToSheets(btn) {
