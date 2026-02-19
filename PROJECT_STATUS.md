@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
-**Last updated:** 2026-02-18
-**Updated by:** Opus 4.6 (session 14 — analysis workflow run)
+**Last updated:** 2026-02-19
+**Updated by:** Opus 4.6 (session 15 — Kevin bypass + 7 call analysis)
 
 ---
 
@@ -151,7 +151,15 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 
 Nothing currently in progress.
 
-### Completed This Session (2026-02-18)
+### Completed This Session (2026-02-19)
+- [x] Kevin bypass: `bypass_keywords_owners` field on `CallFilter` in `models.py`; `_matches_filter()` in `client.py` skips title keyword check for Kevin's calls; `server.py` passes `bypass_keywords_owners=['kevin.codde']`
+- [x] Fixed `analyze_features.py` to handle both `let DATA =` and `const DATA =` in dashboard HTML (regex and index matching)
+- [x] 7 new calls analyzed (38 features total): KeshArt (3), Perry Lifestyle Support (9), Axio-Formation (10), CoxCoach (5), Herd (9), Media Pro (2), Connect with Teachable/no-show (0)
+- [x] 6 additional junk calls marked as processed (empty/failed transcripts)
+- [x] New competitor mentions: Thinkific (Perry Lifestyle Support), Digiforma/NEEDS_REVIEW (Axio-Formation)
+- [x] All 30 calls now accounted for: 24 analyzed, 6 junk (prev session) + 6 junk (this session) = 30 total, 0 pending
+
+### Completed Previous Session (2026-02-18)
 - [x] CLAUDE.md: Added full Analysis Workflow protocol (Step 0 Triage, Step 1 Analyze, Step 2 Post-analysis)
 - [x] Dashboard wizard rewritten: 3-step extract/paste/inject → CC-prep tool (triage/copy/done)
 - [x] Triage logic: auto-junk <100w, flag suspicious, recognize "Teachable" and rep names in titles
@@ -258,15 +266,16 @@ sales-intelligence/
 
 ## Current Data
 
-- **23 calls** in dashboard (17 analyzed, 6 junk, 0 pending)
-- **124 feature mentions** across **10 categories** and **17 analyzed calls**
+- **30 calls** in dashboard (24 analyzed, 12 junk, 0 pending)
+- **162 feature mentions** across **10 categories** and **24 analyzed calls**
 - **10 categories**, zero in "Other" — validated at inject time
 - **9 segments** defined in `segments.json` — validated at inject time
-- **All 17 analyzed calls have segments assigned**
-- **marketing_data** populated on all 17 external analyzed calls
-- **16 companies**: BADM, Biblical Counseling Org, Coxswain Training Co., DMEMI Fitness Academy, Dot Compliance, ESI, Land Transport Authority, New York Epoxy, Pure Life Ministries, Red Rover, Simon & Sabine, Simon Davey, Six String Fingerpicking, Speravita, Transcend Analytics, Unite Health
-- **Competitor mentions**: Kajabi (currently_using by Coxswain Training)
+- **All 24 analyzed calls have segments assigned**
+- **marketing_data** populated on all 24 external analyzed calls
+- **23 companies**: BADM, Axio-Formation, Biblical Counseling Org, CoxCoach, Coxswain Training Co., DMEMI Fitness Academy, Dot Compliance, ESI, Herd, KeshArt, Land Transport Authority, Media Pro, New York Epoxy, Perry Lifestyle Support, Pure Life Ministries, Red Rover, Simon & Sabine, Simon Davey, Six String Fingerpicking, Speravita, Transcend Analytics, Unite Health (plus 1 no-show)
+- **Competitor mentions**: Kajabi (currently_using by Coxswain Training), Thinkific (evaluated by Perry Lifestyle Support), Digiforma/NEEDS_REVIEW (switching_from by Axio-Formation)
 - Default scan filters: `owners=[zach.mccall, jerome.olaloye, kevin.codde]`, `keywords=followup/follow-up/follow up/teachable/zach mccall/jerome olaloye/kevin codde`, `days=14`, `limit=10`
+- **Kevin bypass**: Kevin Codde's calls bypass title keyword filters (all his calls are pulled regardless of title)
 
 ---
 

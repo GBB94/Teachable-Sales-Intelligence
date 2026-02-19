@@ -201,6 +201,7 @@ def scan_preview():
             limit=SCAN_LIMIT,
             title_keywords=SCAN_TITLE_KEYWORDS,
             owner_emails=SCAN_OWNERS,
+            bypass_keywords_owners=['kevin.codde'],
         )
 
         print(f"[preview] Fetching calls (days_back={SCAN_DAYS}, limit={SCAN_LIMIT}, owners={SCAN_OWNERS})...")

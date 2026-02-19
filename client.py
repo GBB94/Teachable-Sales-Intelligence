@@ -210,11 +210,15 @@ class FirefliesRetriever:
                 return False
 
         # Title keywords (normalize hyphens/spaces)
+        # Skip keyword check for owners in bypass_keywords_owners
         if filter_criteria.title_keywords:
-            title = raw_call.get("title", "").lower()
-            title_norm = title.replace("-", " ").replace("_", " ")
-            if not any(kw.lower() in title or kw.lower() in title_norm for kw in filter_criteria.title_keywords):
-                return False
+            organizer = raw_call.get("organizer_email", "").lower()
+            bypass = filter_criteria.bypass_keywords_owners or []
+            if not any(b.lower() in organizer for b in bypass):
+                title = raw_call.get("title", "").lower()
+                title_norm = title.replace("-", " ").replace("_", " ")
+                if not any(kw.lower() in title or kw.lower() in title_norm for kw in filter_criteria.title_keywords):
+                    return False
 
         # Transcript keywords (most expensive — do last)
         if filter_criteria.transcript_keywords:

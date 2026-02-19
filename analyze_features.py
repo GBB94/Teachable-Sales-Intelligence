@@ -131,16 +131,15 @@ def _extract_data_from_html(html_path: str) -> dict:
     with open(html_path, "r") as f:
         html = f.read()
 
-    # The data is on a line like: const DATA = {...};
-    match = re.search(r"const DATA = ({.*?});\s*$", html, re.MULTILINE | re.DOTALL)
+    # The data is on a line like: let DATA = {...}; or const DATA = {...};
+    match = re.search(r"(?:let|const) DATA = ({.*?});\s*$", html, re.MULTILINE | re.DOTALL)
     if not match:
         print("Error: Could not find DATA JSON in dashboard HTML.")
         sys.exit(1)
 
-    # The JSON can be very large; find the correct end boundary
-    # We know it starts with { and the line ends with };
-    # Use a more targeted approach: find "const DATA = " and parse from there
-    start_marker = "const DATA = "
+    # Find the actual marker used (let or const)
+    marker_match = re.search(r"(let|const) DATA = ", html)
+    start_marker = marker_match.group(0)
     start_idx = html.index(start_marker) + len(start_marker)
     # Find the matching end — the JSON object ends with }; on the same logical line
     # We'll use json.JSONDecoder to find the end
@@ -156,8 +155,9 @@ def _write_data_to_html(html_path: str, data: dict):
 
     data_json = json.dumps(data)
 
-    # Replace the const DATA = ...; line
-    start_marker = "const DATA = "
+    # Replace the let/const DATA = ...; line
+    marker_match = re.search(r"(let|const) DATA = ", html)
+    start_marker = marker_match.group(0)
     start_idx = html.index(start_marker)
     # Find the end of the JSON + semicolon
     json_start = start_idx + len(start_marker)

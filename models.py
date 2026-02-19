@@ -114,6 +114,9 @@ class CallFilter:
     title_keywords: Optional[List[str]] = None
     transcript_keywords: Optional[List[str]] = None
 
+    # Owners whose calls bypass title_keywords filtering
+    bypass_keywords_owners: Optional[List[str]] = None
+
     # Metadata filtering
     min_duration: Optional[int] = None   # seconds
     max_duration: Optional[int] = None   # seconds
