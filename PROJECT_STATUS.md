@@ -1,7 +1,7 @@
 # PROJECT STATUS
 
-**Last updated:** 2026-02-19
-**Updated by:** Opus 4.6 (session 15 — Kevin bypass + 7 call analysis)
+**Last updated:** 2026-02-22
+**Updated by:** Opus 4.6 (session 16 — 12 call analysis + 10 junk)
 
 ---
 
@@ -151,7 +151,29 @@ Teachable Sales Intelligence. Pulls call transcripts from Fireflies, uses Claude
 
 Nothing currently in progress.
 
-### Completed This Session (2026-02-19)
+### Completed This Session (2026-02-22)
+- [x] Fixed `server.py` `_extract_data_from_html()` to check `let DATA =` first with `const DATA =` fallback (was broken from prior session rename)
+- [x] Increased `SCAN_LIMIT` from 10 to 50 in `server.py`
+- [x] 12 new calls analyzed (148 features total):
+  - City of Albuquerque / Tom Darling (11 features) — Government & Public Sector Education
+  - Meeting with Teachable / Jeremiah Temoney (10 features) — Corporate Education & Customer Training
+  - Motors 1 / Mila Oliveira (14 features) — Professional Training & Development
+  - RefineryPass / Kyle (15 features) — Continuing Education & Credentialing
+  - Train the Trainers / Airielle Taylor (11 features) — Professional Training & Development
+  - Lines for Life / Crystal Larson (23 features) — Health, Wellness & Fitness
+  - Koltin Demo / Alejandro Arriaga (13 features) — Industry Associations & Membership Orgs
+  - Marriage365 / Casey Caston (13 features) — Coaches & Consultants
+  - Success Gyan / Sawan Kapoor (10 features) — Coaches & Consultants
+  - Jozeph Danial (8 features) — Course Creators & Digital Educators
+  - Koltin / Alejandro Arriaga (11 features) — Health, Wellness & Fitness
+  - Fundacion Flor / Ines Gerardi (9 features) — Professional Training & Development
+- [x] 10 junk calls marked as processed (empty/internal/failed transcripts)
+- [x] New competitor mentions: Kajabi (Marriage365), Thinkific (RefineryPass), Docebo (RefineryPass), Udemy (Marriage365), Skillshare (City of Albuquerque)
+- [x] 5 NEEDS_REVIEW competitors: Digiforma (prev), Knowledge City, Articulate 360, TagMango, 1 unnamed (Jozeph Danial)
+- [x] All calls now accounted for: 36 analyzed, 22 junk, 0 pending
+- [x] Clay snapshot auto-generated: 10 seeds, 7 segments
+
+### Completed Previous Session (2026-02-19)
 - [x] Kevin bypass: `bypass_keywords_owners` field on `CallFilter` in `models.py`; `_matches_filter()` in `client.py` skips title keyword check for Kevin's calls; `server.py` passes `bypass_keywords_owners=['kevin.codde']`
 - [x] Fixed `analyze_features.py` to handle both `let DATA =` and `const DATA =` in dashboard HTML (regex and index matching)
 - [x] 7 new calls analyzed (38 features total): KeshArt (3), Perry Lifestyle Support (9), Axio-Formation (10), CoxCoach (5), Herd (9), Media Pro (2), Connect with Teachable/no-show (0)
@@ -159,7 +181,7 @@ Nothing currently in progress.
 - [x] New competitor mentions: Thinkific (Perry Lifestyle Support), Digiforma/NEEDS_REVIEW (Axio-Formation)
 - [x] All 30 calls now accounted for: 24 analyzed, 6 junk (prev session) + 6 junk (this session) = 30 total, 0 pending
 
-### Completed Previous Session (2026-02-18)
+### Completed Session (2026-02-18)
 - [x] CLAUDE.md: Added full Analysis Workflow protocol (Step 0 Triage, Step 1 Analyze, Step 2 Post-analysis)
 - [x] Dashboard wizard rewritten: 3-step extract/paste/inject → CC-prep tool (triage/copy/done)
 - [x] Triage logic: auto-junk <100w, flag suspicious, recognize "Teachable" and rep names in titles
@@ -266,15 +288,17 @@ sales-intelligence/
 
 ## Current Data
 
-- **30 calls** in dashboard (24 analyzed, 12 junk, 0 pending)
-- **162 feature mentions** across **10 categories** and **24 analyzed calls**
+- **52 calls** in dashboard (36 analyzed, 22 junk, 0 pending)
+- **310 feature mentions** across **10 categories** and **36 analyzed calls**
 - **10 categories**, zero in "Other" — validated at inject time
 - **9 segments** defined in `segments.json` — validated at inject time
-- **All 24 analyzed calls have segments assigned**
-- **marketing_data** populated on all 24 external analyzed calls
-- **23 companies**: BADM, Axio-Formation, Biblical Counseling Org, CoxCoach, Coxswain Training Co., DMEMI Fitness Academy, Dot Compliance, ESI, Herd, KeshArt, Land Transport Authority, Media Pro, New York Epoxy, Perry Lifestyle Support, Pure Life Ministries, Red Rover, Simon & Sabine, Simon Davey, Six String Fingerpicking, Speravita, Transcend Analytics, Unite Health (plus 1 no-show)
-- **Competitor mentions**: Kajabi (currently_using by Coxswain Training), Thinkific (evaluated by Perry Lifestyle Support), Digiforma/NEEDS_REVIEW (switching_from by Axio-Formation)
-- Default scan filters: `owners=[zach.mccall, jerome.olaloye, kevin.codde]`, `keywords=followup/follow-up/follow up/teachable/zach mccall/jerome olaloye/kevin codde`, `days=14`, `limit=10`
+- **All 36 analyzed calls have segments assigned**
+- **marketing_data** populated on all 36 external analyzed calls
+- **35 companies**: BADM, Axio-Formation, Biblical Counseling Org, City of Albuquerque, CoxCoach, Coxswain Training Co., DMEMI Fitness Academy, Dot Compliance, ESI, Fundacion Flor, Herd, Jozeph Danial, KeshArt, Koltin, Land Transport Authority, Lines for Life, Marriage365, Media Pro, Motors 1, New York Epoxy, Perry Lifestyle Support, Pure Life Ministries, Red Rover, RefineryPass, Simon & Sabine, Simon Davey, Six String Fingerpicking, Speravita, Success Gyan, Teachable (internal — Jeremiah Temoney), Train the Trainers, Transcend Analytics, Unite Health (plus junk/no-shows)
+- **Competitor mentions**: 12 total — Kajabi (2), Thinkific (2), NEEDS_REVIEW (5), Skillshare (1), Docebo (1), Udemy (1)
+- **NEEDS_REVIEW competitors**: Digiforma, Knowledge City, Articulate 360, TagMango, 1 unnamed
+- **Clay snapshot**: 10 seeds, 7 segments
+- Default scan filters: `owners=[zach.mccall, jerome.olaloye, kevin.codde]`, `keywords=followup/follow-up/follow up/teachable/zach mccall/jerome olaloye/kevin codde`, `days=14`, `limit=50`
 - **Kevin bypass**: Kevin Codde's calls bypass title keyword filters (all his calls are pulled regardless of title)
 
 ---

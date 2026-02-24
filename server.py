@@ -34,7 +34,7 @@ from models import DEFAULT_SCAN_TITLE_KEYWORDS
 # Config
 # ---------------------------------------------------------------------------
 SCAN_DAYS = 14
-SCAN_LIMIT = 10
+SCAN_LIMIT = 50
 SCAN_TITLE_KEYWORDS = DEFAULT_SCAN_TITLE_KEYWORDS
 SCAN_OWNERS = ['zach.mccall', 'jerome.olaloye', 'kevin.codde']
 SCAN_EXCLUDE_DOMAINS = ['teachable.com']
