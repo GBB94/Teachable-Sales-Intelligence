@@ -93,8 +93,12 @@ def _extract_data_from_html(path):
     with open(path, 'r') as f:
         html = f.read()
     # Use JSONDecoder for robust parsing of large embedded JSON
-    start_marker = "const DATA = "
+    start_marker = "let DATA = "
     idx = html.find(start_marker)
+    if idx == -1:
+        # Fallback for older dashboards that used const
+        start_marker = "const DATA = "
+        idx = html.find(start_marker)
     if idx == -1:
         return None
     json_start = idx + len(start_marker)
