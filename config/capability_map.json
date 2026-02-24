@@ -1,0 +1,1791 @@
+{
+  "version": 2,
+  "source": "Teachable_Platform_Expert_Skill.md",
+  "source_date": "2026-02",
+  "last_generated": "2026-02-24T00:00:00Z",
+  "feature_count": 198,
+  "mapping": {
+    "AI Chatbot / Support Bot": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Platform Features — not listed",
+      "coverage_notes": "No native AI chatbot or support bot. Third-party tools like Intercom/Drift can be embedded via code snippets.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "AI Tutor / Copilot Integration": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "AI Features section",
+      "coverage_notes": "Teachable has AI Course Starter and AI Quiz Generator, but no in-course AI tutor or copilot for learners.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Access Duration / Expiration": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Settings — enrollment duration",
+      "coverage_notes": "Courses can be set to expire after a number of days from enrollment. No calendar-date expiration per student.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Admin / Teacher Reporting": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Reports & Analytics",
+      "coverage_notes": "Course-level and student-level reports available. No custom dashboard builder or advanced role-based reporting views.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Affiliate / Referral Program": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Affiliate Program (Builder+)",
+      "coverage_notes": "Built-in affiliate program with custom commission rates, cookie duration, and affiliate dashboard. Builder plan and above.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Asynchronous / Self-paced Learning": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Types — self-paced",
+      "coverage_notes": "Core product model. All courses are self-paced by default with optional drip scheduling.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Auto-tagging / User Segmentation": {
+      "tier": "workaround",
+      "plan_required": "Growth",
+      "expert_ref": "Webhooks + API (Growth+)",
+      "coverage_notes": "No native auto-tagging. Achievable via webhooks firing on enrollment/completion events to external CRM or via API custom fields.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Automated Assessment Delivery": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Quizzes & Assessments",
+      "coverage_notes": "Auto-graded quizzes with multiple choice and short answer. No timed quizzes, question banks, or manual grading.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Automated Certificates": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Certificates section",
+      "coverage_notes": "Certificates of completion auto-issued on course finish. 3 templates. Builder+ only. No QR codes, serial numbers, or external credential storage.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Automated Report Export": {
+      "tier": "workaround",
+      "plan_required": "Growth",
+      "expert_ref": "Reports + API",
+      "coverage_notes": "Manual CSV export from dashboard. Automated export possible via API (Growth+) or Zapier (Builder+). No native scheduled reports.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Avoid Email for Document Distribution": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Digital Downloads + Course Content",
+      "coverage_notes": "PDFs and documents can be delivered as course content or digital downloads — no email distribution needed.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Bulk / Group Payment": {
+      "tier": "workaround",
+      "plan_required": "Growth",
+      "expert_ref": "Bulk Import (Growth+) + API",
+      "coverage_notes": "No native group checkout. Bulk import (Growth+) can enroll groups after offline payment. API-based enrollment also possible.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Bulk Student Import": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "Bulk Student Import (Growth+)",
+      "coverage_notes": "CSV bulk import of students on Growth+ plans. Also available via API.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Bulk Student Upload": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "Bulk Student Import (Growth+)",
+      "coverage_notes": "CSV bulk upload of students on Growth+ plans. Also available via API.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Bulk User Import": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "Bulk Student Import (Growth+)",
+      "coverage_notes": "CSV bulk import of users on Growth+ plans. Also available via API.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Calendly Integration for Coaching Booking": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Content Embedding + Coaching",
+      "coverage_notes": "No native Calendly integration. Calendly embed link can be added to coaching product or course via text/embed block.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Cart / Bundle Checkout": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Bundles + Order Bumps",
+      "coverage_notes": "Bundles supported. Order bumps and upsells at checkout. No multi-item cart — each purchase is a single transaction.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Certificate Automation": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Certificates section",
+      "coverage_notes": "Auto-issued on course completion. 3 templates, student name and course name personalization. Builder+ only. No QR codes or external credential storage.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Certificate Customization": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Certificates section",
+      "coverage_notes": "3 certificate templates with limited customization. Builder+ only. No full custom design, no logo upload, limited layout options.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Certificate Storage / User Profile": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Certificates section",
+      "coverage_notes": "Certificates can be downloaded but no persistent certificate wallet or profile page listing earned certificates.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Certification & Credentialing": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Certificates + Compliance",
+      "coverage_notes": "Basic completion certificates (Builder+). No formal credentialing, no digital badges, no continuing education credits, no accreditation integration.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Checklist / To-Do Functionality": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Course Content Types — not listed",
+      "coverage_notes": "No native checklist or to-do content block. Could embed external tool or use quiz as a checklist proxy.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Checkout / Sales Page UX": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Sales Pages + Checkout",
+      "coverage_notes": "Built-in sales page builder and checkout flow. Coupons, order bumps, upsells, abandoned cart emails. No A/B testing on sales pages.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Coach Pay-Per-Session Model": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Coaching Products",
+      "coverage_notes": "Coaching products support one-time or subscription pricing. Per-session billing not native — workaround: create separate coaching product per session or use payment plans.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Coach View of Student Submissions": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Quizzes & Assessments — short answer",
+      "coverage_notes": "Coaches can view short-answer quiz submissions in the admin. No dedicated submission review interface or inline feedback tools.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Coach-Assigned Custom Documents": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Coaching Products — not listed",
+      "coverage_notes": "No ability for coaches to assign personalized documents to individual students within the platform.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Coach-Specific Digital Downloads": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Digital Downloads",
+      "coverage_notes": "Digital downloads are a product type. Coach-specific downloads can be separate products. No per-student customization within a single product.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Coaching / Mentoring Sessions": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Coaching Products",
+      "coverage_notes": "Native coaching product type with milestone-based structure. Live sessions via embedded Zoom/YouTube/Vimeo. No native video calling.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Coaching Embedded in Course Flow": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course + Coaching Bundle",
+      "coverage_notes": "Courses and coaching can be bundled. Coaching milestones can align with course sections. Not deeply integrated — separate product types linked by bundle.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Comment Moderation": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Lesson Comments",
+      "coverage_notes": "Lesson-level comments with moderation (approve/delete). No threaded discussions, no mention system, no comment search.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Community Access Controls": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Community Features",
+      "coverage_notes": "Community access tied to product enrollment. Can restrict to specific courses/bundles. No granular permission levels within community.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Community Categories/Forums": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Community Features",
+      "coverage_notes": "Community spaces with categories/topics. Not traditional forum structure — more social-feed style. No sub-forums or threading.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Community Discussion": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Community Features",
+      "coverage_notes": "Native community with discussion posts, likes, and comments. Available on all plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Community Feature": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Community Features",
+      "coverage_notes": "Built-in community feature with posts, comments, likes, and spaces. All plans. No community analytics.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Community Features": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Community Features",
+      "coverage_notes": "Built-in community with posts, comments, likes, spaces. All plans. No advanced moderation tools or community analytics.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Community Navigation from Course": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Community + Course integration",
+      "coverage_notes": "Students can navigate to community from course player. Per-course community linking supported.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Community Username/Privacy Controls": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Community Features — not listed",
+      "coverage_notes": "No anonymous posting or username customization in community. Students appear by their profile name. Limited privacy controls.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Competitive Pricing for High-Volume Users": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Pricing Plans",
+      "coverage_notes": "Tiered plans from Free to Pro+. No transaction fees on paid plans. Volume pricing not publicly documented — likely negotiable for enterprise.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Completion Tracking": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Progress Tracking + Compliance",
+      "coverage_notes": "Per-lesson and per-course completion tracking. Sequential progress, video completion requirements, quiz passing gates. Reports exportable.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Compliance Controls": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Compliance",
+      "coverage_notes": "Sequential lesson enforcement, video completion requirements, quiz pass gates. No SCORM, no timed sessions, no formal audit trail.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Compliance Training": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Compliance + Certificates",
+      "coverage_notes": "Sequential lessons, video completion, quiz gates, and certificates. Suitable for basic compliance. No SCORM, no audit trails, no recertification workflows.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Content Embedding": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Content — embed block",
+      "coverage_notes": "Native embed block supports Zoom, YouTube, Vimeo, Google Docs, Typeform, and other iframe-embeddable content.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Content Migration": {
+      "tier": "workaround",
+      "plan_required": null,
+      "expert_ref": "Onboarding + Support",
+      "coverage_notes": "No automated content migration tool. Teachable offers white-glove onboarding assistance. Manual migration or API-based transfer (Growth+).",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Content Portability / Data Ownership": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Reports — CSV export",
+      "coverage_notes": "Student data exportable via CSV. Course content created by owner. No bulk content export tool — videos hosted on Teachable's CDN.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Content Portability / Export": {
+      "tier": "workaround",
+      "plan_required": "Growth",
+      "expert_ref": "API + Reports",
+      "coverage_notes": "Student/enrollment data exportable via CSV or API. No native course content export. Video files on Teachable CDN not directly downloadable.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Content Presentation & Layout": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Page Builder + Course Editor",
+      "coverage_notes": "Drag-and-drop page builder for sales pages. Course lessons support text, video, audio, PDF, embed, quiz blocks. CSS snippets for customization.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Content Protection / DRM": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Video Hosting + Content Protection",
+      "coverage_notes": "Wistia-powered video hosting with basic protection. No download button by default. No advanced DRM, watermarking, or screen capture prevention.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course + Coaching Bundle": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Bundles",
+      "coverage_notes": "Courses, coaching, digital downloads, and community can be bundled together as a single purchasable product.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Bundles": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Bundles",
+      "coverage_notes": "Native bundle product type. Combine courses, coaching, downloads. Single pricing with coupons and payment plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Commerce / Transactions": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "teachable:pay + Payments",
+      "coverage_notes": "teachable:pay handles payments in 130+ currencies with automated tax. One-time, subscription, payment plans. No transaction fees on paid plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Completion Tracking": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Progress Tracking",
+      "coverage_notes": "Per-lesson and per-course completion with percentage progress. Reports available in admin. Sequential enforcement optional.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Content Editing / Updates": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Editor",
+      "coverage_notes": "Edit course content anytime — add/remove/reorder lessons and sections. Changes apply to all enrolled students immediately.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Embedding on External Website": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — full course player",
+      "coverage_notes": "Cannot embed full course player on external website. Can link to Teachable-hosted courses. Custom domain supported but content stays on Teachable.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Filtering / Catalog": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "School — course listing",
+      "coverage_notes": "Courses displayed on school homepage. Categories/collections available. No advanced search or filter UI for large catalogs.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Limit Increase": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Plan Limits",
+      "coverage_notes": "Free plan: 1 course. Builder: 5. Pro: unlimited. Pro+: unlimited. Upgrade plan for more courses.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Module Structure": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Editor — sections & lessons",
+      "coverage_notes": "Courses organized into sections (modules) with lessons. Drag-and-drop reordering. No nested sub-sections.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Quizzes / Assessments": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Quizzes & Assessments",
+      "coverage_notes": "Multiple choice (auto-graded) and short answer. AI quiz generator. No timed quizzes, question banks, randomization, or manual grading.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Course Sequencing / Completion Gating": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Compliance",
+      "coverage_notes": "Sequential lesson enforcement — students must complete previous lesson before accessing next. Video completion and quiz pass gates.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Cross-Course Community Access": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Community Features",
+      "coverage_notes": "Community spaces can be linked to multiple courses/products or made school-wide. Students in any linked product get access.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Custom Branding": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Custom Domain + Design",
+      "coverage_notes": "Custom domain, logo, colors, page builder. CSS snippets for advanced styling. White-label (remove Teachable branding) on Growth+.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Custom Branding / White-label": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "White Label (Growth+)",
+      "coverage_notes": "Full white-label (remove Teachable branding) on Growth+. Custom domain on all plans. Custom CSS on all plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Custom Checkout Fields": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Custom Registration Fields",
+      "coverage_notes": "Custom fields on enrollment/registration forms. Fields appear in student admin and CSV exports.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Custom Coupon Codes": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Coupons",
+      "coverage_notes": "Custom coupon codes with percentage or fixed discount, expiry dates, usage limits. Available on all plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Custom Development / Add-ons": {
+      "tier": "workaround",
+      "plan_required": "Growth",
+      "expert_ref": "API + Webhooks (Growth+)",
+      "coverage_notes": "API and webhooks on Growth+ enable custom development. CSS snippets on all plans. No plugin/extension marketplace.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Custom Registration Fields": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Custom Registration Fields",
+      "coverage_notes": "Add custom fields to enrollment forms. Text, dropdown, checkbox types. Data accessible in admin and exports.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Custom Role Labels": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "Custom User Roles (Growth+)",
+      "coverage_notes": "Custom user roles with configurable permissions on Growth+ plans. Can create role labels for different admin types.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Custom Themes": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Page Builder + CSS",
+      "coverage_notes": "Page builder with templates for sales pages and course pages. CSS snippets for advanced styling. Not full theme marketplace — more template-based.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Customizable Completion Button": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Course Player — not listed",
+      "coverage_notes": "Completion button text and behavior not customizable. Standard 'Complete & Continue' button.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Demographic Data Collection for Funder Reporting": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Custom Registration Fields + Reports",
+      "coverage_notes": "Custom registration fields can collect demographic data. Export via CSV for funder reporting. No pre-built funder report templates.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Department-based Student Groups": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "B2B Bulk Distribution (beta)",
+      "coverage_notes": "B2B Bulk Distribution in closed beta (2026) includes organization-level enrollment. Native department grouping not yet available.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Digital Course Delivery": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Core Platform",
+      "coverage_notes": "Core product — online course creation and delivery with video, text, PDFs, quizzes, and downloads.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Drip / Timed Content Release": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Drip Content",
+      "coverage_notes": "Drip scheduling by days after enrollment or fixed calendar date. Per-section drip. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Drip Content Scheduling": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Drip Content",
+      "coverage_notes": "Schedule content release by days after enrollment or fixed date. Section-level drip. Available on all plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Embed Courses in Existing Website": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — embedding",
+      "coverage_notes": "Full course player cannot be embedded on external sites. Link out to Teachable-hosted content. Custom domain bridges the gap partially.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Embedded Course Widget": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — embedding",
+      "coverage_notes": "No embeddable course widget for external sites. Can embed individual videos but not the full course player.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "File Upload & Grading": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Quizzes — no file upload",
+      "coverage_notes": "No student file upload for assignments. No manual grading system. Short-answer quizzes exist but are text-only.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Flexible Course Limits": {
+      "tier": "native",
+      "plan_required": "Pro",
+      "expert_ref": "Plan Limits",
+      "coverage_notes": "Free: 1 course, Builder: 5, Pro: unlimited, Pro+: unlimited. Upgrade plan for more courses.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Freemium / Free Course Support": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Pricing — free courses",
+      "coverage_notes": "Free courses supported on all plans. Set price to $0 for freemium model. Lead capture via free enrollment.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "GDPR Compliance": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Privacy & Compliance",
+      "coverage_notes": "GDPR-compliant data handling, student data export/deletion tools. Privacy policy and cookie consent available.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Gamification & Interactive Learning": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — gamification",
+      "coverage_notes": "No native gamification (badges, points, leaderboards, XP). No branching/conditional learning paths.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Government Tax Exemption": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "teachable:pay — tax handling",
+      "coverage_notes": "teachable:pay handles automated tax collection. Tax-exempt purchases may require manual coupon or offline processing. No native tax-exempt checkout flow.",
+      "confidence": "low",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Group / Bulk License Purchasing": {
+      "tier": "workaround",
+      "plan_required": "Growth",
+      "expert_ref": "Bulk Import + API (Growth+)",
+      "coverage_notes": "No native group license checkout. Bulk import (Growth+) enrolls after offline payment. API-based enrollment possible. B2B bulk distribution in beta.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Guest Checkout": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Checkout — account required",
+      "coverage_notes": "Students must create an account to purchase. No guest checkout without account creation.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Headless / API Access": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "API (Growth+)",
+      "coverage_notes": "REST API on Growth+ plans. Students, courses, enrollments, and transactions endpoints. Not a full headless CMS — no content delivery API.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Hybrid Scheduling": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Drip Content + Coaching",
+      "coverage_notes": "Combine self-paced drip courses with scheduled coaching sessions (embedded Zoom/Calendly). No unified hybrid calendar.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "In-Course Zoom Integration": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Content Embedding — Zoom",
+      "coverage_notes": "Zoom meetings/webinars can be embedded in course lessons via embed block. Not a native integration — requires manual link/embed setup.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "In-Platform Messaging to Students": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Built-in Email Marketing (Builder+)",
+      "coverage_notes": "Built-in email to enrolled students on Builder+. No in-app messaging/DMs, no real-time chat, no push notifications.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "In-platform Recording / Replay": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Video Hosting — upload only",
+      "coverage_notes": "No in-platform recording. Videos must be uploaded from local files. Can embed Zoom replay links. No native live-to-replay pipeline.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Inactive User Reporting": {
+      "tier": "workaround",
+      "plan_required": "Growth",
+      "expert_ref": "Reports + API (Growth+)",
+      "coverage_notes": "Student reports show last sign-in and progress. No pre-built inactive user report. Filterable via CSV export or API queries.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Integrated One-on-One Coaching Sessions": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Coaching Products",
+      "coverage_notes": "Native coaching product type with milestones. No native video calling — embed Zoom/Calendly. Milestone-based progress tracking.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Interactive Image Hotspots": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Course Content Types — not listed",
+      "coverage_notes": "No interactive image hotspot content type. Would require external tool embed (e.g., H5P, Genially).",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Interactive Quizzes": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Quizzes & Assessments",
+      "coverage_notes": "Multiple choice (auto-graded) and short answer quizzes. AI quiz generator. No drag-and-drop, matching, hotspot, or multimedia question types.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Internal vs External Course Access": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Visibility Settings",
+      "coverage_notes": "Courses can be published, hidden (direct link only), or draft. No separate internal/external access tiers on same course.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "International Payment Processing": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "teachable:pay",
+      "coverage_notes": "teachable:pay supports 130+ currencies with automated sales tax, VAT, and GST. Available on all plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "International Payout Compliance": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "teachable:pay — payouts",
+      "coverage_notes": "teachable:pay handles multi-currency payouts. Tax compliance automated. Specifics of payout methods and country support may vary.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Intuitive Course Builder": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Editor",
+      "coverage_notes": "Drag-and-drop course editor with sections and lessons. Multiple content types. User-friendly for non-technical creators.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Knowledge Base / Wiki": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — knowledge base",
+      "coverage_notes": "No native knowledge base or wiki feature. Course structure is linear, not wiki-style. No native blogging either.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Landing Pages / Site Builder": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Page Builder",
+      "coverage_notes": "Built-in page builder for sales pages, thank you pages, and school homepage. Drag-and-drop blocks. No A/B testing.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Lead Capture / Email Collection": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Free Courses + Email",
+      "coverage_notes": "Free course enrollment captures email. Built-in email marketing (Builder+). Zapier integration to external ESP (Builder+).",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Leadership Presentation / Approval Workflow": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — approval workflows",
+      "coverage_notes": "No content approval workflows, no multi-step publishing, no stakeholder review process.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Learner File Upload to Coaches": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Coaching Products — not listed",
+      "coverage_notes": "No learner file upload capability. Coaching milestones are text-based. Workaround: use external file sharing (Google Drive, Dropbox links in comments).",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Learner UX / Course Journey": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Player + Mobile App",
+      "coverage_notes": "Clean course player with progress bar, section navigation, and mobile app. No personalized learning paths or adaptive content.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Live Coaching & Webinars": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Coaching + Content Embedding",
+      "coverage_notes": "No native live sessions. Embed Zoom/YouTube Live/Vimeo in course lessons or coaching milestones.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Live Coaching Sessions": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Coaching Products + Embed",
+      "coverage_notes": "Native coaching product type but no built-in video calling. Embed Zoom/Google Meet links in coaching milestones.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Live Webinar / Coaching": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Coaching + Embed",
+      "coverage_notes": "No native live sessions. Embed Zoom/YouTube Live/Vimeo. Coaching product type available for session structure.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Live Webinars": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Content Embedding",
+      "coverage_notes": "No native live webinar feature. Embed Zoom, YouTube Live, or Vimeo livestream in course lessons.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Local Payment Gateway Support": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "teachable:pay — 130+ currencies",
+      "coverage_notes": "teachable:pay supports 130+ currencies and local payment methods via Stripe. Some regional gateways may not be supported.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Mandatory Video Completion": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Compliance — video completion",
+      "coverage_notes": "Video completion can be required before progressing to next lesson. Part of course compliance settings.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Membership / Subscription Pricing": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Memberships + Pricing",
+      "coverage_notes": "Native membership product type with recurring billing. Monthly/annual subscriptions. No pause subscription feature.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Microsoft Teams Integration": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Integrations — not listed",
+      "coverage_notes": "No native Microsoft Teams integration. Could embed Teams meeting links manually or use Zapier (Builder+) for notification bridging.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Minimum Time on Page": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Course Compliance — not listed",
+      "coverage_notes": "No minimum time-on-page enforcement. Video completion required is the closest compliance control. No timed lessons.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Mobile App Access": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Mobile Apps (iOS + Android)",
+      "coverage_notes": "Native iOS and Android apps for course consumption. All plans. Android offline mode coming soon.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Mobile App Course Delivery": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Mobile Apps",
+      "coverage_notes": "Full course delivery on iOS and Android apps. Video playback, quizzes, progress tracking. Android offline mode in development.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Multi-Currency Checkout": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "teachable:pay — 130+ currencies",
+      "coverage_notes": "130+ currencies supported via teachable:pay. Automated currency conversion. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Multi-Format Content (PDF, Video, Podcast, Image)": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Content Types",
+      "coverage_notes": "Video, text, PDF, audio (including podcast-style), images, and embed blocks. No native podcast RSS feed generation.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Multi-format Content Upload": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Content Types",
+      "coverage_notes": "Upload video, audio, PDFs, images. Embed external content. Bulk upload supported.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Multi-language Support": {
+      "tier": "workaround",
+      "plan_required": "Growth",
+      "expert_ref": "AI Subtitles/Translation (Growth+)",
+      "coverage_notes": "AI subtitles and translation on Growth+ (unlimited). Platform interface is English-only. No native multi-language course versions. Workaround: separate courses per language.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Multimedia Course Authoring": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Editor + Content Types",
+      "coverage_notes": "Video, text, audio, PDF, images, embed blocks, and quizzes. Drag-and-drop editor. AI course starter for initial structure.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Multiple Admin Roles & Permissions": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "Custom User Roles (Growth+)",
+      "coverage_notes": "Custom user roles with configurable permissions on Growth+ plans. Owner, admin, author, and custom roles.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Multiple Admin Users": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Multiple Instructors/Authors",
+      "coverage_notes": "Multiple authors/instructors on all plans. Custom roles with granular permissions on Growth+.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Multiple Schools": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Multi-school Support",
+      "coverage_notes": "Creators can run multiple Teachable schools from one account. Each school has its own domain, branding, and courses.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Offline Content Access": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "Mobile Apps — Android offline (coming soon)",
+      "coverage_notes": "Android offline mode coming soon. iOS offline not confirmed. Currently requires internet connection for course access.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "On-Demand Replay / Recorded Webinars": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Video Content Hosting",
+      "coverage_notes": "Upload recorded webinars as video lessons. Native video hosting with Wistia. No live-to-replay pipeline — manual upload required.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "One-time Purchase Pricing": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Pricing Options",
+      "coverage_notes": "One-time purchase, payment plans, and subscriptions all supported. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Online Course Delivery": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Core Platform",
+      "coverage_notes": "Core product — create and deliver online courses with video, text, quizzes, downloads, and certificates.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Online Training Platform": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Core Platform",
+      "coverage_notes": "Full online training platform with courses, coaching, community, downloads, and commerce.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Open-ended Questions / Journal": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Quizzes — short answer",
+      "coverage_notes": "Short-answer quiz questions serve as open-ended responses. No journal/diary feature. No rich-text student responses.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organization Groups & Reporting": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "B2B Bulk Distribution (beta)",
+      "coverage_notes": "B2B Bulk Distribution in closed beta includes organization-level enrollment and reporting. Not generally available yet.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organization Hierarchy / Nesting": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — org hierarchy",
+      "coverage_notes": "No nested organization hierarchy. B2B beta offers flat org enrollment but no parent/child org structures.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organization Reporting": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "B2B Bulk Distribution (beta)",
+      "coverage_notes": "Organization-level reporting coming with B2B Bulk Distribution beta. Currently limited to student-level reports.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organization Reporting & Leaderboards": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — leaderboards",
+      "coverage_notes": "No leaderboards. Organization reporting in B2B beta but leaderboards are not part of it. No gamification.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organization Seat Management": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "B2B Bulk Distribution (beta)",
+      "coverage_notes": "Seat management coming with B2B Bulk Distribution beta. Currently requires manual bulk import or API enrollment.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organization-level Reporting": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "B2B Bulk Distribution (beta)",
+      "coverage_notes": "Organization-level reporting in B2B Bulk Distribution closed beta (2026). Not generally available.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organizations & Group Enrollment": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "B2B Bulk Distribution (beta)",
+      "coverage_notes": "B2B Bulk Distribution in closed beta (2026). Includes org-level enrollment and seat management. Currently: bulk import (Growth+) or API.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organizations / Department Segmentation": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "B2B Bulk Distribution (beta)",
+      "coverage_notes": "Department segmentation not native. B2B beta may support basic org grouping. No department-level course assignments yet.",
+      "confidence": "low",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organizations / Group Management": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "B2B Bulk Distribution (beta)",
+      "coverage_notes": "B2B Bulk Distribution in closed beta. Includes organization and group enrollment. Currently: bulk import (Growth+) or API.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Organizations / Multi-tenancy": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Multi-school Support",
+      "coverage_notes": "Multiple separate schools per account (multi-tenancy at school level). Not org-level tenancy within a single school — that's B2B beta.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "PDF / Digital Downloads in Courses": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Digital Downloads + Course Content",
+      "coverage_notes": "PDFs as course lesson content and as standalone digital download products. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "PayPal Integration": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "teachable:pay — Stripe-based",
+      "coverage_notes": "teachable:pay is Stripe-based. No native PayPal integration. PayPal was previously supported but deprecated in favor of teachable:pay.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Payment Collection & Revenue Tracking": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "teachable:pay + Reports",
+      "coverage_notes": "Built-in payment processing with revenue dashboard, transaction history, and payout tracking. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Payment Plans / Installments": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Payment Plans",
+      "coverage_notes": "Native payment plan support with configurable installment schedules. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Per-Course Community": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Community Features",
+      "coverage_notes": "Community spaces can be linked to specific courses. Students get access upon enrollment.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Per-Student Course Customization by Coach": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Coaching — not per-student content",
+      "coverage_notes": "All enrolled students see the same course content. No per-student customization, conditional content, or coach-assigned variations.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Phone / Alternative Login": {
+      "tier": "workaround",
+      "plan_required": "Builder",
+      "expert_ref": "Google SSO (Builder+)",
+      "coverage_notes": "Email + password is default. Google SSO on Builder+. No phone/SMS login. No social login (Facebook, Apple). SAML/enterprise SSO not supported.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Pre/Post Survey Integration": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Content Embedding — Typeform",
+      "coverage_notes": "No native survey tool. Embed Typeform, Google Forms, or SurveyMonkey in lessons via embed block. Data stays in external tool.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Purchase Order / Invoice Billing": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "teachable:pay — no PO/invoice",
+      "coverage_notes": "No purchase order or invoice billing flow. All payments are credit card/debit via Stripe. No net-30 or enterprise invoicing.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Push Notifications": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Mobile Apps — not listed",
+      "coverage_notes": "No push notifications from Teachable mobile app. Email notifications only. No in-app notification center.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Quiz / Assessment Builder": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Quizzes & Assessments",
+      "coverage_notes": "Quiz builder with multiple choice and short answer. AI quiz generator. No question banks, timed quizzes, or randomization.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Quiz / Assessment Reporting": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Reports — quiz results",
+      "coverage_notes": "Quiz scores visible in student reports. Per-question analytics limited. No item analysis or difficulty metrics.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Quiz Question Types": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Quizzes & Assessments",
+      "coverage_notes": "Multiple choice and short answer only. No matching, ordering, fill-in-blank, drag-and-drop, hotspot, or essay with rubric.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Quizzes & Assessments": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Quizzes & Assessments",
+      "coverage_notes": "Auto-graded multiple choice and short answer. AI quiz generator. No timed quizzes, question banks, or manual grading.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Quizzes & Graded Assessments": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Quizzes & Assessments",
+      "coverage_notes": "Auto-graded quizzes with pass/fail. Short answer viewable by admin but no manual scoring. No rubric-based grading.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Registration Gating": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Visibility + Enrollment",
+      "coverage_notes": "Courses require enrollment to access. Can gate by payment, free enrollment, or direct link. No prerequisites between courses natively.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Reporting Dashboard": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Reports & Analytics",
+      "coverage_notes": "Built-in reporting dashboard with revenue, enrollment, and completion metrics. No custom dashboard builder or advanced analytics.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Reporting Data Export (CSV)": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Reports — CSV export",
+      "coverage_notes": "CSV export of student data, enrollments, transactions, and quiz results. Available on all plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Responsive Customer Support": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Support",
+      "coverage_notes": "Email support on all plans. Priority support on higher tiers. White-glove onboarding on Growth+.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Retroactive Community Access": {
+      "tier": "unknown",
+      "plan_required": null,
+      "expert_ref": "Community — unclear",
+      "coverage_notes": "Not clear if adding community to a course retroactively grants access to previously enrolled students. Needs manual verification.",
+      "confidence": "low",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Role-based Access": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "Custom User Roles (Growth+)",
+      "coverage_notes": "Custom roles with configurable permissions on Growth+. Owner, admin, author roles on lower plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "SCORM Compliance": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — SCORM/xAPI",
+      "coverage_notes": "No SCORM or xAPI support. Cannot import SCORM packages or track SCORM-compliant interactions.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "SCORM Support": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — SCORM/xAPI",
+      "coverage_notes": "No SCORM or xAPI support. Cannot import or play SCORM content packages.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "SOC 2 Type 2 Security": {
+      "tier": "unknown",
+      "plan_required": null,
+      "expert_ref": "Security & Compliance — not confirmed",
+      "coverage_notes": "SOC 2 Type 2 certification status not confirmed in platform documentation. Teachable handles payment security via Stripe. Needs verification with Teachable security team.",
+      "confidence": "low",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "SSO / SAML": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — SAML/enterprise SSO",
+      "coverage_notes": "No SAML or enterprise SSO. Google SSO only (Builder+). No Okta, Azure AD, or other IdP integration.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Seat / User Management": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Student Management",
+      "coverage_notes": "Student management with enrollment, progress, and manual add/remove. No seat-license model natively — B2B beta adds this.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Seat Management": {
+      "tier": "roadmap",
+      "plan_required": null,
+      "expert_ref": "B2B Bulk Distribution (beta)",
+      "coverage_notes": "Seat-based license management coming with B2B Bulk Distribution beta. Currently requires manual enrollment management.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Sequential Course Navigation": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Compliance — sequential lessons",
+      "coverage_notes": "Sequential lesson enforcement available. Students must complete previous lesson before accessing next.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Shopify SSO Integration": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Not supported — native Shopify",
+      "coverage_notes": "No native Shopify SSO or direct integration. Workaround via Zapier (Builder+) — webhook triggers on Shopify purchase to API enroll.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Single Sign-On (SSO)": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Google SSO (Builder+)",
+      "coverage_notes": "Google SSO on Builder+. No SAML, Okta, Azure AD, or enterprise SSO. Limited to Google as the only SSO provider.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Structured Multi-Week Course": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Editor + Drip",
+      "coverage_notes": "Sections and lessons with drip scheduling enable structured multi-week course delivery. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Student Community": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Community Features",
+      "coverage_notes": "Built-in community with discussion posts, comments, and likes. Linked to courses/products. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Student File Upload for Assignments": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Quizzes — no file upload",
+      "coverage_notes": "No student file upload for assignments or submissions. Text-only short answer quizzes. No manual grading workflow.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Student Onboarding Workflow": {
+      "tier": "workaround",
+      "plan_required": "Free",
+      "expert_ref": "Course Content + Email",
+      "coverage_notes": "No dedicated onboarding workflow builder. Use introductory course section, welcome email (Builder+), and drip content as onboarding proxy.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Student Profile in Mobile App": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Mobile Apps",
+      "coverage_notes": "Student profile accessible in mobile app with enrolled courses and progress. Limited profile customization.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Student Progress Tracking": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Progress Tracking + Reports",
+      "coverage_notes": "Per-lesson and per-course progress tracking. Admin reports show completion rates, quiz scores, and enrollment data. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Student-Counselor Assignment": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Coaching — no assignment system",
+      "coverage_notes": "No native student-to-counselor/coach assignment system. All coaching product enrollees interact with the same coach. No routing or caseload management.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Subscription Migration (Braintree to Stripe)": {
+      "tier": "unknown",
+      "plan_required": null,
+      "expert_ref": "teachable:pay migration — unclear",
+      "coverage_notes": "Teachable migrated to teachable:pay (Stripe-based). Migration from legacy Braintree subscriptions would need Teachable support assistance. Not self-service.",
+      "confidence": "low",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Supervisor Role Access": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "Custom User Roles (Growth+)",
+      "coverage_notes": "Custom roles with configurable permissions on Growth+. Can create supervisor-type role with limited admin access.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Test Student / Preview Mode": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Preview",
+      "coverage_notes": "Admins can preview courses as students. No separate test student account creation tool.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Third-party Integration": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Zapier (Builder+) + Webhooks (Growth+)",
+      "coverage_notes": "Zapier on Builder+, webhooks and API on Growth+. Native integrations: Google Analytics, Facebook Pixel, Mailchimp, ConvertKit, Segment.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Tiered Membership Access": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Memberships + Bundles",
+      "coverage_notes": "Create multiple membership products at different price points with different course bundles. No native upgrade/downgrade flow between tiers.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Training Completion Dashboard": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Reports & Analytics",
+      "coverage_notes": "Built-in reports showing completion rates, progress, and enrollment data. No custom dashboard builder.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Unlimited Student Enrollment": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Plan Limits — students",
+      "coverage_notes": "Unlimited students on all plans. No per-student fees.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "User-Friendly Interface for Non-Technical Users": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Editor + Page Builder",
+      "coverage_notes": "Drag-and-drop course editor and page builder designed for non-technical creators. No coding required for basic usage.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Video Content Hosting": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Video Hosting — Wistia-powered",
+      "coverage_notes": "Native video hosting powered by Wistia. Unlimited video uploads on all plans. Basic content protection, no advanced DRM.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Video Scrub Prevention": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Compliance — video completion",
+      "coverage_notes": "Video completion enforcement prevents skipping. Students must watch to a completion threshold. Some scrub prevention built into compliance mode.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Video Streaming Reliability": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Video Hosting — Wistia CDN",
+      "coverage_notes": "Wistia-powered video with CDN delivery. Adaptive bitrate streaming. Reliable for standard usage.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Virtual Campus / Online Academy": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "School — homepage + branding",
+      "coverage_notes": "Each Teachable school serves as a virtual campus with custom domain, branding, course catalog, and community. All plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Voiceover for Courses": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Content — audio",
+      "coverage_notes": "Audio content supported as lesson type. Upload pre-recorded voiceover files. No in-platform recording or text-to-speech.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Webhook Support": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "Webhooks (Growth+)",
+      "coverage_notes": "Webhooks on Growth+ plans. Events: enrollment, completion, transaction. Custom webhook endpoints for external integrations.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Website Builder / Design Flexibility": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Page Builder + CSS",
+      "coverage_notes": "Drag-and-drop page builder for sales and course pages. Custom CSS snippets. Not a full website builder — focused on school/course pages.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Website Embed / Link Integration": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Custom Domain + Linking",
+      "coverage_notes": "Custom domain for seamless linking. Can link from external website to Teachable courses. No iframe embed of full course player.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "White Glove / Managed Course Build": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "White Glove Onboarding (Growth+)",
+      "coverage_notes": "White-glove onboarding and course migration assistance on Growth+ plans. Dedicated onboarding specialist.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "White Glove Onboarding": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "Onboarding (Growth+)",
+      "coverage_notes": "White-glove onboarding with dedicated specialist on Growth+ plans.",
+      "confidence": "medium",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "White Label Platform": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "White Label (Growth+)",
+      "coverage_notes": "Remove Teachable branding on Growth+ plans. Custom domain on all plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "White Label Website": {
+      "tier": "native",
+      "plan_required": "Growth",
+      "expert_ref": "White Label (Growth+)",
+      "coverage_notes": "Remove all Teachable branding from student-facing pages on Growth+ plans.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "White-Label Mobile App": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Mobile Apps — not white-labeled",
+      "coverage_notes": "Teachable mobile app is branded as Teachable. No white-label mobile app with custom branding/app store listing.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "White-label App": {
+      "tier": "gap",
+      "plan_required": null,
+      "expert_ref": "Mobile Apps — not white-labeled",
+      "coverage_notes": "No white-label mobile app. Students use the Teachable-branded app. No custom app store listing.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Worksheets & PDF Uploads": {
+      "tier": "native",
+      "plan_required": "Free",
+      "expert_ref": "Course Content — PDF + Downloads",
+      "coverage_notes": "PDFs uploadable as lesson content or digital downloads. No interactive worksheet/form feature — static PDFs only.",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    },
+    "Zapier Integration for Enrollment": {
+      "tier": "native",
+      "plan_required": "Builder",
+      "expert_ref": "Zapier (Builder+)",
+      "coverage_notes": "Zapier integration on Builder+ plans. Trigger enrollment via Zap from external events (Shopify purchase, form submission, etc.).",
+      "confidence": "high",
+      "last_verified_at": "2026-02-24",
+      "source_urls": []
+    }
+  }
+}

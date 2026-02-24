@@ -160,6 +160,23 @@
     "adjacent": "Adjacent tools sometimes used for courses",
     "marketplace": "Course marketplaces (different model but prospects mention them)"
   },
+    {
+      "id": "articulate360",
+      "name": "Articulate 360",
+      "type": "lms",
+      "short_description": "Industry-standard e-learning authoring suite with Storyline, Rise, and Review.",
+      "description": "E-learning authoring platform with Storyline (interactive), Rise (responsive), and Review (collaboration). Enterprise standard for SCORM/xAPI content.",
+      "differentiator": "Authoring-focused, not a delivery platform. Creates SCORM/xAPI content hosted elsewhere."
+    },
+    {
+      "id": "tagmango",
+      "name": "TagMango",
+      "type": "direct",
+      "short_description": "India-based creator platform for courses, workshops, memberships, and communities.",
+      "description": "Creator platform for live workshops, pre-recorded courses, memberships, and communities. Strong in Indian/Asian markets with localized payment options. 6,700+ creators, $112M+ in sales.",
+      "differentiator": "India-first with localized payments. Low-cost all-in-one for creators in emerging markets."
+    }
+  ],
   "suggested_new_competitors": [],
   "last_updated": "2026-02-13"
 }

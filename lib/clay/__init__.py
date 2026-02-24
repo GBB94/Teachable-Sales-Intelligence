@@ -47,31 +47,88 @@ def _get_webhook_url(entity_type):
     return os.environ.get(key, "")
 
 
-def _load_dashboard_data():
-    """Load DATA from the rendered dashboard HTML."""
+def _load_dashboard_data(data=None):
+    """Load canonical dashboard data for snapshot generation.
+
+    Priority order:
+      1. Passed-in data dict (from server.py or direct call)
+      2. test_output/features.json (canonical machine-readable dataset)
+      3. test_output/index.html DATA blob (let/const supported)
+      4. HARD FAIL — never fall back to demo/preview files
+    """
+    if data is not None:
+        logger.info("[snapshot] Using passed-in data dict")
+        return data
+
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    paths = [
-        os.path.join(base_dir, "..", "..", "test_output", "index.html"),
-        os.path.join(base_dir, "..", "..", "dashboard_preview.html"),
-        os.path.join(base_dir, "..", "..", "dashboard_latest.html"),
-    ]
-    for path in paths:
-        if not os.path.exists(path):
-            continue
-        with open(path, "r") as f:
-            html = f.read()
-        start_marker = "const DATA = "
-        idx = html.find(start_marker)
-        if idx == -1:
-            continue
-        json_start = idx + len(start_marker)
+    features_path = os.path.join(base_dir, "..", "..", "test_output", "features.json")
+    if os.path.exists(features_path):
         try:
-            decoder = json.JSONDecoder()
-            data, _ = decoder.raw_decode(html, json_start)
-            return data
-        except json.JSONDecodeError:
-            continue
-    return None
+            with open(features_path, "r") as f:
+                data = json.load(f)
+            # Minimal schema check to avoid loading accidental junk
+            if isinstance(data, dict) and "calls" in data and "mentions" in data:
+                logger.info("[snapshot] Loading from %s", features_path)
+                return data
+        except Exception:
+            pass
+
+    html_path = os.path.join(base_dir, "..", "..", "test_output", "index.html")
+    if os.path.exists(html_path):
+        with open(html_path, "r") as f:
+            html = f.read()
+        for start_marker in ("let DATA = ", "const DATA = "):
+            idx = html.find(start_marker)
+            if idx == -1:
+                continue
+            json_start = idx + len(start_marker)
+            try:
+                decoder = json.JSONDecoder()
+                data, _ = decoder.raw_decode(html, json_start)
+                logger.info("[snapshot] Parsing from %s", html_path)
+                return data
+            except json.JSONDecodeError:
+                continue
+
+    raise FileNotFoundError(
+        "Cannot generate snapshot: no live data found. "
+        "Expected test_output/features.json or test_output/index.html with DATA object. "
+        "Run 'python3 analyze_features.py inject' first."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Validation
+# ---------------------------------------------------------------------------
+_DEMO_COMPANY_NAMES = {"demo corp", "example inc", "test company", "acme corp", "sample org"}
+
+
+def _validate_snapshot(snapshot):
+    """Sanity-check a generated snapshot. Returns list of warning strings (empty = OK)."""
+    warnings = []
+
+    seeds = snapshot.get("seed_companies", [])
+    if not seeds:
+        warnings.append("Snapshot has zero seed companies")
+        return warnings
+
+    # Check for demo-data contamination
+    names = {s.get("company_name", "").lower() for s in seeds}
+    demo_hits = names & _DEMO_COMPANY_NAMES
+    if demo_hits:
+        warnings.append(f"Demo company names detected in seeds: {demo_hits}")
+
+    # Check for degenerate scores (all identical)
+    scores = [s.get("score", 0) for s in seeds]
+    if len(set(scores)) == 1 and len(scores) > 1:
+        warnings.append(f"All {len(scores)} seeds have identical score ({scores[0]})")
+
+    # Check for missing segments
+    no_segment = sum(1 for s in seeds if not s.get("segment"))
+    if no_segment == len(seeds):
+        warnings.append("No seeds have segment assignments")
+
+    return warnings
 
 
 # ---------------------------------------------------------------------------
@@ -83,16 +140,21 @@ def generate_snapshot(data=None):
     Does NOT push anything to Clay. Returns the full snapshot.
 
     If data dict is passed, use it directly.
-    If not, fall back to _load_dashboard_data() (parses HTML from disk).
+    If not, fall back to _load_dashboard_data() which raises FileNotFoundError
+    when no live data is available.
     """
     global _current_snapshot
 
     if data is None:
         data = _load_dashboard_data()
-    if data is None:
-        return {"error": "No dashboard data found. Run a scan first."}
 
     snapshot = generate_icp_snapshot(data)
+
+    # Validate before caching
+    warnings = _validate_snapshot(snapshot)
+    for w in warnings:
+        logger.warning("[snapshot] %s", w)
+
     _current_snapshot = snapshot
     return snapshot
 

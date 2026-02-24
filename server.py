@@ -423,7 +423,10 @@ def clay_generate_snapshot():
     if auth_err:
         return auth_err
     from lib.clay import generate_snapshot
-    result = generate_snapshot()
+    # Generate from the same DATA source the dashboard is currently serving.
+    # This avoids stale preview/demo file fallbacks and keeps snapshot + UI aligned.
+    data = _load_existing_data()
+    result = generate_snapshot(data=data)
     if "error" in result:
         return jsonify(result), 500
     clean = {k: v for k, v in result.items() if not k.startswith("_")}

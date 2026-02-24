@@ -1145,6 +1145,19 @@ body {
 
 /* Section 1: Segment overview cards */
 .seg-overview { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+/* Competitor overview — horizontal scroll instead of wrap */
+#competitors-view .seg-overview {
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    padding-bottom: 8px; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+#competitors-view .seg-overview::-webkit-scrollbar { height: 6px; }
+#competitors-view .seg-overview::-webkit-scrollbar-track { background: transparent; }
+#competitors-view .seg-overview::-webkit-scrollbar-thumb { background: #2a2d3e; border-radius: 3px; }
+#competitors-view .seg-overview::-webkit-scrollbar-thumb:hover { background: #3a3d4e; }
+#competitors-view .seg-overview .seg-card {
+    flex: 0 0 auto; min-width: 240px; max-width: 300px; scroll-snap-align: start;
+}
 .seg-card {
     flex: 1 1 220px; max-width: 320px; min-width: 200px;
     background: #14161e; border: 1px solid #1e2130; border-radius: 10px;
@@ -1170,11 +1183,54 @@ body {
     100% { background-color: transparent; }
 }
 .seg-card-dismiss:hover { color: #f87171; border-color: #f87171; background: #2a1a1a; }
-/* Unverified competitor card state */
-.seg-card.unverified {
-    opacity: 0.55; border-style: dashed;
+/* Competitor tier card states */
+.seg-card.comp-verified {
+    border-left: 4px solid var(--seg-color, #4a7cff); position: relative;
 }
-.seg-card.unverified:hover { opacity: 0.8; }
+.seg-card.comp-verified::after {
+    content: '\2713'; position: absolute; top: 0.5rem; right: 0.6rem;
+    font-size: 0.85rem; font-weight: 700; color: #34d399;
+}
+.seg-card.comp-notable {
+    border-left: 4px solid var(--seg-color, #f59e0b); border-style: solid;
+}
+.seg-card.comp-noise {
+    background: #111318; border-left: 4px dashed #3a3d4e; opacity: 0.6;
+}
+.seg-card.comp-noise:hover { opacity: 0.8; }
+
+/* Toggle buttons for Verified & Notable / Show All */
+.comp-toggle-btn {
+    font-size: 0.75rem; padding: 0.25rem 0.7rem; border-radius: 4px;
+    border: 1px solid #2a2d3e; background: transparent; color: #6b7084;
+    cursor: pointer; transition: all 0.15s;
+}
+.comp-toggle-btn:hover { border-color: #4a7cff; color: #9a9db0; }
+.comp-toggle-btn.active {
+    background: #4a7cff22; border-color: #4a7cff; color: #4a7cff; font-weight: 600;
+}
+
+/* Collapsed noise section */
+.comp-noise-section { margin-top: 0.75rem; }
+.comp-noise-toggle {
+    display: flex; align-items: center; gap: 0.4rem; cursor: pointer;
+    font-size: 0.82rem; color: #555a6e; padding: 0.4rem 0;
+    border: none; background: none; transition: color 0.15s;
+}
+.comp-noise-toggle:hover { color: #8b8fa3; }
+.comp-noise-grid {
+    display: none; gap: 0.75rem; padding-top: 0.5rem;
+    overflow-x: auto; overflow-y: hidden;
+    padding-bottom: 8px; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+.comp-noise-grid::-webkit-scrollbar { height: 6px; }
+.comp-noise-grid::-webkit-scrollbar-track { background: transparent; }
+.comp-noise-grid::-webkit-scrollbar-thumb { background: #2a2d3e; border-radius: 3px; }
+.comp-noise-grid.open { display: flex; }
+.comp-noise-grid .seg-card {
+    flex: 0 0 auto; min-width: 200px; max-width: 260px; scroll-snap-align: start;
+}
 .seg-card-unverified-badge {
     display: inline-block; font-size: 0.65rem; font-weight: 500; color: #8b8fa3;
     background: #1e2130; padding: 0.1rem 0.4rem; border-radius: 3px;
@@ -1361,6 +1417,9 @@ body {
 .comp-detail-card { position: relative; }
 .comp-detail-card.comp-unrecognized { opacity: 0.7; }
 .comp-detail-card.comp-unrecognized .comp-detail-name { font-style: italic; }
+.comp-detail-card.comp-notable-detail { border-left: 4px solid var(--comp-color, #f59e0b); }
+.comp-detail-card.comp-noise-detail { opacity: 0.6; border-style: dashed; }
+.comp-detail-card.comp-noise-detail .comp-detail-name { font-style: italic; }
 .comp-detail-type-unknown { background: #1a1a1e !important; color: #555a6e !important; }
 .comp-detail-card.dismissing {
     opacity: 0; transform: scale(0.97); transition: opacity 0.3s, transform 0.3s;
@@ -1441,6 +1500,90 @@ body {
     font-size: 0.82rem; color: #555a6e; font-style: italic;
     padding: 0.3rem 0 0.6rem 0;
 }
+
+/* ====== Capability Tier Overlay ====== */
+.tier-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+    white-space: nowrap; margin-left: 8px; vertical-align: middle;
+    position: relative; cursor: default;
+}
+.tier-badge.native { background: #0a2e1a; color: #4ade80; border: 1px solid #166534; }
+.tier-badge.workaround { background: #2a1f0a; color: #fbbf24; border: 1px solid #92400e; }
+.tier-badge.roadmap { background: #0a1a2e; color: #60a5fa; border: 1px solid #1e40af; }
+.tier-badge.gap { background: #2e0a0a; color: #f87171; border: 1px solid #991b1b; }
+.tier-badge.unknown { background: #1a1a1e; color: #9ca3af; border: 1px solid #4b5563; }
+.tier-badge.low-confidence { border-style: dashed; }
+
+/* Tier badge tooltip */
+.tier-badge[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b; color: #f8fafc;
+    padding: 8px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 400; line-height: 1.4;
+    max-width: 300px; min-width: 180px; white-space: normal;
+    z-index: 100; pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.tier-badge[data-tooltip]:hover::before {
+    content: ''; position: absolute;
+    bottom: calc(100% + 2px); left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent; border-top-color: #1e293b;
+    z-index: 101; pointer-events: none;
+}
+
+/* Tier filter buttons */
+.tier-filter-group {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+.tier-filter-label {
+    font-size: 0.82rem; color: #6b7084; margin-right: 4px;
+}
+.tier-filter-btn {
+    font-size: 0.72rem; padding: 3px 10px; border-radius: 4px;
+    border: 1px solid #2a2d3e; background: transparent; color: #6b7084;
+    cursor: pointer; transition: all 0.15s; font-family: inherit;
+}
+.tier-filter-btn:hover { border-color: #4a7cff; color: #9a9db0; }
+.tier-filter-btn.active { font-weight: 600; }
+.tier-filter-btn.active[data-tier="all"] { background: #4a7cff22; border-color: #4a7cff; color: #4a7cff; }
+.tier-filter-btn.active[data-tier="gap"] { background: #2e0a0a; border-color: #991b1b; color: #f87171; }
+.tier-filter-btn.active[data-tier="native"] { background: #0a2e1a; border-color: #166534; color: #4ade80; }
+.tier-filter-btn.active[data-tier="workaround"] { background: #2a1f0a; border-color: #92400e; color: #fbbf24; }
+.tier-filter-btn.active[data-tier="roadmap"] { background: #0a1a2e; border-color: #1e40af; color: #60a5fa; }
+.tier-filter-btn.active[data-tier="unknown"] { background: #1a1a1e; border-color: #4b5563; color: #9ca3af; }
+
+/* Tier stats bar */
+.tier-stats-bar {
+    background: #14161e; border: 1px solid #1e2130; border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 12px;
+}
+.tier-stats-total { font-size: 14px; font-weight: 600; color: #f0f1f4; margin-bottom: 4px; }
+.tier-stats-breakdown { font-size: 13px; color: #9a9db0; }
+.tier-stat-sep { margin: 0 6px; color: #2a2d3e; }
+
+/* Feature card de-emphasis by tier */
+.feature-card.tier-native,
+.feature-card.tier-workaround { opacity: 0.55; }
+.feature-card.tier-native { border-left: 3px solid #166534; }
+.feature-card.tier-workaround { border-left: 3px solid #92400e; }
+.feature-card.tier-roadmap { border-left: 3px solid #1e40af; }
+.feature-card.tier-gap { border-left: 3px solid #dc2626; }
+.feature-card.tier-unknown { border-left: 3px solid #4b5563; }
+.feature-card.tier-native:hover,
+.feature-card.tier-workaround:hover { opacity: 1; }
+
+/* By Call tab — tier-tinted feature tags */
+.feat-tag.tier-native { background: #0a2e1a; border-color: #166534; color: #4ade80; }
+.feat-tag.tier-workaround { background: #2a1f0a; border-color: #92400e; color: #fbbf24; }
+.feat-tag.tier-roadmap { background: #0a1a2e; border-color: #1e40af; color: #60a5fa; }
+.feat-tag.tier-gap { }
+.feat-tag.tier-unknown { background: #1a1a1e; border-color: #4b5563; color: #9ca3af; }
 </style>
 </head>
 <body>
@@ -1548,6 +1691,7 @@ body {
 
 <script>
 let DATA = {{DATA_JSON}};
+const CAPABILITY_MAP = (DATA && DATA.capability_map) ? DATA.capability_map : {};
 const ACTION_PASSWORD = 'sdflkjei';
 let _pwResolve = null;
 function checkActionPassword(actionLabel) {
@@ -2498,6 +2642,65 @@ function esc(s) {
     return d.innerHTML;
 }
 
+// ---- Capability tier overlay ----
+function getCapabilityTier(featureName) {
+    const def = { tier: 'unknown', plan_required: null, expert_ref: null,
+                  coverage_notes: 'Not yet classified', confidence: 'low' };
+    if (!featureName || !CAPABILITY_MAP || Object.keys(CAPABILITY_MAP).length === 0) return def;
+    if (CAPABILITY_MAP[featureName]) return CAPABILITY_MAP[featureName];
+    const normalized = featureName.trim().toLowerCase();
+    for (const [key, val] of Object.entries(CAPABILITY_MAP)) {
+        if (key.trim().toLowerCase() === normalized) return val;
+    }
+    return def;
+}
+
+const TIER_LABELS = {
+    native: '\u2705 Available', workaround: '\ud83d\udd27 Workaround',
+    roadmap: '\ud83d\uddfa\ufe0f Roadmap', gap: '\u274c Gap', unknown: '\u2753 Review'
+};
+
+function renderTierBadge(featureName) {
+    const cap = getCapabilityTier(featureName);
+    const label = TIER_LABELS[cap.tier] || TIER_LABELS.unknown;
+    const parts = [
+        cap.expert_ref,
+        cap.plan_required ? 'Plan: ' + cap.plan_required : null,
+        cap.coverage_notes,
+        cap.confidence !== 'high' ? '\u26a0 Confidence: ' + cap.confidence : null
+    ].filter(Boolean).join(' \u00b7 ');
+    const confClass = cap.confidence === 'low' ? ' low-confidence' : '';
+    return '<span class="tier-badge ' + cap.tier + confClass + '" data-tooltip="' + esc(parts) + '">' + label + '</span>';
+}
+
+let activeTierFilters = new Set(['all']);
+function tierFilteredFeatures(features) {
+    if (activeTierFilters.has('all')) return features;
+    return features.filter(function(f) {
+        var name = typeof f === 'string' ? f : (f.feature || f.name || f.keyword || '');
+        return activeTierFilters.has(getCapabilityTier(name).tier);
+    });
+}
+
+function toggleTierFilter(btn) {
+    var tier = btn.dataset.tier;
+    if (tier === 'all') {
+        activeTierFilters = new Set(['all']);
+    } else {
+        activeTierFilters.delete('all');
+        if (activeTierFilters.has(tier)) {
+            activeTierFilters.delete(tier);
+        } else {
+            activeTierFilters.add(tier);
+        }
+        if (activeTierFilters.size === 0) activeTierFilters = new Set(['all']);
+    }
+    document.querySelectorAll('.tier-filter-btn').forEach(function(b) {
+        b.classList.toggle('active', activeTierFilters.has(b.dataset.tier));
+    });
+    buildFeatures();
+}
+
 const GENERIC_TITLE_RE = /^connect\s+with\s+teachable$/i;
 const FOLLOWUP_TITLE_RE = /^teachable\s+followup$/i;
 function getProspectTitle(call) {
@@ -2705,11 +2908,14 @@ function buildFeatureCard(kw, mentions, callMap, companies, maxMentions, featIdx
     const countLabel = '<span class="cnt-num">' + count + '</span> <span class="cnt-label">' + countWord + '</span>' + barHTML;
 
     const callIds = [...new Set(mentions.map(m => m.call_id))];
-    return '<div class="card" data-feat-idx="' + featIdx + '" data-companies="' + esc((companies || []).join(',').toLowerCase()) + '" data-callids="' + esc(callIds.join(',')) + '" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + ' ' + esc(Object.keys(coMap).join(' ').toLowerCase()) + '">' +
+    const capTier = getCapabilityTier(kw).tier;
+    const tierClass = ' tier-' + capTier;
+    const badge = renderTierBadge(kw);
+    return '<div class="card feature-card' + tierClass + '" data-feat-idx="' + featIdx + '" data-companies="' + esc((companies || []).join(',').toLowerCase()) + '" data-callids="' + esc(callIds.join(',')) + '" data-search="' + esc(kw.toLowerCase()) + ' ' + esc(mentions.map(m => m.speaker + ' ' + m.call_title + ' ' + m.text).join(' ').toLowerCase()) + ' ' + esc(Object.keys(coMap).join(' ').toLowerCase()) + '">' +
         '<div class="card-hdr" onclick="toggleFeatureDetail(this)">' +
             '<div class="left"><span class="arrow">&#9654;</span>' +
                 '<div class="name-block">' +
-                    '<div class="name">' + esc(kw) + '</div>' +
+                    '<div class="name">' + esc(kw) + badge + '</div>' +
                     (pillsHTML ? '<div class="hdr-tags">' + pillsHTML + '</div>' : '') +
                 '</div>' +
             '</div>' +
@@ -2744,6 +2950,15 @@ function buildFeatures() {
         featureGroups[m.keyword].mentions.push(m);
     });
 
+    // Apply tier filter (scoped to By Feature tab only)
+    if (!activeTierFilters.has('all')) {
+        Object.keys(featureGroups).forEach(kw => {
+            if (!activeTierFilters.has(getCapabilityTier(kw).tier)) {
+                delete featureGroups[kw];
+            }
+        });
+    }
+
     const callMap = {};
     DATA.calls.forEach(c => { callMap[c.id] = c; });
     _featCallMap = callMap;
@@ -2777,7 +2992,43 @@ function buildFeatures() {
         return b[1].totalMentions - a[1].totalMentions;
     });
 
+    // Tier stats bar + filter toggle (only if capability map has data)
     let html = '';
+    if (Object.keys(CAPABILITY_MAP).length > 0) {
+        // Stats bar
+        const allKws = Object.keys(featureGroups);
+        const allMentionKws = Object.keys(activeMentions().reduce(function(acc, m) { acc[m.keyword] = true; return acc; }, {}));
+        const tierCounts = { native: 0, workaround: 0, roadmap: 0, gap: 0, unknown: 0 };
+        allMentionKws.forEach(function(kw) { var t = getCapabilityTier(kw).tier; tierCounts[t] = (tierCounts[t] || 0) + 1; });
+        var total = allMentionKws.length;
+        var pct = function(n) { return total > 0 ? Math.round(n / total * 100) : 0; };
+        html += '<div class="tier-stats-bar">';
+        html += '<div class="tier-stats-total">' + total + ' unique features across ' + DATA.stats.unique_calls + ' analyzed calls</div>';
+        html += '<div class="tier-stats-breakdown">';
+        html += '<span>\u274c ' + tierCounts.gap + ' Gaps (' + pct(tierCounts.gap) + '%)</span>';
+        html += '<span class="tier-stat-sep">\u00b7</span>';
+        html += '<span>\ud83d\udd27 ' + tierCounts.workaround + ' Workarounds (' + pct(tierCounts.workaround) + '%)</span>';
+        html += '<span class="tier-stat-sep">\u00b7</span>';
+        html += '<span>\u2705 ' + tierCounts.native + ' Native (' + pct(tierCounts.native) + '%)</span>';
+        html += '<span class="tier-stat-sep">\u00b7</span>';
+        html += '<span>\ud83d\uddfa\ufe0f ' + tierCounts.roadmap + ' Roadmap (' + pct(tierCounts.roadmap) + '%)</span>';
+        html += '<span class="tier-stat-sep">\u00b7</span>';
+        html += '<span>\u2753 ' + tierCounts.unknown + ' Review (' + pct(tierCounts.unknown) + '%)</span>';
+        html += '</div></div>';
+
+        // Tier filter buttons
+        var btnActive = function(t) { return activeTierFilters.has(t) ? ' active' : ''; };
+        html += '<div class="tier-filter-group">';
+        html += '<span class="tier-filter-label">Show:</span>';
+        html += '<button class="tier-filter-btn' + btnActive('all') + '" data-tier="all" onclick="toggleTierFilter(this)">All</button>';
+        html += '<button class="tier-filter-btn' + btnActive('gap') + '" data-tier="gap" onclick="toggleTierFilter(this)">\u274c Gaps</button>';
+        html += '<button class="tier-filter-btn' + btnActive('native') + '" data-tier="native" onclick="toggleTierFilter(this)">\u2705 Native</button>';
+        html += '<button class="tier-filter-btn' + btnActive('workaround') + '" data-tier="workaround" onclick="toggleTierFilter(this)">\ud83d\udd27 Workaround</button>';
+        html += '<button class="tier-filter-btn' + btnActive('roadmap') + '" data-tier="roadmap" onclick="toggleTierFilter(this)">\ud83d\uddfa\ufe0f Roadmap</button>';
+        html += '<button class="tier-filter-btn' + btnActive('unknown') + '" data-tier="unknown" onclick="toggleTierFilter(this)">\u2753 Review</button>';
+        html += '</div>';
+    }
+
     sortedCats.forEach(([catName, catData], idx) => {
         catData.features.sort((a, b) => b.mentions.length - a.mentions.length);
 
@@ -2963,9 +3214,9 @@ function buildCalls() {
         if (!isPending) {
             const visibleFeats = features.slice(0, TAG_CAP);
             const extraCount = features.length - TAG_CAP;
-            tags = visibleFeats.map(f => '<span class="feat-tag">' + esc(f) + '</span>').join('');
+            tags = visibleFeats.map(f => { var t = getCapabilityTier(f).tier; var pfx = t === 'native' ? '\u2705 ' : t === 'workaround' ? '\ud83d\udd27 ' : t === 'roadmap' ? '\ud83d\uddfa\ufe0f ' : ''; return '<span class="feat-tag tier-' + t + '">' + pfx + esc(f) + '</span>'; }).join('');
             if (extraCount > 0) {
-                const hiddenTags = features.slice(TAG_CAP).map(f => '<span class="feat-tag">' + esc(f) + '</span>').join('');
+                const hiddenTags = features.slice(TAG_CAP).map(f => { var t = getCapabilityTier(f).tier; var pfx = t === 'native' ? '\u2705 ' : t === 'workaround' ? '\ud83d\udd27 ' : t === 'roadmap' ? '\ud83d\uddfa\ufe0f ' : ''; return '<span class="feat-tag tier-' + t + '">' + pfx + esc(f) + '</span>'; }).join('');
                 tags += '<span class="feat-tag-extra" style="display:none">' + hiddenTags + '</span>';
                 tags += '<button class="feat-tag-more" onclick="event.stopPropagation();toggleTagMore(this)">+' + extraCount + ' more</button>';
             }
@@ -3368,7 +3619,7 @@ function buildReport() {
     }
     prodH += '</div>';
 
-    // Feature Recap
+    // Feature Recap — tier-split when capability map is available
     prodH += '<div class="rpt-section' + (prodSections.features ? '' : ' hidden') + '" id="product-panel-features">';
     prodH += '<div class="rpt-section-hdr">Feature Recap</div>';
     if (DATA.recap) {
@@ -3376,21 +3627,82 @@ function buildReport() {
     } else {
         prodH += '<div class="rpt-recap-block"><em>Run analysis to generate the feature recap narrative.</em></div>';
     }
-    if (catEntries.length) {
+
+    // Helper to render a feature line with company links
+    function rptFeatLine(feat, entries) {
+        const byCompany = {};
+        entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
+        const parts = Object.entries(byCompany).map(([co, es]) => {
+            const e = es[0];
+            if (e.link && e.tsDisplay) return esc(co) + ' (<a href="' + esc(e.link) + '" target="_blank" style="color:#7aa2ff">' + esc(e.tsDisplay) + '</a>)';
+            if (e.tsDisplay) return esc(co) + ' (' + esc(e.tsDisplay) + ')';
+            return esc(co);
+        });
+        return '<div class="rpt-feat-line">\u2013 <strong>' + esc(feat) + '</strong> \u2014 ' + parts.join(' \u00b7 ') + '</div>';
+    }
+
+    if (Object.keys(CAPABILITY_MAP).length > 0 && catEntries.length) {
+        // Flatten all features with their entries
+        var allFeatsFlat = [];
+        catEntries.forEach(ce => {
+            Object.entries(ce.feats).forEach(([feat, entries]) => {
+                allFeatsFlat.push({ feat: feat, entries: entries, tier: getCapabilityTier(feat).tier });
+            });
+        });
+
+        // Section 1: Unmet Product Needs (gaps)
+        var gapFeats = allFeatsFlat.filter(f => f.tier === 'gap').sort((a, b) => b.entries.length - a.entries.length);
+        if (gapFeats.length) {
+            prodH += '<div class="rpt-subhead" style="color:#f87171">\u274c Unmet Product Needs</div>';
+            prodH += '<div style="font-size:0.78rem;color:#6b7084;margin-bottom:0.5rem">Features prospects asked for that Teachable does not currently support</div>';
+            gapFeats.forEach(f => { prodH += rptFeatLine(f.feat, f.entries); });
+        }
+
+        // Roadmap callout
+        var roadmapFeats = allFeatsFlat.filter(f => f.tier === 'roadmap');
+        if (roadmapFeats.length) {
+            prodH += '<div class="rpt-subhead" style="color:#60a5fa">\ud83d\uddfa\ufe0f Roadmap</div>';
+            prodH += '<div style="font-size:0.78rem;color:#6b7084;margin-bottom:0.5rem">' + roadmapFeats.length + ' feature' + (roadmapFeats.length !== 1 ? 's are' : ' is') + ' on the 2026 roadmap or in beta</div>';
+            roadmapFeats.sort((a, b) => b.entries.length - a.entries.length).forEach(f => {
+                var cap = getCapabilityTier(f.feat);
+                prodH += '<div class="rpt-feat-line">\u2013 <strong>' + esc(f.feat) + '</strong>';
+                if (cap.coverage_notes) prodH += ' <span style="color:#6b7084;font-size:0.78rem">\u2014 ' + esc(cap.coverage_notes) + '</span>';
+                prodH += '</div>';
+            });
+        }
+
+        // Section 2: Sales Enablement Gaps (native + workaround)
+        var enableFeats = allFeatsFlat.filter(f => f.tier === 'native' || f.tier === 'workaround').sort((a, b) => b.entries.length - a.entries.length);
+        if (enableFeats.length) {
+            var totalEnableMentions = enableFeats.reduce((s, f) => s + f.entries.length, 0);
+            prodH += '<div class="rpt-subhead" style="color:#4ade80">\u2705 Sales Enablement Gaps</div>';
+            prodH += '<div style="font-size:0.78rem;color:#6b7084;margin-bottom:0.5rem">Prospects asked about these ' + totalEnableMentions + ' times, but Teachable already supports them</div>';
+            enableFeats.forEach(f => {
+                var cap = getCapabilityTier(f.feat);
+                var planNote = cap.plan_required ? ' (Plan: ' + cap.plan_required + ')' : '';
+                prodH += '<div class="rpt-feat-line">\u2013 <strong>' + esc(f.feat) + '</strong>' + (TIER_LABELS[cap.tier] || '') + planNote;
+                if (cap.coverage_notes) prodH += ' <span style="color:#6b7084;font-size:0.78rem">\u2014 ' + esc(cap.coverage_notes) + '</span>';
+                prodH += '</div>';
+            });
+        }
+
+        // Section 3: Needs Review (unknown)
+        var unknownFeats = allFeatsFlat.filter(f => f.tier === 'unknown');
+        if (unknownFeats.length) {
+            prodH += '<div class="rpt-subhead" style="color:#9ca3af">\u2753 Needs Review</div>';
+            prodH += '<div style="font-size:0.78rem;color:#6b7084;margin-bottom:0.5rem">' + unknownFeats.length + ' feature' + (unknownFeats.length !== 1 ? 's' : '') + ' couldn\'t be confidently classified \u2014 manual review recommended</div>';
+            unknownFeats.forEach(f => {
+                prodH += '<div class="rpt-feat-line" style="opacity:0.7">\u2013 ' + esc(f.feat) + ' (' + f.entries.length + ' mention' + (f.entries.length !== 1 ? 's' : '') + ')</div>';
+            });
+        }
+    } else if (catEntries.length) {
+        // Fallback: original category-based recap when no capability map
         prodH += '<div class="rpt-subhead">By Category</div>';
         catEntries.forEach(ce => {
             prodH += '<div class="rpt-cat-group">';
             prodH += '<div class="rpt-cat-title">' + esc(ce.cat) + ' <span class="rpt-cat-co">(' + ce.coCount + ' compan' + (ce.coCount !== 1 ? 'ies' : 'y') + ')</span></div>';
             Object.entries(ce.feats).sort((a, b) => b[1].length - a[1].length).forEach(([feat, entries]) => {
-                const byCompany = {};
-                entries.forEach(e => { if (!byCompany[e.company]) byCompany[e.company] = []; byCompany[e.company].push(e); });
-                const parts = Object.entries(byCompany).map(([co, es]) => {
-                    const e = es[0];
-                    if (e.link && e.tsDisplay) return esc(co) + ' (<a href="' + esc(e.link) + '" target="_blank" style="color:#7aa2ff">' + esc(e.tsDisplay) + '</a>)';
-                    if (e.tsDisplay) return esc(co) + ' (' + esc(e.tsDisplay) + ')';
-                    return esc(co);
-                });
-                prodH += '<div class="rpt-feat-line">\u2013 <strong>' + esc(feat) + '</strong> \u2014 ' + parts.join(' \u00b7 ') + '</div>';
+                prodH += rptFeatLine(feat, entries);
             });
             prodH += '</div>';
         });
@@ -3558,6 +3870,46 @@ function buildReport() {
         mktH += '<div class="rpt-body"><em>No terminology data from this period.</em></div>';
     }
     mktH += '</div>';
+
+    // Enablement Intelligence (only if capability map loaded)
+    if (Object.keys(CAPABILITY_MAP).length > 0) {
+        // Get feature mention counts
+        var fMentionCounts = {};
+        mentions.forEach(function(m) { fMentionCounts[m.keyword] = (fMentionCounts[m.keyword] || 0) + 1; });
+        var nativeFeats = Object.entries(fMentionCounts)
+            .filter(function(e) { return getCapabilityTier(e[0]).tier === 'native'; })
+            .sort(function(a, b) { return b[1] - a[1]; });
+        var waFeats = Object.entries(fMentionCounts)
+            .filter(function(e) { return getCapabilityTier(e[0]).tier === 'workaround'; })
+            .sort(function(a, b) { return b[1] - a[1]; });
+
+        if (nativeFeats.length || waFeats.length) {
+            mktH += '<div class="rpt-section" id="marketing-panel-enablement">';
+            mktH += '<div class="rpt-section-hdr">Enablement Intelligence</div>';
+            if (nativeFeats.length) {
+                mktH += '<div class="rpt-subhead">\u2705 Top features prospects didn\'t know we have</div>';
+                mktH += '<div class="rpt-body">';
+                nativeFeats.slice(0, 10).forEach(function(e) {
+                    var cap = getCapabilityTier(e[0]);
+                    var plan = cap.plan_required ? ' (' + cap.plan_required + ')' : '';
+                    var notes = cap.coverage_notes ? ' \u2014 ' + cap.coverage_notes : '';
+                    mktH += '<div>\u2022 <strong>' + esc(e[0]) + '</strong> (' + e[1] + ' mention' + (e[1] !== 1 ? 's' : '') + ')' + plan + '<span style="color:#6b7084;font-size:0.78rem">' + esc(notes) + '</span></div>';
+                });
+                mktH += '</div>';
+            }
+            if (waFeats.length) {
+                mktH += '<div class="rpt-subhead">\ud83d\udd27 Workaround opportunities</div>';
+                mktH += '<div class="rpt-body">';
+                waFeats.slice(0, 10).forEach(function(e) {
+                    var cap = getCapabilityTier(e[0]);
+                    var notes = cap.coverage_notes ? ' \u2014 ' + cap.coverage_notes : '';
+                    mktH += '<div>\u2022 <strong>' + esc(e[0]) + '</strong> (' + e[1] + ' mention' + (e[1] !== 1 ? 's' : '') + ')<span style="color:#6b7084;font-size:0.78rem">' + esc(notes) + '</span></div>';
+                });
+                mktH += '</div>';
+            }
+            mktH += '</div>';
+        }
+    }
 
     // ==================== PRODUCT EMAIL CARD (light theme) ====================
     let prodEmail = '<h1>PRODUCT INTELLIGENCE REPORT</h1>';
@@ -4854,6 +5206,20 @@ let activeCompTypeFilter = null; // null = show all
 let activeCompNameFilters = new Set(); // empty = show all
 let compAllExpanded = false; // false = not all expanded (initial: top 3 open); toggled by button
 let compExpandUserSet = false; // true once user clicks expand/collapse toggle
+let compShowAll = false; // false = hide noise (unverified + 1 mention)
+
+function setCompShowAll(val) {
+    compShowAll = val;
+    buildCompetitors();
+}
+
+function toggleNoiseSection() {
+    const grid = document.getElementById('noise-grid');
+    const chevron = document.getElementById('noise-chevron');
+    const isHidden = !grid.classList.contains('open');
+    grid.classList.toggle('open', isHidden);
+    chevron.style.transform = isHidden ? 'rotate(90deg)' : '';
+}
 
 // ---- Competitor filter dropdowns ----
 function buildCompFilterDropdown(allCompNames) {
@@ -5086,11 +5452,22 @@ function buildCompetitors() {
         return { short_description: 'Description not available.' };
     }
 
+    function isNeedsReview(name) {
+        return name.toUpperCase() === 'NEEDS_REVIEW';
+    }
+
+    function compTier(name, mentionCount) {
+        if (getCompMeta(name).type) return 'verified';
+        if (mentionCount >= 2) return 'notable';
+        return 'noise';
+    }
+
     // Group by competitor (separate active vs excluded)
     const byComp = {};
     const byCompExcluded = {};
     allMentions.forEach(cm => {
         const name = cm.competitor;
+        if (isNeedsReview(name)) return;
         const isExcluded = excludedCompetitors.has(name.toLowerCase());
         const target = isExcluded ? byCompExcluded : byComp;
         if (!target[name]) target[name] = { mentions: [], types: new Set(), companies: new Set() };
@@ -5120,11 +5497,19 @@ function buildCompetitors() {
         });
     }
 
-    // Sort competitors: verified first (by mention count desc), then unverified (by mention count desc)
+    // In default mode, filter out noise (unverified + 1 mention)
+    if (!compShowAll) {
+        filteredComps = filteredComps.filter(([name, data]) =>
+            compTier(name, data.mentions.length) !== 'noise'
+        );
+    }
+
+    // Sort competitors: verified → notable → noise, then by mention count desc
+    const tierRank = { verified: 0, notable: 1, noise: 2 };
     const sortedComps = filteredComps.sort((a, b) => {
-        const aVerified = !!getCompMeta(a[0]).type;
-        const bVerified = !!getCompMeta(b[0]).type;
-        if (aVerified !== bVerified) return bVerified ? 1 : -1;
+        const aTier = compTier(a[0], a[1].mentions.length);
+        const bTier = compTier(b[0], b[1].mentions.length);
+        if (aTier !== bTier) return tierRank[aTier] - tierRank[bTier];
         return b[1].mentions.length - a[1].mentions.length;
     });
     const activeMentionCount = sortedComps.reduce((sum, [, d]) => sum + d.mentions.length, 0);
@@ -5148,19 +5533,25 @@ function buildCompetitors() {
     sortedComps.forEach(([name]) => compColor(name));
 
     // ========== COMPETITOR OVERVIEW CARDS ==========
-    html += '<div class="seg-section-title">Competitor Overview</div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">';
+    html += '<div class="seg-section-title" style="margin:0;border:0;padding:0">Competitor Overview</div>';
+    html += '<div style="display:flex;gap:6px">';
+    html += '<button class="comp-toggle-btn' + (compShowAll ? '' : ' active') + '" onclick="setCompShowAll(false)">Verified &amp; Notable</button>';
+    html += '<button class="comp-toggle-btn' + (compShowAll ? ' active' : '') + '" onclick="setCompShowAll(true)">Show All</button>';
+    html += '</div></div>';
     html += '<div class="seg-overview">';
     sortedComps.forEach(([name, data]) => {
         const meta = getCompMeta(name);
-        const isVerified = !!meta.type;
         const color = compColor(name);
+        const tier = compTier(name, data.mentions.length);
+        const tierClass = tier === 'verified' ? ' comp-verified' : tier === 'notable' ? ' comp-notable' : ' comp-noise';
         const descHTML = meta.short_description
             ? '<div class="seg-card-sub" style="margin-top:0.5rem;padding-top:0.4rem;border-top:1px solid #1e2130">' + esc(meta.short_description) + '</div>'
             : '';
-        const badge = isVerified ? '' : '<span class="seg-card-unverified-badge">Unverified</span>';
+        const badge = tier === 'noise' ? '<span class="seg-card-unverified-badge">Unverified</span>' : '';
         const dismissX = '<button class="seg-card-dismiss" onclick="event.stopPropagation();dismissCompetitor(\'' + esc(name).replace(/'/g, "\\'") + '\')" title="Dismiss competitor">&#10005;</button>';
         const hasNewMentions = data.mentions.some(cm => isNewMention(cm));
-        html += '<div class="seg-card clickable' + (isVerified ? '' : ' unverified') + '" style="--seg-color:' + color + '" onclick="scrollToCompDetail(\'' + esc(name).replace(/'/g, "\\'") + '\')">' +
+        html += '<div class="seg-card clickable' + tierClass + '" style="--seg-color:' + color + '" onclick="scrollToCompDetail(\'' + esc(name).replace(/'/g, "\\'") + '\')">' +
             (hasNewMentions ? '<span class="new-dot"></span>' : '') +
             dismissX +
             '<div class="seg-card-name">' + esc(name) + badge + '</div>' +
@@ -5170,6 +5561,35 @@ function buildCompetitors() {
         '</div>';
     });
     html += '</div>';
+
+    // ========== COLLAPSED NOISE SECTION (default mode only) ==========
+    if (!compShowAll) {
+        const allComps = Object.entries(byComp);
+        const noiseComps = allComps.filter(([name, data]) => compTier(name, data.mentions.length) === 'noise');
+        if (noiseComps.length > 0) {
+            html += '<div class="comp-noise-section">';
+            html += '<button class="comp-noise-toggle" onclick="toggleNoiseSection()">';
+            html += '<span id="noise-chevron" style="font-size:0.7rem;transition:transform 0.15s">&#9654;</span>';
+            html += 'Other mentions (' + noiseComps.length + ')';
+            html += '</button>';
+            html += '<div class="comp-noise-grid" id="noise-grid">';
+            noiseComps.sort((a, b) => b[1].mentions.length - a[1].mentions.length).forEach(([name, data]) => {
+                const color = compColor(name);
+                const meta = getCompMeta(name);
+                const descHTML = meta.short_description
+                    ? '<div class="seg-card-sub" style="margin-top:0.5rem;padding-top:0.4rem;border-top:1px solid #1e2130">' + esc(meta.short_description) + '</div>'
+                    : '';
+                html += '<div class="seg-card comp-noise" style="--seg-color:' + color + '">' +
+                    '<div class="seg-card-name">' + esc(name) + '<span class="seg-card-unverified-badge">Unverified</span></div>' +
+                    '<div class="seg-card-stat">' + data.mentions.length + ' mention' + (data.mentions.length !== 1 ? 's' : '') + '</div>' +
+                    '<div class="seg-card-sub">from ' + data.companies.size + ' compan' + (data.companies.size !== 1 ? 'ies' : 'y') + '</div>' +
+                    descHTML +
+                '</div>';
+            });
+            html += '</div>';
+            html += '</div>';
+        }
+    }
 
     // ========== COMPETITOR MIX BAR ==========
     if (sortedComps.length > 0) {
@@ -5210,10 +5630,12 @@ function buildCompetitors() {
         const isCanonical = !!meta.type;
         const type = meta.type || 'unknown';
         const color = compColor(name);
+        const detailTier = compTier(name, data.mentions.length);
+        const detailTierClass = detailTier === 'notable' ? ' comp-notable-detail' : detailTier === 'noise' ? ' comp-noise-detail' : '';
         // If user manually toggled, respect that. Otherwise: top 3 expanded, rest collapsed
         const isCollapsed = compExpandUserSet ? !compAllExpanded : idx >= 3;
 
-        html += '<div class="comp-detail-card' + (isCanonical ? '' : ' comp-unrecognized') + (isCollapsed ? ' collapsed' : '') + '" data-comp-type="' + esc(type) + '" data-comp-name="' + esc(name) + '" style="--comp-color:' + color + '">';
+        html += '<div class="comp-detail-card' + (isCanonical ? '' : ' comp-unrecognized') + detailTierClass + (isCollapsed ? ' collapsed' : '') + '" data-comp-type="' + esc(type) + '" data-comp-name="' + esc(name) + '" style="--comp-color:' + color + '">';
         html += '<div class="comp-detail-hdr" onclick="toggleCompCard(this)">';
         html += '<span class="comp-collapse-arrow">&#9654;</span>';
         html += '<div class="comp-detail-name">' + esc(name) + '</div>';

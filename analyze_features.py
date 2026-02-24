@@ -937,6 +937,17 @@ def cmd_inject(args):
         print("  Tip: run `python3 analyze_features.py validate <file> --fix` to auto-correct.")
         sys.exit(1)
 
+    # Embed capability map for dashboard overlay
+    cap_map_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'capability_map.json')
+    if os.path.exists(cap_map_path):
+        with open(cap_map_path) as f:
+            cap_data = json.load(f)
+        data['capability_map'] = cap_data.get('mapping', {})
+        print(f"  Loaded capability map: {len(data['capability_map'])} features mapped")
+    else:
+        print("  WARNING: config/capability_map.json not found — overlay will be disabled")
+        data['capability_map'] = {}
+
     # Write updated dashboard
     _write_data_to_html(args.dashboard, data)
 
@@ -1302,6 +1313,120 @@ def validate_analysis(data, valid_categories, valid_segments, valid_competitors=
     return errors
 
 
+def _check_capability_map_coverage(data):
+    """Check capability map coverage of features in analysis data."""
+    cap_map_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'capability_map.json')
+    if not os.path.exists(cap_map_path):
+        print("\n  INFO: No config/capability_map.json found — skipping overlay validation")
+        return
+    with open(cap_map_path) as f:
+        cap_data = json.load(f)
+    cap_map = cap_data.get('mapping', {})
+    map_keys_lower = {k.lower().strip() for k in cap_map.keys()}
+
+    # Collect unique feature names from analysis
+    unmapped = []
+    features_dict = data.get("features", {})
+    all_names = set()
+    for call_feats in features_dict.values():
+        if isinstance(call_feats, list):
+            for f in call_feats:
+                fname = (f.get('feature') or f.get('name') or f.get('keyword', '')).strip()
+                if fname and fname.upper() != 'NEEDS_REVIEW':
+                    all_names.add(fname)
+    for fname in all_names:
+        if fname.lower().strip() not in map_keys_lower:
+            unmapped.append(fname)
+    if unmapped:
+        print(f"\n  WARNING: {len(unmapped)} features not in capability_map.json:")
+        for fname in sorted(set(unmapped)):
+            print(f"    - {fname}")
+        print("\n  Run: python3 analyze_features.py map-features to generate mappings")
+    else:
+        print(f"\n  \u2713 All {len(all_names)} features have capability map entries")
+    low_conf = [k for k, v in cap_map.items() if v.get('confidence') == 'low']
+    if low_conf:
+        print(f"\n  INFO: {len(low_conf)} features have low confidence:")
+        for fname in sorted(low_conf)[:10]:
+            print(f"    - {fname}: {cap_map[fname].get('tier')} ({cap_map[fname].get('coverage_notes', '')})")
+        if len(low_conf) > 10:
+            print(f"    ... and {len(low_conf) - 10} more")
+
+
+def cmd_map_features(args):
+    """Show unmapped features and optionally inject a mapping file."""
+    # Load existing capability map
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    cap_map_path = os.path.join(base_dir, 'config', 'capability_map.json')
+    existing_map = {}
+    if os.path.exists(cap_map_path):
+        with open(cap_map_path) as f:
+            existing_map = json.load(f).get('mapping', {})
+
+    # Load features from dashboard HTML
+    with open(args.dashboard, 'r') as f:
+        html = f.read()
+    m = re.search(r'let DATA = ({.*?});\s*(?://|</script>)', html, re.DOTALL)
+    if not m:
+        print("ERROR: Could not find DATA in dashboard HTML")
+        sys.exit(1)
+    data = json.loads(m.group(1))
+
+    all_names = set()
+    for mention in data.get('mentions', []):
+        kw = mention.get('keyword', '').strip()
+        if kw and kw.upper() != 'NEEDS_REVIEW':
+            all_names.add(kw)
+
+    map_keys_lower = {k.lower().strip() for k in existing_map.keys()}
+    unmapped = sorted([n for n in all_names if n.lower().strip() not in map_keys_lower])
+
+    print(f"Total unique features: {len(all_names)}")
+    print(f"Already mapped: {len(all_names) - len(unmapped)}")
+    print(f"Unmapped: {len(unmapped)}")
+
+    if hasattr(args, 'inject_file') and args.inject_file:
+        # Merge new mappings into existing
+        with open(args.inject_file) as f:
+            new_data = json.load(f)
+        new_mapping = new_data.get('mapping', new_data)
+        merged = dict(existing_map)
+        added = 0
+        for k, v in new_mapping.items():
+            if k not in merged:
+                added += 1
+            merged[k] = v
+        output = {
+            "version": 2,
+            "source": "Teachable_Platform_Expert_Skill.md",
+            "source_date": "2026-02",
+            "last_generated": date.today().isoformat() + "T00:00:00Z",
+            "feature_count": len(merged),
+            "mapping": merged
+        }
+        os.makedirs(os.path.dirname(cap_map_path), exist_ok=True)
+        with open(cap_map_path, 'w') as f:
+            json.dump(output, f, indent=2)
+        print(f"\nMerged {added} new + {len(new_mapping) - added} updated entries into {cap_map_path}")
+        print(f"Total mapped: {len(merged)}")
+    elif unmapped:
+        print(f"\nUnmapped feature names (paste into generation prompt):")
+        for name in unmapped:
+            print(f"  {name}")
+    else:
+        print("\nAll features are mapped!")
+
+    # Show tier distribution
+    if existing_map:
+        tiers = {}
+        for v in existing_map.values():
+            t = v.get('tier', 'unknown')
+            tiers[t] = tiers.get(t, 0) + 1
+        print(f"\nCurrent tier distribution:")
+        for t in ['native', 'workaround', 'roadmap', 'gap', 'unknown']:
+            print(f"  {t}: {tiers.get(t, 0)}")
+
+
 def cmd_validate(args):
     """Validate an analysis JSON against canonical category/segment/competitor lists."""
     with open(args.analysis_json, "r") as f:
@@ -1339,6 +1464,7 @@ def cmd_validate(args):
         print(f"VALID: {feat_count} features, {seg_count} segments, {comp_count} competitor mentions — all canonical.")
         if needs_review_cats or needs_review_segs or needs_review_comps:
             print(f"  NEEDS_REVIEW: {needs_review_cats} feature(s), {needs_review_segs} segment(s), {needs_review_comps} competitor(s)")
+        _check_capability_map_coverage(data)
         sys.exit(0)
 
     # Print errors
@@ -1362,6 +1488,9 @@ def cmd_validate(args):
     else:
         print(f"\n  Run with --fix to auto-correct obvious mismatches.")
         sys.exit(1)
+
+    # Check capability map coverage
+    _check_capability_map_coverage(data)
 
 
 def _apply_fixes(data, errors, output_path):
@@ -1570,6 +1699,13 @@ def main():
                                help="Fix company fields and remove invalid internal-speaker mentions")
     p_cleanup.add_argument("dashboard", help="Path to dashboard HTML file")
 
+    # Map features — capability overlay helper
+    p_mapf = sub.add_parser("map-features",
+                             help="Show unmapped features and manage capability_map.json")
+    p_mapf.add_argument("dashboard", help="Path to dashboard HTML file")
+    p_mapf.add_argument("--inject", dest="inject_file", metavar="FILE",
+                         help="JSON file with new mappings to merge into capability_map.json")
+
     args = parser.parse_args()
     if args.command == "extract":
         cmd_extract(args)
@@ -1583,6 +1719,8 @@ def main():
         cmd_refetch_empty(args)
     elif args.command == "cleanup":
         cmd_cleanup(args)
+    elif args.command == "map-features":
+        cmd_map_features(args)
     else:
         parser.print_help()
 
