@@ -1503,37 +1503,29 @@ body {
 
 /* ====== Capability Tier Overlay ====== */
 .tier-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 2px 8px; border-radius: 4px;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+    display: inline-flex; align-items: center;
+    padding: 2px 6px; border-radius: 3px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase;
     white-space: nowrap; margin-left: 8px; vertical-align: middle;
-    position: relative; cursor: default;
+    cursor: default;
 }
-.tier-badge.native { background: #0a2e1a; color: #4ade80; border: 1px solid #166534; }
-.tier-badge.workaround { background: #2a1f0a; color: #fbbf24; border: 1px solid #92400e; }
-.tier-badge.roadmap { background: #0a1a2e; color: #60a5fa; border: 1px solid #1e40af; }
-.tier-badge.gap { background: #2e0a0a; color: #f87171; border: 1px solid #991b1b; }
-.tier-badge.unknown { background: #1a1a1e; color: #9ca3af; border: 1px solid #4b5563; }
-.tier-badge.low-confidence { border-style: dashed; }
+.tier-badge.native { background: rgba(22,101,52,0.25); color: #4ade80; }
+.tier-badge.workaround { background: rgba(146,64,14,0.25); color: #fbbf24; }
+.tier-badge.roadmap { background: rgba(30,64,175,0.25); color: #60a5fa; }
+.tier-badge.gap { background: rgba(153,27,27,0.25); color: #f87171; }
+.tier-badge.unknown { background: rgba(75,85,99,0.25); color: #9ca3af; }
+.tier-badge.low-confidence { border: 1px dashed rgba(255,255,255,0.15); }
 
-/* Tier badge tooltip */
-.tier-badge[data-tooltip]:hover::after {
-    content: attr(data-tooltip);
-    position: absolute; bottom: calc(100% + 8px); left: 50%;
-    transform: translateX(-50%);
+/* Tier badge tooltip — JS-positioned to avoid overflow:hidden clipping */
+#tier-tooltip {
+    position: fixed; display: none;
     background: #1e293b; color: #f8fafc;
     padding: 8px 12px; border-radius: 6px;
     font-size: 12px; font-weight: 400; line-height: 1.4;
-    max-width: 300px; min-width: 180px; white-space: normal;
-    z-index: 100; pointer-events: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.tier-badge[data-tooltip]:hover::before {
-    content: ''; position: absolute;
-    bottom: calc(100% + 2px); left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent; border-top-color: #1e293b;
-    z-index: 101; pointer-events: none;
+    max-width: 300px; min-width: 160px; white-space: normal;
+    z-index: 10000; pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 /* Tier filter buttons */
@@ -1579,14 +1571,15 @@ body {
 .feature-card.tier-workaround:hover { opacity: 1; }
 
 /* By Call tab — tier-tinted feature tags */
-.feat-tag.tier-native { background: #0a2e1a; border-color: #166534; color: #4ade80; }
-.feat-tag.tier-workaround { background: #2a1f0a; border-color: #92400e; color: #fbbf24; }
-.feat-tag.tier-roadmap { background: #0a1a2e; border-color: #1e40af; color: #60a5fa; }
-.feat-tag.tier-gap { }
-.feat-tag.tier-unknown { background: #1a1a1e; border-color: #4b5563; color: #9ca3af; }
+.feat-tag.tier-native { border-left: 2px solid #4ade80; color: rgba(74,222,128,0.7); }
+.feat-tag.tier-workaround { border-left: 2px solid #fbbf24; color: rgba(251,191,36,0.7); }
+.feat-tag.tier-roadmap { border-left: 2px solid #60a5fa; color: rgba(96,165,250,0.7); }
+.feat-tag.tier-gap { border-left: 2px solid #f87171; color: rgba(248,113,113,0.7); }
+.feat-tag.tier-unknown { border-left: 2px solid #6b7280; color: #6b7280; }
 </style>
 </head>
 <body>
+<div id="tier-tooltip"></div>
 <div class="wrap">
     <div class="hdr">
         <div class="hdr-left">
@@ -2656,8 +2649,8 @@ function getCapabilityTier(featureName) {
 }
 
 const TIER_LABELS = {
-    native: '\u2705 Available', workaround: '\ud83d\udd27 Workaround',
-    roadmap: '\ud83d\uddfa\ufe0f Roadmap', gap: '\u274c Gap', unknown: '\u2753 Review'
+    native: 'AVAILABLE', workaround: 'WORKAROUND',
+    roadmap: 'ROADMAP', gap: 'GAP', unknown: 'REVIEW'
 };
 
 function renderTierBadge(featureName) {
@@ -2667,13 +2660,32 @@ function renderTierBadge(featureName) {
         cap.expert_ref,
         cap.plan_required ? 'Plan: ' + cap.plan_required : null,
         cap.coverage_notes,
-        cap.confidence !== 'high' ? '\u26a0 Confidence: ' + cap.confidence : null
+        cap.confidence !== 'high' ? 'Confidence: ' + cap.confidence : null
     ].filter(Boolean).join(' \u00b7 ');
     const confClass = cap.confidence === 'low' ? ' low-confidence' : '';
-    return '<span class="tier-badge ' + cap.tier + confClass + '" data-tooltip="' + esc(parts) + '">' + label + '</span>';
+    return '<span class="tier-badge ' + cap.tier + confClass + '" data-tip="' + esc(parts) + '" onmouseenter="showTierTip(this)" onmouseleave="hideTierTip()">' + label + '</span>';
 }
 
-let activeTierFilters = new Set(['all']);
+var _tierTipEl = null;
+function showTierTip(el) {
+    if (!_tierTipEl) { _tierTipEl = document.getElementById('tier-tooltip'); }
+    var text = el.getAttribute('data-tip');
+    if (!text) return;
+    _tierTipEl.textContent = text;
+    _tierTipEl.style.display = 'block';
+    var r = el.getBoundingClientRect();
+    var tw = _tierTipEl.offsetWidth;
+    var left = r.left + r.width / 2 - tw / 2;
+    if (left < 8) left = 8;
+    if (left + tw > window.innerWidth - 8) left = window.innerWidth - 8 - tw;
+    _tierTipEl.style.left = left + 'px';
+    _tierTipEl.style.top = (r.top - _tierTipEl.offsetHeight - 8) + 'px';
+}
+function hideTierTip() {
+    if (_tierTipEl) _tierTipEl.style.display = 'none';
+}
+
+let activeTierFilters = new Set(['gap']);
 function tierFilteredFeatures(features) {
     if (activeTierFilters.has('all')) return features;
     return features.filter(function(f) {
@@ -3021,11 +3033,11 @@ function buildFeatures() {
         html += '<div class="tier-filter-group">';
         html += '<span class="tier-filter-label">Show:</span>';
         html += '<button class="tier-filter-btn' + btnActive('all') + '" data-tier="all" onclick="toggleTierFilter(this)">All</button>';
-        html += '<button class="tier-filter-btn' + btnActive('gap') + '" data-tier="gap" onclick="toggleTierFilter(this)">\u274c Gaps</button>';
-        html += '<button class="tier-filter-btn' + btnActive('native') + '" data-tier="native" onclick="toggleTierFilter(this)">\u2705 Native</button>';
-        html += '<button class="tier-filter-btn' + btnActive('workaround') + '" data-tier="workaround" onclick="toggleTierFilter(this)">\ud83d\udd27 Workaround</button>';
-        html += '<button class="tier-filter-btn' + btnActive('roadmap') + '" data-tier="roadmap" onclick="toggleTierFilter(this)">\ud83d\uddfa\ufe0f Roadmap</button>';
-        html += '<button class="tier-filter-btn' + btnActive('unknown') + '" data-tier="unknown" onclick="toggleTierFilter(this)">\u2753 Review</button>';
+        html += '<button class="tier-filter-btn' + btnActive('gap') + '" data-tier="gap" onclick="toggleTierFilter(this)">Gaps</button>';
+        html += '<button class="tier-filter-btn' + btnActive('native') + '" data-tier="native" onclick="toggleTierFilter(this)">Native</button>';
+        html += '<button class="tier-filter-btn' + btnActive('workaround') + '" data-tier="workaround" onclick="toggleTierFilter(this)">Workaround</button>';
+        html += '<button class="tier-filter-btn' + btnActive('roadmap') + '" data-tier="roadmap" onclick="toggleTierFilter(this)">Roadmap</button>';
+        html += '<button class="tier-filter-btn' + btnActive('unknown') + '" data-tier="unknown" onclick="toggleTierFilter(this)">Review</button>';
         html += '</div>';
     }
 
@@ -3165,46 +3177,8 @@ function buildCalls() {
             .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     }
 
-    // Group into weeks
-    const weeks = new Map(); // weekKey -> { start, calls[] }
-    callList.forEach(c => {
-        const ws = getWeekStart(c.date || '2000-01-01');
-        const key = ws.toISOString().slice(0,10);
-        if (!weeks.has(key)) weeks.set(key, { start: ws, calls: [] });
-        weeks.get(key).calls.push(c);
-    });
-
     let html = '';
-    for (const [, week] of weeks) {
-        const totalFeatures = week.calls.reduce((sum, c) => sum + (byCall[c.id] || []).length, 0);
-        // Segment breakdown for week header
-        const weekSegs = {};
-        week.calls.forEach(c => {
-            if (c.segment) {
-                const sl = c.segment.toLowerCase();
-                if (!weekSegs[sl]) weekSegs[sl] = { count: 0, name: c.segment };
-                weekSegs[sl].count++;
-            }
-        });
-        let segDotsHTML = '';
-        const segEntries = Object.values(weekSegs).sort((a, b) => b.count - a.count);
-        if (segEntries.length > 0) {
-            segDotsHTML = '<span class="week-seg-dots">';
-            segEntries.forEach(s => {
-                const abbr = SEG_ABBREV[s.name.toLowerCase()] || s.name.split(' ').slice(0, 2).join(' ');
-                const color = segColor(s.name);
-                segDotsHTML += '<span class="week-seg-dot" style="--dot-color:' + color + '">' + s.count + ' ' + esc(abbr) + '</span>';
-            });
-            segDotsHTML += '</span>';
-        }
-        html += '<div class="week-hdr">' +
-            '<span class="week-label">' + esc(weekLabel(week.start)) + '</span>' +
-            '<span class="week-meta">' + week.calls.length + ' call' + (week.calls.length > 1 ? 's' : '') +
-            ' &middot; ' + totalFeatures + ' feature' + (totalFeatures > 1 ? 's' : '') + '</span>' +
-            segDotsHTML +
-        '</div>';
-
-    week.calls.forEach(c => {
+    callList.forEach(c => {
         const callMentions = (byCall[c.id] || []).sort((a, b) => (a.ts_sec || 0) - (b.ts_sec || 0));
         const features = [...new Set(callMentions.map(m => m.keyword))];
         const isPending = c.pending_analysis && callMentions.length === 0;
@@ -3214,9 +3188,9 @@ function buildCalls() {
         if (!isPending) {
             const visibleFeats = features.slice(0, TAG_CAP);
             const extraCount = features.length - TAG_CAP;
-            tags = visibleFeats.map(f => { var t = getCapabilityTier(f).tier; var pfx = t === 'native' ? '\u2705 ' : t === 'workaround' ? '\ud83d\udd27 ' : t === 'roadmap' ? '\ud83d\uddfa\ufe0f ' : ''; return '<span class="feat-tag tier-' + t + '">' + pfx + esc(f) + '</span>'; }).join('');
+            tags = visibleFeats.map(f => { var t = getCapabilityTier(f).tier; return '<span class="feat-tag tier-' + t + '">' + esc(f) + '</span>'; }).join('');
             if (extraCount > 0) {
-                const hiddenTags = features.slice(TAG_CAP).map(f => { var t = getCapabilityTier(f).tier; var pfx = t === 'native' ? '\u2705 ' : t === 'workaround' ? '\ud83d\udd27 ' : t === 'roadmap' ? '\ud83d\uddfa\ufe0f ' : ''; return '<span class="feat-tag tier-' + t + '">' + pfx + esc(f) + '</span>'; }).join('');
+                const hiddenTags = features.slice(TAG_CAP).map(f => { var t = getCapabilityTier(f).tier; return '<span class="feat-tag tier-' + t + '">' + esc(f) + '</span>'; }).join('');
                 tags += '<span class="feat-tag-extra" style="display:none">' + hiddenTags + '</span>';
                 tags += '<button class="feat-tag-more" onclick="event.stopPropagation();toggleTagMore(this)">+' + extraCount + ' more</button>';
             }
@@ -3328,8 +3302,7 @@ function buildCalls() {
                     sectionsHTML +
                 '</div></div>';
         }
-    }); // end week.calls.forEach
-    } // end for weeks
+    }); // end callList.forEach
 
     // "Scan for More Calls" button at bottom
     const scanCmd = 'python retrieve_calls.py --days 30 --limit 20 --owner zach.mccall \\\n  --title-keywords demo discovery followup follow-up sales \\\n  --dashboard dashboard.html --output-dir test_output/';
