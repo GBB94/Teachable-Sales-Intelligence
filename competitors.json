@@ -151,15 +151,7 @@
       "short_description": "WhatsApp and Instagram CRM with unified inbox, sales automation, and omnichannel support. Targets e-commerce, healthcare, and small business.",
       "description": "WhatsApp/Instagram-focused CRM with unified inbox, sales automation, omnichannel messaging, and customer scoring.",
       "differentiator": "Omnichannel CRM for WhatsApp/Instagram. Not a course platform — adjacent tool for customer communication."
-    }
-  ],
-  "competitor_types": {
-    "direct": "Direct course platform competitors (same market, same buyer)",
-    "lms": "Traditional LMS platforms (often comes up in CE/corporate segment)",
-    "diy": "DIY/self-hosted solutions",
-    "adjacent": "Adjacent tools sometimes used for courses",
-    "marketplace": "Course marketplaces (different model but prospects mention them)"
-  },
+    },
     {
       "id": "articulate360",
       "name": "Articulate 360",
@@ -177,6 +169,13 @@
       "differentiator": "India-first with localized payments. Low-cost all-in-one for creators in emerging markets."
     }
   ],
+  "competitor_types": {
+    "direct": "Direct course platform competitors (same market, same buyer)",
+    "lms": "Traditional LMS platforms (often comes up in CE/corporate segment)",
+    "diy": "DIY/self-hosted solutions",
+    "adjacent": "Adjacent tools sometimes used for courses",
+    "marketplace": "Course marketplaces (different model but prospects mention them)"
+  },
   "suggested_new_competitors": [],
   "last_updated": "2026-02-13"
 }

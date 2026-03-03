@@ -684,6 +684,7 @@ def cmd_inject(args):
         marketing_data_by_call = raw.get("marketing_data", {})
         segment_data_by_call = raw.get("segment_data", {})
         competitor_mentions_by_call = raw.get("competitor_mentions", {})
+        junk_ids = set(raw.get("junk_ids", []))
     else:
         features_by_call = raw
         notes_by_call = {}
@@ -693,6 +694,7 @@ def cmd_inject(args):
         marketing_data_by_call = {}
         segment_data_by_call = {}
         competitor_mentions_by_call = {}
+        junk_ids = set()
 
     # Load categories list for validation (optional fallback)
     valid_categories = set()
@@ -828,6 +830,9 @@ def cmd_inject(args):
         call_id = call.get("id", "")
         if call_id in calls_with_features:
             call.pop("pending_analysis", None)
+        elif call_id in junk_ids:
+            call.pop("pending_analysis", None)
+            call["is_junk"] = True
 
     # Merge: keep existing mentions for calls NOT in the new input, replace for calls that are
     existing_mentions = data.get("mentions", [])
