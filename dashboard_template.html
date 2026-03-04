@@ -5451,7 +5451,30 @@ function buildCompetitors() {
         'fiducare': 'Financial compliance and fiduciary management platform.'
     };
     // Aliases for legacy/abbreviated competitor names in call data
-    const _compAliases = { 'wap': 'wapcrm' };
+    const _compAliases = { 'wap': 'wapcrm', 'school': 'skool' };
+    // Resolve a competitor name to its canonical form (for grouping/dedup)
+    function resolveCompName(name) {
+        if (compMeta[name]) return name;
+        const lower = name.toLowerCase();
+        if (_compMetaLower[lower]) return DATA.competitors.find(c => c.name.toLowerCase() === lower)?.name || name;
+        if (_compAliases[lower]) {
+            const aliasTarget = _compAliases[lower];
+            const canon = DATA.competitors?.find(c => c.name.toLowerCase() === aliasTarget);
+            if (canon) return canon.name;
+        }
+        const stripped = lower.replace(/[\s\-()]/g, '');
+        if (_compMetaStrip[stripped]) {
+            const canon = DATA.competitors?.find(c => c.name.toLowerCase().replace(/[\s\-()]/g, '') === stripped);
+            if (canon) return canon.name;
+        }
+        const paren = name.match(/\(([^)]+)\)/);
+        if (paren) {
+            const inner = paren[1];
+            const resolved = resolveCompName(inner);
+            if (resolved !== inner) return resolved;
+        }
+        return name;
+    }
     function getCompMeta(name) {
         if (compMeta[name]) return compMeta[name];
         const lower = name.toLowerCase();
@@ -5482,12 +5505,13 @@ function buildCompetitors() {
         return 'noise';
     }
 
-    // Group by competitor (separate active vs excluded)
+    // Group by competitor (separate active vs excluded), resolving aliases
     const byComp = {};
     const byCompExcluded = {};
     allMentions.forEach(cm => {
-        const name = cm.competitor;
-        if (isNeedsReview(name)) return;
+        if (isNeedsReview(cm.competitor)) return;
+        const name = resolveCompName(cm.competitor);
+        cm.competitor = name; // normalize for downstream display
         const isExcluded = excludedCompetitors.has(name.toLowerCase());
         const target = isExcluded ? byCompExcluded : byComp;
         if (!target[name]) target[name] = { mentions: [], types: new Set(), companies: new Set() };

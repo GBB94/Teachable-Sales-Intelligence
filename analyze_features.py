@@ -919,6 +919,11 @@ def cmd_inject(args):
                 validated = []
                 for cm in mentions_list:
                     comp_name = cm.get("competitor", "")
+                    # Resolve aliases (e.g. "School" -> "Skool")
+                    resolved = _resolve_competitor_name(comp_name)
+                    if resolved != comp_name:
+                        cm["competitor"] = resolved
+                        comp_name = resolved
                     if valid_competitors and comp_name and comp_name != "NEEDS_REVIEW" and comp_name not in valid_competitors:
                         suggestion = _suggest_match(comp_name, valid_competitors)
                         hint = f' (did you mean "{suggestion}"?)' if suggestion else ""
@@ -1220,6 +1225,16 @@ def cmd_refetch_empty(args):
 
 VALID_MENTION_TYPES = {"currently_using", "switching_from", "evaluated", "asked_about", "compared_to"}
 
+# Competitor name aliases — maps informal/misspelled names to canonical form
+_COMPETITOR_ALIASES = {
+    "school": "Skool",
+}
+
+
+def _resolve_competitor_name(name):
+    """Resolve competitor aliases to canonical name."""
+    return _COMPETITOR_ALIASES.get(name.lower(), name)
+
 
 def _load_valid_names():
     """Load canonical category, segment, and competitor names from JSON files."""
@@ -1297,6 +1312,7 @@ def validate_analysis(data, valid_categories, valid_segments, valid_competitors=
                 continue
             for cm in mentions:
                 comp = cm.get("competitor", "")
+                comp = _resolve_competitor_name(comp)
                 if comp and comp != "NEEDS_REVIEW" and comp not in valid_competitors:
                     errors.append({
                         "type": "invalid_competitor",

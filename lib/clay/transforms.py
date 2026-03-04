@@ -36,6 +36,17 @@ _TITLE_PATTERNS = [
 ]
 
 
+# Competitor name aliases — maps informal/misspelled names to canonical form
+_COMPETITOR_ALIASES = {
+    "school": "Skool",
+}
+
+
+def resolve_competitor_name(name):
+    """Resolve competitor aliases to canonical name."""
+    return _COMPETITOR_ALIASES.get(name.lower(), name)
+
+
 def normalize_company_name(name):
     """Strip whitespace, remove Inc./LLC suffixes."""
     if not name:
@@ -424,7 +435,7 @@ def generate_icp_snapshot(data, config=None):
             for comp in c.get("competitors_mentioned", []):
                 name = comp.get("competitor", comp.get("name", "")) if isinstance(comp, dict) else comp
                 if name:
-                    all_competitors.append(name)
+                    all_competitors.append(resolve_competitor_name(name))
 
         # Count features and competitors
         feature_counts = {}
@@ -482,6 +493,7 @@ def generate_icp_snapshot(data, config=None):
             comp = comp_raw.get("competitor", comp_raw.get("name", "")) if isinstance(comp_raw, dict) else comp_raw
             if not comp:
                 continue
+            comp = resolve_competitor_name(comp)
             if comp not in comp_landscape:
                 comp_landscape[comp] = {"segments": set(), "count": 0}
             comp_landscape[comp]["count"] += 1
