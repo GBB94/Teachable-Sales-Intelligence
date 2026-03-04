@@ -935,8 +935,8 @@ def cmd_inject(args):
                         continue
                     validated.append(cm)
                 if validated:
-                    existing = call.get("competitor_mentions", [])
-                    call["competitor_mentions"] = existing + validated
+                    # Replace (not append) to prevent duplication on re-inject
+                    call["competitor_mentions"] = validated
 
     if competitor_errors:
         print("\n  COMPETITOR VALIDATION FAILED:")

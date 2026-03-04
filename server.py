@@ -285,6 +285,11 @@ def analysis_extract():
             ['python3', 'analyze_features.py', 'extract', OUTPUT_PATH],
             capture_output=True, text=True, timeout=30, cwd=REPO_DIR
         )
+        if result.returncode != 0:
+            return jsonify({
+                "error": "Extract failed",
+                "output": result.stdout + result.stderr,
+            }), 500
         output = result.stdout
         pending = 0
         for line in output.split('\n'):
@@ -319,6 +324,12 @@ def analysis_inject():
             ['python3', 'analyze_features.py', 'validate', tmp.name],
             capture_output=True, text=True, timeout=30, cwd=REPO_DIR
         )
+        if validate_result.returncode != 0:
+            return jsonify({
+                "success": False,
+                "error": "Validation failed — inject aborted",
+                "validate_output": validate_result.stdout + validate_result.stderr,
+            }), 422
         # Inject
         inject_result = subprocess.run(
             ['python3', 'analyze_features.py', 'inject', OUTPUT_PATH, tmp.name],
@@ -381,6 +392,9 @@ def exclude_competitor():
 @app.route('/api/sync-sheets', methods=['POST'])
 def sync_sheets():
     """Trigger a sheet sync from the dashboard UI."""
+    auth_err = _require_clay_token()
+    if auth_err:
+        return auth_err
     try:
         from sync_to_sheets import sync
         result = sync(output_dir=OUTPUT_DIR)
@@ -530,6 +544,9 @@ def clay_export_reengagements():
 
 @app.route('/api/clay/test-connectivity', methods=['POST'])
 def clay_test_connectivity():
+    auth_err = _require_clay_token()
+    if auth_err:
+        return auth_err
     from lib.clay.client import ClayClient
     client = ClayClient()
     results = {}
@@ -544,6 +561,9 @@ def clay_test_connectivity():
 
 @app.route('/api/clay/reload-config', methods=['POST'])
 def clay_reload_config():
+    auth_err = _require_clay_token()
+    if auth_err:
+        return auth_err
     from lib.clay import reload_config
     from lib.clay.scoring import get_config
     reload_config()
