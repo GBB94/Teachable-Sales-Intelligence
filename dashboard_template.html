@@ -4515,7 +4515,7 @@ function _triageCalls() {
 }
 
 async function showAnalyzeModal() {
-    if (!await checkActionPassword('Run analysis')) return;
+    // password gate removed for now
     _analyzeStep = 1;
     _analyzeCCCommand = '';
     const body = document.getElementById('analyze-modal-body');
@@ -4650,7 +4650,7 @@ async function syncToSheets(btn) {
 }
 
 async function startScan(btn) {
-    if (!await checkActionPassword('Scan for calls')) return;
+    // password gate removed for now
     // Static file mode: fall back to clipboard
     if (location.protocol === 'file:') {
         const cmd = document.getElementById('calls-view').dataset.scanCmd;
