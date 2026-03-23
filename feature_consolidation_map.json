@@ -1,0 +1,666 @@
+{
+  "Course Quizzes / Assessments": {
+    "canonical": "Quiz / Assessment Builder",
+    "category": "Assessments & Quizzes"
+  },
+  "Quiz Functionality": {
+    "canonical": "Quiz / Assessment Builder",
+    "category": "Assessments & Quizzes"
+  },
+  "Quizzes & Assessments": {
+    "canonical": "Quiz / Assessment Builder",
+    "category": "Assessments & Quizzes"
+  },
+  "Quizzes & Graded Assessments": {
+    "canonical": "Quiz / Assessment Builder",
+    "category": "Assessments & Quizzes"
+  },
+  "Interactive Quizzes": {
+    "canonical": "Quiz / Assessment Builder",
+    "category": "Assessments & Quizzes"
+  },
+  "Completion Certificates": {
+    "canonical": "Certificate Automation",
+    "category": "Compliance & Credentialing"
+  },
+  "Student File Upload for Assignments": {
+    "canonical": "File Upload & Grading",
+    "category": "Assessments & Quizzes"
+  },
+  "Learner File Upload to Coaches": {
+    "canonical": "Learner File Upload to Coaches",
+    "category": "Assessments & Quizzes"
+  },
+  "Buy Now Pay Later (Klarna)": {
+    "canonical": "Buy Now Pay Later",
+    "category": "Commerce & Checkout"
+  },
+  "Installment Payment Plans": {
+    "canonical": "Payment Plans / Installments",
+    "category": "Commerce & Checkout"
+  },
+  "International Payment Methods": {
+    "canonical": "International Payment Processing",
+    "category": "Commerce & Checkout"
+  },
+  "Local Payment Gateway Support": {
+    "canonical": "International Payment Processing",
+    "category": "Commerce & Checkout"
+  },
+  "International Payout Compliance": {
+    "canonical": "International Payment Processing",
+    "category": "Commerce & Checkout"
+  },
+  "Custom Coupon Codes": {
+    "canonical": "Coupon / Discount Codes",
+    "category": "Commerce & Checkout"
+  },
+  "One-time Purchase Pricing": {
+    "canonical": "One-time Payment Option",
+    "category": "Commerce & Checkout"
+  },
+  "Cart / Bundle Checkout": {
+    "canonical": "Course Bundles",
+    "category": "Commerce & Checkout"
+  },
+  "Course + Coaching Bundle": {
+    "canonical": "Course Bundles",
+    "category": "Commerce & Checkout"
+  },
+  "Bulk / Group Payment": {
+    "canonical": "Group / Bulk License Purchasing",
+    "category": "Commerce & Checkout"
+  },
+  "Bulk Seat Purchasing": {
+    "canonical": "Group / Bulk License Purchasing",
+    "category": "Commerce & Checkout"
+  },
+  "Flexible Seat Quantity Selection": {
+    "canonical": "Group / Bulk License Purchasing",
+    "category": "Commerce & Checkout"
+  },
+  "Tiered Pricing / Member vs Non-member Rates": {
+    "canonical": "Tiered Membership Access",
+    "category": "Commerce & Checkout"
+  },
+  "Course Commerce / Transactions": {
+    "canonical": "Checkout / Sales Page UX",
+    "category": "Commerce & Checkout"
+  },
+  "Payment Collection & Revenue Tracking": {
+    "canonical": "Checkout / Sales Page UX",
+    "category": "Commerce & Checkout"
+  },
+  "Competitive Pricing for High-Volume Users": {
+    "canonical": "SMB / Flexible Pricing Tiers",
+    "category": "Commerce & Checkout"
+  },
+  "Stripe Payment Integration": {
+    "canonical": "Checkout / Sales Page UX",
+    "category": "Commerce & Checkout"
+  },
+  "Hybrid Scheduling": {
+    "canonical": "Hybrid Scheduling",
+    "category": "Engagement & Community"
+  },
+  "Flexible Course Limits": {
+    "canonical": "Flexible Course Limits",
+    "category": "Commerce & Checkout"
+  },
+  "Automated Certificates": {
+    "canonical": "Certificate Automation",
+    "category": "Compliance & Credentialing"
+  },
+  "Certification & Credentialing": {
+    "canonical": "Certificate Automation",
+    "category": "Compliance & Credentialing"
+  },
+  "Certification Tracking": {
+    "canonical": "Certificate Automation",
+    "category": "Compliance & Credentialing"
+  },
+  "Certificate Storage / User Profile": {
+    "canonical": "Certificate Automation",
+    "category": "Compliance & Credentialing"
+  },
+  "Compliance Training": {
+    "canonical": "Compliance Controls",
+    "category": "Compliance & Credentialing"
+  },
+  "Mandatory Video Completion": {
+    "canonical": "Video Scrub Prevention",
+    "category": "Compliance & Credentialing"
+  },
+  "Minimum Time on Page": {
+    "canonical": "Video Scrub Prevention",
+    "category": "Compliance & Credentialing"
+  },
+  "Course Expiration / Recertification": {
+    "canonical": "Access Duration / Expiration",
+    "category": "Compliance & Credentialing"
+  },
+  "SOC 2 Type 2 Security": {
+    "canonical": "SOC 2 Compliance",
+    "category": "Compliance & Credentialing"
+  },
+  "Course Drip / Scheduled Content Release": {
+    "canonical": "Drip / Timed Content Release",
+    "category": "Curriculum & Content"
+  },
+  "Drip Content Scheduling": {
+    "canonical": "Drip / Timed Content Release",
+    "category": "Curriculum & Content"
+  },
+  "Enforced Course Completion Order": {
+    "canonical": "Course Sequencing / Completion Gating",
+    "category": "Curriculum & Content"
+  },
+  "Sequential Course Navigation": {
+    "canonical": "Course Sequencing / Completion Gating",
+    "category": "Curriculum & Content"
+  },
+  "Multi-Format Content (PDF, Video, Podcast, Image)": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "Multimedia Course Authoring": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "PDF / Digital Downloads in Courses": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "PDF Content Hosting": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "Worksheets & PDF Uploads": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "Video Content Hosting": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "Member-only Video Hosting": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "Digital Course Delivery": {
+    "canonical": "Online Course Delivery",
+    "category": "Curriculum & Content"
+  },
+  "Online Training Platform": {
+    "canonical": "Online Course Delivery",
+    "category": "Curriculum & Content"
+  },
+  "Virtual Campus / Online Academy": {
+    "canonical": "Online Course Delivery",
+    "category": "Curriculum & Content"
+  },
+  "Asynchronous / Self-paced Learning": {
+    "canonical": "Online Course Delivery",
+    "category": "Curriculum & Content"
+  },
+  "Intuitive Course Builder": {
+    "canonical": "Content Templates",
+    "category": "Curriculum & Content"
+  },
+  "Course Content Editing / Updates": {
+    "canonical": "Content Templates",
+    "category": "Curriculum & Content"
+  },
+  "Course Module Structure": {
+    "canonical": "Learning Paths",
+    "category": "Curriculum & Content"
+  },
+  "Structured Multi-Week Course": {
+    "canonical": "Learning Paths",
+    "category": "Curriculum & Content"
+  },
+  "Structured Onboarding Courses": {
+    "canonical": "Learning Paths",
+    "category": "Curriculum & Content"
+  },
+  "Employee Onboarding Course Bundles": {
+    "canonical": "Learning Paths",
+    "category": "Curriculum & Content"
+  },
+  "Course Bundles for Certificate Programs": {
+    "canonical": "Learning Paths",
+    "category": "Curriculum & Content"
+  },
+  "Live Coaching Sessions": {
+    "canonical": "Live Sessions",
+    "category": "Engagement & Community"
+  },
+  "Live Virtual Sessions / Coaching": {
+    "canonical": "Live Sessions",
+    "category": "Engagement & Community"
+  },
+  "Live Webinars": {
+    "canonical": "Live Sessions",
+    "category": "Engagement & Community"
+  },
+  "Coaching / Mentoring Sessions": {
+    "canonical": "Live Sessions",
+    "category": "Engagement & Community"
+  },
+  "Live Coaching & Webinars": {
+    "canonical": "Live Sessions",
+    "category": "Engagement & Community"
+  },
+  "Live Webinar / Coaching": {
+    "canonical": "Live Sessions",
+    "category": "Engagement & Community"
+  },
+  "In-platform Recording / Replay": {
+    "canonical": "On-Demand Replay / Recorded Webinars",
+    "category": "Curriculum & Content"
+  },
+  "Coach-Assigned Custom Documents": {
+    "canonical": "Per-Student Course Customization by Coach",
+    "category": "Curriculum & Content"
+  },
+  "Coach-Specific Digital Downloads": {
+    "canonical": "Per-Student Course Customization by Coach",
+    "category": "Curriculum & Content"
+  },
+  "White Glove / Managed Course Build": {
+    "canonical": "White Glove Onboarding",
+    "category": "Platform & Integrations"
+  },
+  "Content Presentation & Layout": {
+    "canonical": "Learner UX / Course Journey",
+    "category": "Design & Branding"
+  },
+  "Course Limit Increase": {
+    "canonical": "Flexible Course Limits",
+    "category": "Commerce & Checkout"
+  },
+  "White Label Platform": {
+    "canonical": "White Label",
+    "category": "Design & Branding"
+  },
+  "White Label Website": {
+    "canonical": "White Label",
+    "category": "Design & Branding"
+  },
+  "White-label / Embedded Experience": {
+    "canonical": "White Label",
+    "category": "Design & Branding"
+  },
+  "Custom Branding / White-label": {
+    "canonical": "White Label",
+    "category": "Design & Branding"
+  },
+  "White-Label Mobile App": {
+    "canonical": "White Label Mobile App",
+    "category": "Design & Branding"
+  },
+  "White-label App": {
+    "canonical": "White Label Mobile App",
+    "category": "Design & Branding"
+  },
+  "Custom Domain / Subdomain": {
+    "canonical": "Custom Domain",
+    "category": "Design & Branding"
+  },
+  "Custom Branding": {
+    "canonical": "Custom Themes",
+    "category": "Design & Branding"
+  },
+  "Website Builder / Design Flexibility": {
+    "canonical": "Landing Pages / Site Builder",
+    "category": "Design & Branding"
+  },
+  "User-Friendly Interface for Non-Technical Users": {
+    "canonical": "Learner UX / Course Journey",
+    "category": "Design & Branding"
+  },
+  "Customizable Completion Button": {
+    "canonical": "Learner UX / Course Journey",
+    "category": "Design & Branding"
+  },
+  "Community / Discussion Board": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Community / Discussion Groups": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Community Discussion": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Community Feature": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Student Community": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Community Categories/Forums": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Community Access Controls": {
+    "canonical": "Private / Gated Community Tiers",
+    "category": "Engagement & Community"
+  },
+  "Tiered Membership / Community": {
+    "canonical": "Private / Gated Community Tiers",
+    "category": "Engagement & Community"
+  },
+  "Cross-Course Community Access": {
+    "canonical": "Private / Gated Community Tiers",
+    "category": "Engagement & Community"
+  },
+  "Retroactive Community Access": {
+    "canonical": "Private / Gated Community Tiers",
+    "category": "Engagement & Community"
+  },
+  "Community Groups / Segmentation": {
+    "canonical": "Per-Course Community",
+    "category": "Engagement & Community"
+  },
+  "Gamification": {
+    "canonical": "Gamification & Interactive Learning",
+    "category": "Engagement & Community"
+  },
+  "Coaching Embedded in Course Flow": {
+    "canonical": "Integrated One-on-One Coaching Sessions",
+    "category": "Engagement & Community"
+  },
+  "In-Platform Messaging to Students": {
+    "canonical": "Direct Messaging",
+    "category": "Engagement & Community"
+  },
+  "Organization Grouping": {
+    "canonical": "Organization Hierarchy / Nesting",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Organization-based Grouping": {
+    "canonical": "Organization Hierarchy / Nesting",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Organizations / Department Segmentation": {
+    "canonical": "Organization Hierarchy / Nesting",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Department-based Student Groups": {
+    "canonical": "Organization Hierarchy / Nesting",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Organizations / Multi-tenancy": {
+    "canonical": "Organization Hierarchy / Nesting",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Organizations / Group Management": {
+    "canonical": "Organization Hierarchy / Nesting",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Organization Groups & Reporting": {
+    "canonical": "Organization Hierarchy / Nesting",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Multi-client School Structure": {
+    "canonical": "Multiple Schools",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Organizations & Group Enrollment": {
+    "canonical": "Group Enrollment",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Organization Seat Management": {
+    "canonical": "Seat Management",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Self-service Seat Management": {
+    "canonical": "Seat Management",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Seat Reassignment": {
+    "canonical": "Seat Management",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Seat / User Management": {
+    "canonical": "Seat Management",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "AI Chatbot / Support Bot": {
+    "canonical": "AI Support Chatbot",
+    "category": "Platform & Integrations"
+  },
+  "SSO Integration": {
+    "canonical": "SSO / SAML",
+    "category": "Platform & Integrations"
+  },
+  "Single Sign-On (SSO)": {
+    "canonical": "SSO / SAML",
+    "category": "Platform & Integrations"
+  },
+  "API Documentation for SSO": {
+    "canonical": "SSO / SAML",
+    "category": "Platform & Integrations"
+  },
+  "Shopify Integration via API/Webhook": {
+    "canonical": "Shopify Integration",
+    "category": "Platform & Integrations"
+  },
+  "Shopify SSO Integration": {
+    "canonical": "SSO with Shopify",
+    "category": "Platform & Integrations"
+  },
+  "Course Embedding in External Site": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "Course Embedding on External Website": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "Embed Courses in Existing Website": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "Embedded LMS (iframe Integration)": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "Content Embedding": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "Website Embed / Link Integration": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "Website Integration (Wix)": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "Content Portability / Data Ownership": {
+    "canonical": "Content Portability / Export",
+    "category": "Platform & Integrations"
+  },
+  "SCORM Compliance": {
+    "canonical": "SCORM Support",
+    "category": "Platform & Integrations"
+  },
+  "SOC 2 Compliance Documentation": {
+    "canonical": "SOC 2 Compliance",
+    "category": "Compliance & Credentialing"
+  },
+  "Mobile App Access": {
+    "canonical": "Mobile App Course Delivery",
+    "category": "Platform & Integrations"
+  },
+  "Zapier Integration for Enrollment": {
+    "canonical": "Zapier Integration",
+    "category": "Platform & Integrations"
+  },
+  "Avoid Email for Document Distribution": {
+    "canonical": "Third-party Integration",
+    "category": "Platform & Integrations"
+  },
+  "Shareable Sales Assets / Collateral": {
+    "canonical": "Third-party Integration",
+    "category": "Platform & Integrations"
+  },
+  "White Glove Onboarding": {
+    "canonical": "White Glove Onboarding",
+    "category": "Platform & Integrations"
+  },
+  "Custom Development / Add-ons": {
+    "canonical": "Headless / API Access",
+    "category": "Platform & Integrations"
+  },
+  "Responsive Customer Support": {
+    "canonical": "White Glove Onboarding",
+    "category": "Platform & Integrations"
+  },
+  "Video Streaming Reliability": {
+    "canonical": "Mobile App Course Delivery",
+    "category": "Platform & Integrations"
+  },
+  "Cross-browser Compatibility (Safari)": {
+    "canonical": "Mobile App Course Delivery",
+    "category": "Platform & Integrations"
+  },
+  "Automated Assessment Delivery": {
+    "canonical": "Automated Assessment Delivery",
+    "category": "Assessments & Quizzes"
+  },
+  "Phone / Alternative Login": {
+    "canonical": "SSO / SAML",
+    "category": "Platform & Integrations"
+  },
+  "Community Features": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Course Completion Tracking": {
+    "canonical": "Completion Tracking",
+    "category": "Reporting & Analytics"
+  },
+  "Student Progress Tracking": {
+    "canonical": "Completion Tracking",
+    "category": "Reporting & Analytics"
+  },
+  "Student Progress Export / Reporting": {
+    "canonical": "Completion Tracking",
+    "category": "Reporting & Analytics"
+  },
+  "Training Completion Dashboard": {
+    "canonical": "Completion Tracking",
+    "category": "Reporting & Analytics"
+  },
+  "Coaching Session Tracking": {
+    "canonical": "Completion Tracking",
+    "category": "Reporting & Analytics"
+  },
+  "Organization Reporting": {
+    "canonical": "Organization-level Reporting",
+    "category": "Reporting & Analytics"
+  },
+  "Organization Reporting & Leaderboards": {
+    "canonical": "Organization-level Reporting",
+    "category": "Reporting & Analytics"
+  },
+  "Organization-based Analytics": {
+    "canonical": "Organization-level Reporting",
+    "category": "Reporting & Analytics"
+  },
+  "Demographic Data Collection for Funder Reporting": {
+    "canonical": "Organization-level Reporting",
+    "category": "Reporting & Analytics"
+  },
+  "Data Export": {
+    "canonical": "Reporting Data Export (CSV)",
+    "category": "Reporting & Analytics"
+  },
+  "CSV Student Export": {
+    "canonical": "Reporting Data Export (CSV)",
+    "category": "Reporting & Analytics"
+  },
+  "Automated Report Export": {
+    "canonical": "Reporting Data Export (CSV)",
+    "category": "Reporting & Analytics"
+  },
+  "Admin / Teacher Reporting": {
+    "canonical": "Reporting Dashboard",
+    "category": "Reporting & Analytics"
+  },
+  "Unified Data Analytics": {
+    "canonical": "Reporting Dashboard",
+    "category": "Reporting & Analytics"
+  },
+  "Coach View of Student Submissions": {
+    "canonical": "Quiz / Assessment Reporting",
+    "category": "Reporting & Analytics"
+  },
+  "Inactive User Reporting": {
+    "canonical": "Reporting Dashboard",
+    "category": "Reporting & Analytics"
+  },
+  "Bulk Student Import": {
+    "canonical": "Bulk User Import",
+    "category": "User Management"
+  },
+  "Bulk Student Upload": {
+    "canonical": "Bulk User Import",
+    "category": "User Management"
+  },
+  "Custom Enrollment Fields (Birthday)": {
+    "canonical": "Student Custom Fields / Onboarding",
+    "category": "User Management"
+  },
+  "Custom Registration Fields": {
+    "canonical": "Student Custom Fields / Onboarding",
+    "category": "User Management"
+  },
+  "Student Onboarding Workflow": {
+    "canonical": "Student Custom Fields / Onboarding",
+    "category": "User Management"
+  },
+  "Auto-tagging / User Segmentation": {
+    "canonical": "Student Custom Fields / Onboarding",
+    "category": "User Management"
+  },
+  "Student Profile in Mobile App": {
+    "canonical": "Student Custom Fields / Onboarding",
+    "category": "User Management"
+  },
+  "Community Username/Privacy Controls": {
+    "canonical": "Student Custom Fields / Onboarding",
+    "category": "User Management"
+  },
+  "Multiple Admin Users": {
+    "canonical": "Multiple Admin Roles & Permissions",
+    "category": "User Management"
+  },
+  "Custom Role Labels": {
+    "canonical": "Role-based Access",
+    "category": "User Management"
+  },
+  "Student-Counselor Assignment": {
+    "canonical": "Role-based Access",
+    "category": "User Management"
+  },
+  "Access Duration / Expiration": {
+    "canonical": "Access Duration / Expiration",
+    "category": "Compliance & Credentialing"
+  },
+  "Video Scrub Prevention": {
+    "canonical": "Video Scrub Prevention",
+    "category": "Compliance & Credentialing"
+  },
+  "Sponsored Ad Read Partnership": {
+    "canonical": "Sponsored Ad Read Partnership",
+    "category": "Commerce & Checkout"
+  }
+}

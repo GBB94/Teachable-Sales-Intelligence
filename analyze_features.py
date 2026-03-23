@@ -180,11 +180,19 @@ def cmd_extract(args):
     """
     # Load prior feature names for context
     prior_names = _load_canonical_names()
-    if args.prior:
-        dashboard_names = _get_feature_names_from_dashboard(args.prior)
-        for name in dashboard_names:
-            if name not in prior_names:
-                prior_names.append(name)
+
+    # Always auto-load from the current dashboard if it exists
+    _default_dashboard = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_output', 'index.html')
+    _auto_sources = [_default_dashboard]
+    if args.prior and args.prior != _default_dashboard:
+        _auto_sources.append(args.prior)
+
+    for _source in _auto_sources:
+        if os.path.exists(_source):
+            _dashboard_names = _get_feature_names_from_dashboard(_source)
+            for name in _dashboard_names:
+                if name not in prior_names:
+                    prior_names.append(name)
 
     if prior_names:
         print(f"{'='*70}")
@@ -215,6 +223,14 @@ def cmd_extract(args):
             print("All calls have been analyzed. Use --all to re-extract everything.")
             return
 
+    total_pending = len(calls)
+    if args.batch_size and args.batch_size > 0:
+        calls = calls[:args.batch_size]
+        print(f"Batching: showing {len(calls)} of {total_pending} pending calls.")
+        remaining = total_pending - len(calls)
+        if remaining > 0:
+            print(f"Run extract again after injecting this batch to process the remaining {remaining} call(s).\n")
+
     for i, call in enumerate(calls, 1):
         transcript = call.get("transcript_text", "")
         word_count = len(transcript.split()) if transcript else 0
@@ -233,12 +249,7 @@ def cmd_extract(args):
 
         if transcript and not args.titles_only:
             print(f"{'─'*70}")
-            # Print first 3000 chars to keep output manageable
-            if len(transcript) > 3000:
-                print(transcript[:3000])
-                print(f"\n    ... [{len(transcript) - 3000} more chars truncated]")
-            else:
-                print(transcript)
+            print(transcript)
         print()
 
     # Also write a machine-readable extract for convenience
@@ -261,7 +272,10 @@ def cmd_extract(args):
     print(f"{'='*70}")
     print("DATA SOURCE")
     print(f"{'─'*70}")
-    print("""The transcripts above are already saved in the dashboard data. Each call
+    print("""NOTE: Full transcripts are saved in calls_for_analysis.json in the same
+directory. For long calls, read from that file rather than this terminal output.
+
+The transcripts above are already saved in the dashboard data. Each call
 has a transcript_text field with the full transcript. Do NOT re-pull from
 the Fireflies API. Just read the transcripts printed above (or from
 test_output/calls_for_analysis.json).
@@ -311,6 +325,14 @@ SPEAKER & COMPANY RULES:
   Example: "Teachable <> Dot Compliance Followup" → company is "Dot Compliance"
   Example: "Teachable <> Speravita: Organizations Review" → company is "Speravita"
 - The "speaker" field must always be a PROSPECT name: "Ibrahim Haleem Khan (Dot Compliance)"
+
+CONTACT TITLE EXTRACTION:
+Look for job titles mentioned during introductions, email signatures read aloud,
+references like "as the head of...", "I manage...", "my role is...", or context
+clues like "I report to..." that imply seniority level. If the prospect's exact
+title isn't stated but their role is clear from context (e.g., they describe
+managing a team of trainers), infer and note it as approximate:
+"Training Manager (inferred)".
 """)
 
     # Load canonical category and segment names from JSON files
@@ -353,6 +375,20 @@ SPEAKER & COMPANY RULES:
         print(f"     {seg_obj['description']}")
         print(f"     e.g. {examples} | signals: {signals}")
     print()
+
+    # Load and print company aliases
+    aliases_path = os.path.join(base_dir, "config", "company_aliases.json")
+    if os.path.exists(aliases_path):
+        with open(aliases_path, "r") as f:
+            alias_data = json.load(f)
+        canonical_companies = alias_data.get("canonical_companies", {})
+        if canonical_companies:
+            print(f"{'='*70}")
+            print("COMPANY NAME RULES (use ONLY canonical names, never aliases):")
+            print(f"{'─'*70}")
+            for canonical, aliases in canonical_companies.items():
+                print(f"  {canonical}  (NOT: {', '.join(aliases)})")
+            print()
 
     # Load and print competitors for extraction
     comp_names = []
@@ -438,10 +474,13 @@ If no competitors were mentioned, return an empty array: "competitor_mentions": 
         "suggested_category": "only if NEEDS_REVIEW — what you would have named it",
         "company": "Prospect Company Name (NEVER 'Teachable' or 'Unknown')",
         "speaker": "Customer Name (Company)",
+        "contact_title": "Job title if stated or clearly implied (e.g. 'Director of Training', 'CEO'). Leave empty ONLY if truly unknown. Add '(inferred)' if derived from context.",
         "quote": "most relevant 1-2 sentence verbatim quote",
         "timestamp": "~MM:SS",
         "ts_seconds": 123,
-        "type": "prospect_request | prospect_interest"
+        "type": "prospect_request | prospect_interest",
+        "confidence": 0.8,
+        "competitor_context": "If this feature was mentioned in direct comparison to a specific competitor, name that competitor here. Otherwise null."
       }
     ]
   },
@@ -478,6 +517,17 @@ Feature type meanings:
   "prospect_request"  — customer explicitly asked for this feature
   "prospect_interest" — customer asked about it or engaged positively
 Do NOT use "rep_highlighted". Only extract features from prospect speakers.
+
+Confidence score meanings:
+  1.0 — Prospect stated this feature need explicitly and directly ("we need X")
+  0.8 — Prospect asked a specific question about this capability
+  0.6 — Prospect engaged positively with a rep demo of this feature
+  0.4 — Feature implied by a pain point or workaround described by prospect
+
+competitor_context: Only populate when the prospect explicitly connects the feature
+need to a specific competitor (e.g. "Kajabi lets us do X" or "we're switching from
+Thinkific because they don't have Y"). Do NOT populate just because a competitor was
+mentioned elsewhere in the call. Use null if not applicable.
 """)
     print("HUBSPOT NOTE FORMAT (for the 'notes' field):")
     print(f"{'─'*70}")
@@ -792,6 +842,7 @@ def cmd_inject(args):
                 "ts_sec": ts_seconds,
                 "link": deep_link,
                 "transcript": transcript_url,
+                "competitor_context": feat.get("competitor_context"),
             })
 
             # For HubSpot note
@@ -854,7 +905,13 @@ def cmd_inject(args):
         "generated": date.today().isoformat(),
     }
     if recap_text:
-        data["recap"] = recap_text
+        existing_recap = data.get("recap", "")
+        if existing_recap and existing_recap.strip():
+            # Append to existing recap with a date separator rather than overwriting
+            today = date.today().isoformat()
+            data["recap"] = existing_recap.rstrip() + f"\n\n[{today}] " + recap_text
+        else:
+            data["recap"] = recap_text
     if company_summaries:
         data["company_summaries"] = company_summaries
     if marketing_report:
@@ -946,6 +1003,10 @@ def cmd_inject(args):
         print(f"  Valid mention types: {sorted(valid_mention_types)}")
         print("  Tip: run `python3 analyze_features.py validate <file> --fix` to auto-correct.")
         sys.exit(1)
+
+    # Compute engagement scores
+    data["company_scores"] = _compute_engagement_scores(data)
+    print(f"  Computed engagement scores for {len(data['company_scores'])} companies")
 
     # Embed capability map for dashboard overlay
     cap_map_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'capability_map.json')
@@ -1669,6 +1730,760 @@ def cmd_cleanup(args):
         print(f"    {c}: {count}")
 
 
+def _load_company_aliases():
+    """Load company alias map. Returns {alias_lower: canonical_name}."""
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base_dir, 'config', 'company_aliases.json')
+    if not os.path.exists(path):
+        return {}
+    with open(path, 'r') as f:
+        data = json.load(f)
+    alias_map = {}
+    for canonical, aliases in data.get("canonical_companies", {}).items():
+        for alias in aliases:
+            alias_map[alias] = canonical
+        # Also map canonical to itself for normalization
+        alias_map[canonical] = canonical
+    return alias_map
+
+
+def _normalize_company_name(name, alias_map):
+    """Normalize a company name using the alias map. Returns the canonical name or original."""
+    if not name:
+        return name
+    if name in alias_map:
+        return alias_map[name]
+    return name
+
+
+def _normalize_speaker_company(speaker, alias_map):
+    """Normalize company name inside speaker field like 'Name (Company)'."""
+    if not speaker or '(' not in speaker:
+        return speaker
+    idx = speaker.index('(')
+    name_part = speaker[:idx]
+    company_part = speaker[idx+1:].rstrip(')')
+    normalized = _normalize_company_name(company_part, alias_map)
+    if normalized != company_part:
+        return f"{name_part}({normalized})"
+    return speaker
+
+
+def _compute_engagement_scores(data):
+    """Compute engagement scores for all companies in the dashboard data."""
+    from datetime import datetime, timedelta, timezone
+    mentions = data.get("mentions", [])
+    calls = data.get("calls", [])
+    now = datetime.now(timezone.utc)
+
+    # Build per-company data
+    companies = {}
+    for m in mentions:
+        company = m.get("company", "")
+        if not company:
+            continue
+        if company not in companies:
+            companies[company] = {
+                "mention_count": 0, "request_count": 0,
+                "call_ids": set(), "competitor_mentioned": False,
+                "has_segment": False, "call_dates": [],
+            }
+        c = companies[company]
+        c["mention_count"] += 1
+        if m.get("type") == "prospect_request":
+            c["request_count"] += 1
+        c["call_ids"].add(m.get("call_id", ""))
+
+    # Enrich from calls
+    call_map = {c.get("id", ""): c for c in calls}
+    for company, c in companies.items():
+        for call_id in c["call_ids"]:
+            call = call_map.get(call_id)
+            if not call:
+                continue
+            if call.get("segment"):
+                c["has_segment"] = True
+            if call.get("competitor_mentions"):
+                c["competitor_mentioned"] = True
+            call_date_str = call.get("date", "")
+            if call_date_str:
+                try:
+                    dt = datetime.fromisoformat(call_date_str.replace("Z", "+00:00"))
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    c["call_dates"].append(dt)
+                except (ValueError, AttributeError):
+                    pass
+
+    # Compute scores
+    company_scores = {}
+    for company, c in companies.items():
+        score = 0
+        # Feature mentions: +2 each
+        score += c["mention_count"] * 2
+        # Prospect requests: +3 bonus each
+        score += c["request_count"] * 3
+        # Unique calls: +5 each
+        num_calls = len(c["call_ids"])
+        score += num_calls * 5
+        # Has segment: +5
+        if c["has_segment"]:
+            score += 5
+        # Competitor mention: +8
+        if c["competitor_mentioned"]:
+            score += 8
+
+        # Recency scoring with decay
+        recent_14 = 0
+        recent_30 = 0
+        last_activity = None
+        for dt in c["call_dates"]:
+            days_ago = (now - dt).days
+            if days_ago <= 14:
+                recent_14 += 1
+            elif days_ago <= 30:
+                recent_30 += 1
+            # Decay: 60-90 days = 50% weight, 90+ = 25%
+            if days_ago > 90:
+                score -= num_calls * 5 * 0.75 / max(len(c["call_dates"]), 1)
+            elif days_ago > 60:
+                score -= num_calls * 5 * 0.5 / max(len(c["call_dates"]), 1)
+
+            if last_activity is None or dt > last_activity:
+                last_activity = dt
+
+        score += recent_14 * 10
+        score += recent_30 * 5
+
+        company_scores[company] = {
+            "score": max(0, round(score)),
+            "breakdown": {
+                "mentions": c["mention_count"],
+                "calls": num_calls,
+                "recent_calls": recent_14 + recent_30,
+                "competitor_mentions": c["competitor_mentioned"],
+                "last_activity": last_activity.strftime("%Y-%m-%d") if last_activity else None,
+            }
+        }
+
+    return company_scores
+
+
+def cmd_consolidate(args):
+    """Apply feature consolidation map to normalize duplicate feature names and fix category assignments."""
+    map_path = args.map
+    if not os.path.exists(map_path):
+        print(f"Error: Consolidation map not found at {map_path}")
+        sys.exit(1)
+
+    with open(map_path, 'r') as f:
+        cmap = json.load(f)
+
+    dashboard_path = args.dashboard
+    if not os.path.exists(dashboard_path):
+        print(f"Error: Dashboard not found at {dashboard_path}")
+        sys.exit(1)
+
+    data = _extract_data_from_html(dashboard_path)
+    mentions = data.get("mentions", [])
+    calls = data.get("calls", [])
+
+    # Track original keywords for before/after count
+    original_keywords = set(m.get("keyword", "") for m in mentions)
+
+    name_changes = 0
+    cat_changes = 0
+    unchanged = 0
+
+    for mention in mentions:
+        old_keyword = mention.get("keyword", "")
+        old_category = mention.get("category", "")
+
+        if old_keyword in cmap:
+            entry = cmap[old_keyword]
+            new_keyword = entry["canonical"]
+            new_category = entry["category"]
+
+            changed = False
+            if old_keyword != new_keyword:
+                mention["keyword"] = new_keyword
+                name_changes += 1
+                changed = True
+            if old_category != new_category:
+                mention["category"] = new_category
+                cat_changes += 1
+                changed = True
+
+            if not changed:
+                unchanged += 1
+        else:
+            unchanged += 1
+
+    # Company name normalization
+    alias_map = _load_company_aliases()
+    company_renames = 0
+    if alias_map:
+        for mention in mentions:
+            old_company = mention.get("company", "")
+            new_company = _normalize_company_name(old_company, alias_map)
+            if new_company != old_company:
+                mention["company"] = new_company
+                company_renames += 1
+            old_speaker = mention.get("speaker", "")
+            new_speaker = _normalize_speaker_company(old_speaker, alias_map)
+            if new_speaker != old_speaker:
+                mention["speaker"] = new_speaker
+
+        # Also normalize calls marketing_data and company_summaries
+        for call in calls:
+            md = call.get("marketing_data")
+            if md and isinstance(md, dict) and md.get("company"):
+                normalized = _normalize_company_name(md["company"], alias_map)
+                if normalized != md["company"]:
+                    md["company"] = normalized
+
+        cs = data.get("company_summaries", {})
+        if cs:
+            new_cs = {}
+            for k, v in cs.items():
+                new_key = _normalize_company_name(k, alias_map)
+                if new_key in new_cs:
+                    # Merge: keep longer summary
+                    if len(v) > len(new_cs[new_key]):
+                        new_cs[new_key] = v
+                else:
+                    new_cs[new_key] = v
+            data["company_summaries"] = new_cs
+
+    unique_before = len(original_keywords)
+    unique_after = len(set(m["keyword"] for m in mentions))
+
+    print(f"Consolidation summary:")
+    print(f"  Feature name changes: {name_changes}")
+    print(f"  Category reassignments: {cat_changes}")
+    if company_renames:
+        print(f"  Company name normalizations: {company_renames}")
+    print(f"  Unchanged mentions: {unchanged}")
+    print(f"  Unique features: {unique_before} -> {unique_after}")
+    print(f"  Total mentions: {len(mentions)}")
+
+    if args.dry_run:
+        print("\n[DRY RUN] No files written.")
+        return
+
+    # Compute engagement scores
+    data["company_scores"] = _compute_engagement_scores(data)
+    print(f"  Computed engagement scores for {len(data['company_scores'])} companies")
+
+    # Update stats
+    data["stats"]["unique_features"] = unique_after
+    data["stats"]["generated"] = date.today().isoformat()
+
+    # Write updated features.json
+    output_dir = os.path.dirname(dashboard_path)
+    write_canonical_json(data, output_dir)
+
+    # Rebuild dashboard HTML
+    _write_data_to_html(dashboard_path, data)
+    print(f"Wrote {dashboard_path}")
+
+    # Update .feature_names canonical file
+    canonical_names = sorted(set(m["keyword"] for m in mentions))
+    _save_canonical_names(canonical_names)
+
+    print("\nDone. Review the dashboard to verify consolidation looks correct.")
+
+
+def cmd_normalize_companies(args):
+    """Apply company name normalization to the dashboard data."""
+    dashboard_path = args.dashboard
+    if not os.path.exists(dashboard_path):
+        print(f"Error: Dashboard not found at {dashboard_path}")
+        sys.exit(1)
+
+    data = _extract_data_from_html(dashboard_path)
+    mentions = data.get("mentions", [])
+    calls = data.get("calls", [])
+    alias_map = _load_company_aliases()
+
+    if not alias_map:
+        print("No company aliases found in config/company_aliases.json")
+        return
+
+    company_renames = 0
+    for mention in mentions:
+        old_company = mention.get("company", "")
+        new_company = _normalize_company_name(old_company, alias_map)
+        if new_company != old_company:
+            mention["company"] = new_company
+            company_renames += 1
+        old_speaker = mention.get("speaker", "")
+        new_speaker = _normalize_speaker_company(old_speaker, alias_map)
+        if new_speaker != old_speaker:
+            mention["speaker"] = new_speaker
+
+    for call in calls:
+        md = call.get("marketing_data")
+        if md and isinstance(md, dict) and md.get("company"):
+            normalized = _normalize_company_name(md["company"], alias_map)
+            if normalized != md["company"]:
+                md["company"] = normalized
+
+    cs = data.get("company_summaries", {})
+    if cs:
+        new_cs = {}
+        for k, v in cs.items():
+            new_key = _normalize_company_name(k, alias_map)
+            if new_key in new_cs:
+                if len(v) > len(new_cs[new_key]):
+                    new_cs[new_key] = v
+            else:
+                new_cs[new_key] = v
+        data["company_summaries"] = new_cs
+
+    print(f"Company normalization: {company_renames} mention(s) updated")
+
+    if args.dry_run:
+        print("\n[DRY RUN] No files written.")
+        return
+
+    _write_data_to_html(dashboard_path, data)
+    output_dir = os.path.dirname(dashboard_path)
+    write_canonical_json(data, output_dir)
+    print(f"Wrote {dashboard_path}")
+
+
+def cmd_backfill_segments(args):
+    """Print unsegmented calls with HubSpot note summaries for segment assignment."""
+    dashboard_path = args.dashboard
+    data = _extract_data_from_html(dashboard_path)
+    calls = data.get("calls", [])
+
+    unsegmented = [c for c in calls if not c.get("segment") or c.get("segment") == "NEEDS_REVIEW"]
+
+    if not unsegmented:
+        print("All calls have segments assigned. Nothing to backfill.")
+        return
+
+    # If --apply, read JSON and write segments back
+    if args.apply:
+        if not os.path.exists(args.apply):
+            print(f"Error: File not found: {args.apply}")
+            sys.exit(1)
+        with open(args.apply, 'r') as f:
+            segment_assignments = json.load(f)
+
+        applied = 0
+        for call in calls:
+            call_id = call.get("id", "")
+            if call_id in segment_assignments:
+                seg = segment_assignments[call_id]
+                call["segment"] = seg.get("segment")
+                call["segment_confidence"] = seg.get("segment_confidence")
+                call["segment_reasoning"] = seg.get("segment_reasoning")
+                call["alternative_segment"] = seg.get("alternative_segment")
+                applied += 1
+
+        print(f"Applied segment assignments to {applied} calls")
+        _write_data_to_html(dashboard_path, data)
+        output_dir = os.path.dirname(dashboard_path)
+        write_canonical_json(data, output_dir)
+        print(f"Wrote {dashboard_path}")
+        return
+
+    print(f"Found {len(unsegmented)} unsegmented calls out of {len(calls)} total.\n")
+
+    # Load segments for the prompt
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    segments_path = os.path.join(base_dir, "segments.json")
+    if os.path.exists(segments_path):
+        with open(segments_path, "r") as f:
+            segs = json.load(f)
+        print(f"{'='*70}")
+        print("PERSONA SEGMENTS (use these EXACT names):")
+        print(f"{'─'*70}")
+        for i, s in enumerate(segs.get("segments", []), 1):
+            print(f"  {i}. {s['name']}")
+            print(f"     {s['description']}")
+        print()
+
+    for i, call in enumerate(unsegmented, 1):
+        note = call.get("hubspot_note", "")
+        note_preview = note[:500] if note else "(no HubSpot note)"
+        print(f"{'='*70}")
+        print(f"[{i}] {call.get('title', 'Untitled')}")
+        print(f"    Date: {call.get('date', 'N/A')}  |  ID: {call.get('id', 'N/A')}")
+        print(f"    Attendees: {call.get('attendees', '')}")
+        print(f"{'─'*70}")
+        print(note_preview)
+        print()
+
+    print(f"{'='*70}")
+    print("OUTPUT FORMAT")
+    print(f"{'─'*70}")
+    print("""Provide a JSON object mapping call_id to segment data:
+
+{
+  "<call_id>": {
+    "segment": "EXACT segment name from list above",
+    "segment_confidence": 0.85,
+    "segment_reasoning": "One sentence explaining why",
+    "alternative_segment": "Second-best fit or null"
+  }
+}
+
+Save to a file and run:
+  python3 analyze_features.py backfill-segments test_output/index.html --apply <file>
+""")
+
+
+def cmd_backfill_titles(args):
+    """Print calls with missing contact titles for retroactive title extraction."""
+    dashboard_path = args.dashboard
+    data = _extract_data_from_html(dashboard_path)
+    mentions = data.get("mentions", [])
+    calls = data.get("calls", [])
+    call_map = {c.get("id", ""): c for c in calls}
+
+    # Find calls with mentions missing contact_title
+    calls_needing_titles = {}
+    for m in mentions:
+        if not m.get("contact_title"):
+            call_id = m.get("call_id", "")
+            if call_id not in calls_needing_titles:
+                calls_needing_titles[call_id] = {
+                    "call": call_map.get(call_id, {}),
+                    "speakers": set(),
+                    "mention_count": 0,
+                }
+            calls_needing_titles[call_id]["speakers"].add(m.get("speaker", ""))
+            calls_needing_titles[call_id]["mention_count"] += 1
+
+    if not calls_needing_titles:
+        print("All mentions have contact titles. Nothing to backfill.")
+        return
+
+    # If --apply, read JSON and write titles back
+    if args.apply:
+        if not os.path.exists(args.apply):
+            print(f"Error: File not found: {args.apply}")
+            sys.exit(1)
+        with open(args.apply, 'r') as f:
+            title_assignments = json.load(f)
+        # Format: { "call_id": { "Speaker Name": "Job Title" } }
+
+        applied = 0
+        for m in mentions:
+            call_id = m.get("call_id", "")
+            speaker = m.get("speaker", "")
+            if call_id in title_assignments and speaker in title_assignments[call_id]:
+                m["contact_title"] = title_assignments[call_id][speaker]
+                applied += 1
+
+        print(f"Applied contact titles to {applied} mentions")
+        _write_data_to_html(dashboard_path, data)
+        output_dir = os.path.dirname(dashboard_path)
+        write_canonical_json(data, output_dir)
+        print(f"Wrote {dashboard_path}")
+        return
+
+    total_empty = sum(c["mention_count"] for c in calls_needing_titles.values())
+    print(f"Found {total_empty} mentions across {len(calls_needing_titles)} calls missing contact titles.\n")
+
+    for call_id, info in calls_needing_titles.items():
+        call = info["call"]
+        transcript = call.get("transcript_text", "")
+
+        # Extract only prospect speaker turns (first 2000 chars)
+        prospect_text = ""
+        if transcript:
+            for line in transcript.split("\n"):
+                if ":" in line:
+                    speaker_part = line.split(":")[0].strip()
+                    if not _is_internal_speaker(speaker_part):
+                        prospect_text += line + "\n"
+                        if len(prospect_text) >= 2000:
+                            break
+
+        print(f"{'='*70}")
+        print(f"Call: {call.get('title', 'Untitled')} ({call.get('date', '')})")
+        print(f"ID: {call_id}")
+        print(f"Speakers needing titles: {', '.join(info['speakers'])}")
+        print(f"{'─'*70}")
+        if prospect_text:
+            print(prospect_text[:2000])
+        else:
+            note = call.get("hubspot_note", "")
+            print(note[:1000] if note else "(no transcript or note)")
+        print()
+
+    print(f"{'='*70}")
+    print("OUTPUT FORMAT")
+    print(f"{'─'*70}")
+    print("""Provide a JSON object mapping call_id to speaker titles:
+
+{
+  "<call_id>": {
+    "Speaker Name (Company)": "Job Title or Title (inferred)"
+  }
+}
+
+If the title is inferred from context rather than explicitly stated,
+add "(inferred)" suffix: "Training Manager (inferred)"
+
+Save to a file and run:
+  python3 analyze_features.py backfill-titles test_output/index.html --apply <file>
+""")
+
+
+def cmd_rebuild_capability_map(args):
+    """Rebuild the capability map against canonical post-consolidation feature names."""
+    dashboard_path = args.dashboard
+    data = _extract_data_from_html(dashboard_path)
+    mentions = data.get("mentions", [])
+
+    current_features = sorted(set(m.get("keyword", "") for m in mentions if m.get("keyword")))
+
+    # Load existing capability map
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    cap_map_path = os.path.join(base_dir, 'config', 'capability_map.json')
+    existing_map = {}
+    if os.path.exists(cap_map_path):
+        with open(cap_map_path) as f:
+            cap_data = json.load(f)
+        existing_map = cap_data.get('mapping', {})
+
+    # Load consolidation map for tier migration
+    consolidation_map_path = os.path.join(base_dir, 'feature_consolidation_map.json')
+    cmap = {}
+    if os.path.exists(consolidation_map_path):
+        with open(consolidation_map_path) as f:
+            cmap = json.load(f)
+
+    # Build reverse lookup: canonical_name -> [old_names]
+    canonical_to_old = {}
+    for old_name, entry in cmap.items():
+        canonical = entry["canonical"]
+        if canonical not in canonical_to_old:
+            canonical_to_old[canonical] = []
+        canonical_to_old[canonical].append(old_name)
+
+    # Tier priority: native > workaround > roadmap > gap > unknown
+    tier_priority = {"native": 0, "workaround": 1, "roadmap": 2, "gap": 3, "unknown": 4}
+
+    # Migrate tiers from old names to canonical names
+    new_map = {}
+    migrated = 0
+    untiered = []
+
+    for feature in current_features:
+        # Check if feature itself has a tier in the existing map
+        if feature in existing_map:
+            new_map[feature] = existing_map[feature]
+            continue
+
+        # Check old variant names
+        old_names = canonical_to_old.get(feature, [])
+        best_tier = "unknown"
+        best_desc = ""
+        for old_name in [feature] + old_names:
+            if old_name in existing_map:
+                old_entry = existing_map[old_name]
+                old_tier = old_entry.get("tier", "unknown")
+                if tier_priority.get(old_tier, 4) < tier_priority.get(best_tier, 4):
+                    best_tier = old_tier
+                    best_desc = old_entry.get("description", "")
+
+        if best_tier != "unknown":
+            new_map[feature] = {"tier": best_tier, "description": best_desc}
+            migrated += 1
+        else:
+            new_map[feature] = {"tier": "unknown", "description": ""}
+            untiered.append(feature)
+
+    # If --apply, read JSON and merge
+    if args.apply:
+        if not os.path.exists(args.apply):
+            print(f"Error: File not found: {args.apply}")
+            sys.exit(1)
+        with open(args.apply, 'r') as f:
+            updates = json.load(f)
+        applied = 0
+        for feature, entry in updates.items():
+            if feature in new_map:
+                new_map[feature]["tier"] = entry.get("tier", new_map[feature].get("tier", "unknown"))
+                if entry.get("description"):
+                    new_map[feature]["description"] = entry["description"]
+                applied += 1
+        print(f"Applied {applied} capability map updates")
+        cap_data = {"mapping": new_map}
+        with open(cap_map_path, 'w') as f:
+            json.dump(cap_data, f, indent=2)
+        print(f"Wrote {cap_map_path} ({len(new_map)} features)")
+
+        # Also update dashboard
+        data["capability_map"] = new_map
+        _write_data_to_html(dashboard_path, data)
+        output_dir = os.path.dirname(dashboard_path)
+        write_canonical_json(data, output_dir)
+        print(f"Wrote {dashboard_path}")
+        return
+
+    orphans = [k for k in existing_map if k not in current_features]
+    missing_desc = [f for f, e in new_map.items() if not e.get("description")]
+
+    print(f"Capability map rebuild:")
+    print(f"  Current features in mentions: {len(current_features)}")
+    print(f"  Existing map entries: {len(existing_map)}")
+    print(f"  Migrated tiers from old names: {migrated}")
+    print(f"  Untiered features needing assignment: {len(untiered)}")
+    print(f"  Orphaned old names to remove: {len(orphans)}")
+    print(f"  Features missing descriptions: {len(missing_desc)}")
+
+    if untiered:
+        print(f"\n{'='*70}")
+        print("UNTIERED FEATURES (need tier + description):")
+        print(f"{'─'*70}")
+        for f in untiered:
+            print(f"  - {f}")
+
+    if missing_desc:
+        print(f"\n{'='*70}")
+        print("FEATURES MISSING DESCRIPTIONS:")
+        print(f"{'─'*70}")
+        for f in missing_desc:
+            tier = new_map[f].get("tier", "unknown")
+            print(f"  - {f} (tier: {tier})")
+
+    print(f"\n{'='*70}")
+    print("OUTPUT FORMAT")
+    print(f"{'─'*70}")
+    print("""Provide a JSON object with tier assignments and descriptions:
+
+{
+  "Feature Name": {
+    "tier": "native | workaround | roadmap | gap | unknown",
+    "description": "1-sentence: how Teachable handles this (or why it's a gap)"
+  }
+}
+
+Tiers:
+  native     - Built-in Teachable feature, works out of the box
+  workaround - Achievable via integrations, custom code, or manual process
+  roadmap    - Planned or in development
+  gap        - Not available, no workaround exists
+  unknown    - Insufficient information to classify
+
+Save to a file and run:
+  python3 analyze_features.py rebuild-capability-map test_output/index.html --apply <file>
+""")
+
+
+def cmd_validate_extraction(args):
+    """Validate a Claude Code extraction JSON before injection."""
+    with open(args.analysis_json, 'r') as f:
+        raw = json.load(f)
+
+    features_by_call = raw.get("features", raw) if isinstance(raw.get("features"), dict) else raw
+
+    # Load canonical data
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    valid_categories = set()
+    categories_path = os.path.join(base_dir, "categories.json")
+    if os.path.exists(categories_path):
+        with open(categories_path, "r") as f:
+            cats = json.load(f)
+        valid_categories = {c["name"] for c in cats.get("categories", [])}
+
+    canonical_names = _load_canonical_names()
+    alias_map = _load_company_aliases()
+
+    errors = []
+    warnings = []
+
+    required_fields = {"feature", "category", "company", "speaker", "quote", "type"}
+    valid_types = {"prospect_request", "prospect_interest"}
+    seen_combos = set()
+
+    for call_id, feats in features_by_call.items():
+        if not isinstance(feats, list):
+            continue
+        for feat in feats:
+            feature = feat.get("feature", "")
+            category = feat.get("category", "")
+            company = feat.get("company", "")
+
+            # Schema validation
+            missing = required_fields - set(feat.keys())
+            if missing:
+                errors.append(f"[{call_id[:12]}] Missing fields: {missing} for '{feature}'")
+
+            # Category validation
+            if valid_categories and category and category not in valid_categories:
+                if category == "NEEDS_REVIEW":
+                    warnings.append(f"[{call_id[:12]}] Category is NEEDS_REVIEW for '{feature}'")
+                else:
+                    suggestion = _suggest_match(category, valid_categories)
+                    hint = f' (did you mean "{suggestion}"?)' if suggestion else ""
+                    errors.append(f"[{call_id[:12]}] Invalid category '{category}' for '{feature}'{hint}")
+
+            # Feature name fuzzy match
+            if canonical_names and feature and feature not in canonical_names:
+                close = get_close_matches(feature, canonical_names, n=1, cutoff=0.8)
+                if close:
+                    warnings.append(f"[{call_id[:12]}] Feature '{feature}' similar to existing '{close[0]}'. Did you mean '{close[0]}'?")
+
+            # Company alias check
+            if alias_map and company:
+                canonical_company = _normalize_company_name(company, alias_map)
+                if canonical_company != company:
+                    warnings.append(f"[{call_id[:12]}] Company '{company}' should be '{canonical_company}' (known alias)")
+
+            # Confidence range
+            confidence = feat.get("confidence")
+            if confidence is not None:
+                try:
+                    conf_val = float(confidence)
+                    if conf_val < 0.0 or conf_val > 1.0:
+                        errors.append(f"[{call_id[:12]}] Confidence {conf_val} out of range [0.0, 1.0] for '{feature}'")
+                except (ValueError, TypeError):
+                    errors.append(f"[{call_id[:12]}] Invalid confidence value '{confidence}' for '{feature}'")
+
+            # Type validation
+            feat_type = feat.get("type", "")
+            if feat_type and feat_type not in valid_types:
+                errors.append(f"[{call_id[:12]}] Invalid type '{feat_type}' for '{feature}'. Must be: {valid_types}")
+
+            # Duplicate detection
+            combo = (call_id, feature, company)
+            if combo in seen_combos:
+                warnings.append(f"[{call_id[:12]}] Duplicate: '{feature}' + '{company}' appears multiple times")
+            seen_combos.add(combo)
+
+    # Print results
+    print(f"Validation results:")
+    print(f"  Calls checked: {len(features_by_call)}")
+    total_feats = sum(len(f) for f in features_by_call.values() if isinstance(f, list))
+    print(f"  Features checked: {total_feats}")
+
+    if errors:
+        print(f"\n  ERRORS ({len(errors)}):")
+        for e in errors:
+            print(f"    {e}")
+
+    if warnings:
+        print(f"\n  WARNINGS ({len(warnings)}):")
+        for w in warnings:
+            print(f"    {w}")
+
+    print(f"\n  Summary: {len(errors)} error(s), {len(warnings)} warning(s).")
+    if errors:
+        print("  Fix errors before injecting.")
+        sys.exit(1)
+    else:
+        print("  OK to inject.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="AI feature analysis helper")
     sub = parser.add_subparsers(dest="command")
@@ -1682,6 +2497,14 @@ def main():
                            help="Extract all calls, not just pending/unanalyzed")
     p_extract.add_argument("--prior", metavar="DASHBOARD",
                            help="Load existing feature names from a prior dashboard")
+    p_extract.add_argument(
+        '--batch', '--batch-size',
+        type=int,
+        default=0,
+        metavar='N',
+        dest='batch_size',
+        help='Limit output to the first N pending calls. Use for large backlogs to avoid context degradation. 0 = no limit (default).'
+    )
 
     # Normalize
     p_norm = sub.add_parser("normalize", help="Normalize feature names via merge map")
@@ -1727,6 +2550,48 @@ def main():
     p_mapf.add_argument("--inject", dest="inject_file", metavar="FILE",
                          help="JSON file with new mappings to merge into capability_map.json")
 
+    # Consolidate — apply feature name consolidation map
+    p_consolidate = sub.add_parser("consolidate",
+                                    help="Apply feature name consolidation map to clean up duplicates")
+    p_consolidate.add_argument("dashboard", help="Path to the dashboard HTML file (e.g. test_output/index.html)")
+    p_consolidate.add_argument("--map", default="feature_consolidation_map.json",
+                                help="Path to consolidation map JSON")
+    p_consolidate.add_argument("--dry-run", action="store_true",
+                                help="Print changes without writing")
+
+    # Normalize companies
+    p_normco = sub.add_parser("normalize-companies",
+                               help="Normalize company names using config/company_aliases.json")
+    p_normco.add_argument("dashboard", help="Path to dashboard HTML file")
+    p_normco.add_argument("--dry-run", action="store_true",
+                           help="Print changes without writing")
+
+    # Backfill segments
+    p_bfseg = sub.add_parser("backfill-segments",
+                              help="Print unsegmented calls for segment assignment")
+    p_bfseg.add_argument("dashboard", help="Path to dashboard HTML file")
+    p_bfseg.add_argument("--apply", metavar="FILE",
+                          help="JSON file with segment assignments to apply")
+
+    # Backfill titles
+    p_bftit = sub.add_parser("backfill-titles",
+                              help="Print calls with missing contact titles for retroactive extraction")
+    p_bftit.add_argument("dashboard", help="Path to dashboard HTML file")
+    p_bftit.add_argument("--apply", metavar="FILE",
+                          help="JSON file with title assignments to apply")
+
+    # Rebuild capability map
+    p_rcap = sub.add_parser("rebuild-capability-map",
+                             help="Rebuild capability map against canonical feature names")
+    p_rcap.add_argument("dashboard", help="Path to dashboard HTML file")
+    p_rcap.add_argument("--apply", metavar="FILE",
+                         help="JSON file with tier/description updates to apply")
+
+    # Validate extraction
+    p_valext = sub.add_parser("validate-extraction",
+                               help="Validate extraction JSON before injection")
+    p_valext.add_argument("analysis_json", help="Path to the extraction JSON file to validate")
+
     args = parser.parse_args()
     if args.command == "extract":
         cmd_extract(args)
@@ -1742,6 +2607,18 @@ def main():
         cmd_cleanup(args)
     elif args.command == "map-features":
         cmd_map_features(args)
+    elif args.command == "consolidate":
+        cmd_consolidate(args)
+    elif args.command == "normalize-companies":
+        cmd_normalize_companies(args)
+    elif args.command == "backfill-segments":
+        cmd_backfill_segments(args)
+    elif args.command == "backfill-titles":
+        cmd_backfill_titles(args)
+    elif args.command == "rebuild-capability-map":
+        cmd_rebuild_capability_map(args)
+    elif args.command == "validate-extraction":
+        cmd_validate_extraction(args)
     else:
         parser.print_help()
 

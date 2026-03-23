@@ -36,12 +36,21 @@ data/
 # Capability map config
 !config/capability_map.json
 
+# Company aliases
+!config/company_aliases.json
+
+# Feature consolidation map
+!feature_consolidation_map.json
+
 # Credentials
 credentials/
 
 # Local config
 .feature_blacklist
 .feature_names
+
+# Scan ledger (local state)
+scan_ledger.json
 
 # OS
 .DS_Store

@@ -35,7 +35,7 @@ class FirefliesRetriever:
 
     MAX_RETRIES = 3
     RETRY_BACKOFF = 1.0       # seconds; doubles each retry
-    REQUEST_DELAY = 1.0       # seconds between paginated batches
+    REQUEST_DELAY = 0.3       # seconds between paginated batches
     RATE_LIMIT_WAIT = 10.0    # default wait when 429 has no Retry-After
     HARD_CAP_RAW = 500        # absolute max raw calls per run, regardless of limit
 
@@ -325,6 +325,7 @@ class FirefliesRetriever:
         filter_criteria: Optional[CallFilter] = None,
         include_transcript: bool = True,
         verbose: bool = True,
+        after_date: Optional[datetime] = None,
     ) -> List[Call]:
         """
         Retrieve calls with filtering.
@@ -373,9 +374,20 @@ class FirefliesRetriever:
             for raw_call in batch:
                 if len(filtered_calls) >= filter_criteria.limit:
                     break
+                # Convert epoch-ms date to ISO string for display
+                parsed_dt = self._parse_call_date(raw_call.get("date", ""))
+
+                # Early exit: Fireflies returns newest-first, so once we see a call
+                # older than after_date, all remaining calls will also be older.
+                if after_date is not None and parsed_dt is not None:
+                    if parsed_dt < after_date:
+                        if verbose:
+                            print(f"   Reached calls older than cutoff ({after_date.date()}), stopping pagination.")
+                        # Signal outer loop to stop after this batch finishes
+                        total_raw = max_raw  # triggers the cap check below
+                        break
+
                 if self._matches_filter(raw_call, filter_criteria):
-                    # Convert epoch-ms date to ISO string for display
-                    parsed_dt = self._parse_call_date(raw_call.get("date", ""))
                     date_iso = parsed_dt.isoformat() if parsed_dt else str(raw_call.get("date", ""))
 
                     call = Call(

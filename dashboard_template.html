@@ -4685,14 +4685,17 @@ async function startScan(btn) {
         }
         const data = await resp.json();
         _scanPreviewCalls = data.calls || [];
+        const meta = data.meta || {};
 
         if (_scanPreviewCalls.length === 0) {
             title.textContent = 'No Calls Found';
-            body.innerHTML = '<div class="scan-empty">No matching calls found in the last 14 days.</div>';
+            let emptyMsg = 'No matching calls found.';
+            if (meta.skipped_known) emptyMsg += ' (' + meta.skipped_known + ' already imported or rejected)';
+            body.innerHTML = '<div class="scan-empty">' + esc(emptyMsg) + '</div>';
             footer.style.display = 'none';
         } else {
             title.textContent = 'Select Calls to Process';
-            renderScanCallList();
+            renderScanCallList(meta);
             footer.style.display = 'flex';
             updateScanFooter();
         }
@@ -4707,9 +4710,16 @@ async function startScan(btn) {
     btn.disabled = false;
 }
 
-function renderScanCallList() {
+function renderScanCallList(meta) {
     const body = document.getElementById('scan-modal-body');
     let html = '';
+    if (meta) {
+        let metaLine = '';
+        if (meta.last_scan_at) metaLine += 'Last scan: ' + meta.last_scan_at.slice(0, 10);
+        if (meta.effective_days) metaLine += (metaLine ? ' \u00b7 ' : '') + 'Window: ' + meta.effective_days + ' days';
+        if (meta.skipped_known) metaLine += (metaLine ? ' \u00b7 ' : '') + meta.skipped_known + ' known calls filtered';
+        if (metaLine) html += '<div style="font-size:0.78rem;color:#777;margin-bottom:0.5rem;">' + metaLine + '</div>';
+    }
     _scanPreviewCalls.forEach((c, i) => {
         const checked = !c.already_exists ? 'checked' : '';
         const dupeNote = c.already_exists
@@ -4784,6 +4794,17 @@ async function processSelectedCalls() {
         buildFeatures();
         buildCalls();
         if (typeof buildReport === 'function') buildReport();
+
+        // Reject unselected calls so they don't re-appear in future scans
+        const allPreviewIds = _scanPreviewCalls.map(c => c.id);
+        const rejectedIds = allPreviewIds.filter(id => !ids.includes(id));
+        if (rejectedIds.length > 0) {
+            fetch('/api/scan/reject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ call_ids: rejectedIds })
+            }).catch(err => console.warn('Failed to record rejections:', err));
+        }
 
         btn.textContent = 'Done!';
         btn.classList.remove('processing');

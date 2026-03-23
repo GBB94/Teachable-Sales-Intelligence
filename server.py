@@ -29,6 +29,13 @@ from flask import Flask, jsonify, request
 
 from fireflies_retriever import FirefliesRetriever, CallFilter
 from models import DEFAULT_SCAN_TITLE_KEYWORDS
+from lib.scan_ledger import (
+    get_known_ids,
+    get_last_scan_dt,
+    record_scan,
+    record_imported,
+    record_rejected,
+)
 
 # ---------------------------------------------------------------------------
 # Config
@@ -198,29 +205,50 @@ def scan_preview():
         return jsonify({"error": "FIREFLIES_API_KEY not set"}), 500
 
     try:
-        retriever = FirefliesRetriever(api_key)
+        # --- Ledger: determine scan window ---
+        known_ids = get_known_ids(OUTPUT_DIR)
+        last_scan_dt = get_last_scan_dt(OUTPUT_DIR)
 
+        if last_scan_dt is not None:
+            from datetime import timedelta
+            delta_days = (datetime.now(timezone.utc) - last_scan_dt).days
+            # Add 1-day buffer to avoid edge-case gaps; clamp between 2 and SCAN_DAYS
+            effective_days = max(2, min(delta_days + 1, SCAN_DAYS))
+        else:
+            effective_days = SCAN_DAYS
+
+        # after_date for early pagination exit
+        from datetime import timedelta
+        after_date = datetime.now(timezone.utc) - timedelta(days=effective_days)
+
+        retriever = FirefliesRetriever(api_key)
         filt = CallFilter(
-            days_back=SCAN_DAYS,
+            days_back=effective_days,
             limit=SCAN_LIMIT,
             title_keywords=SCAN_TITLE_KEYWORDS,
             owner_emails=SCAN_OWNERS,
             bypass_keywords_owners=['kevin.codde'],
         )
 
-        print(f"[preview] Fetching calls (days_back={SCAN_DAYS}, limit={SCAN_LIMIT}, owners={SCAN_OWNERS})...")
-        calls = retriever.get_calls(filter_criteria=filt, verbose=True)
+        print(f"[preview] Fetching calls (days_back={effective_days}, limit={SCAN_LIMIT}, owners={SCAN_OWNERS})...")
+        if last_scan_dt:
+            print(f"[preview] Last scan: {last_scan_dt.isoformat()} — {len(known_ids)} known IDs (imported + rejected)")
+        calls = retriever.get_calls(filter_criteria=filt, verbose=True, after_date=after_date)
         print(f"[preview] Found {len(calls)} calls")
 
-        # Cache for /process
+        # Record this scan timestamp
+        record_scan(OUTPUT_DIR)
+
+        # Cache for /process (include all calls, even known ones, so /process can find them)
         _preview_cache = {call.id: call for call in calls}
 
-        # Check which calls already exist in the dashboard
-        existing = _load_existing_data()
-        existing_call_ids = {c["id"] for c in existing.get("calls", [])}
-
+        # Build preview — exclude known IDs entirely
         preview = []
+        skipped = 0
         for call in calls:
+            if call.id in known_ids:
+                skipped += 1
+                continue
             preview.append({
                 "id": call.id,
                 "title": call.title,
@@ -229,10 +257,20 @@ def scan_preview():
                 "organizer": call.organizer_email or "",
                 "attendees": ", ".join(call.attendee_names) or "",
                 "transcript": call.transcript_url or "",
-                "already_exists": call.id in existing_call_ids,
+                "already_exists": False,
             })
 
-        return jsonify({"calls": preview})
+        if skipped:
+            print(f"[preview] Skipped {skipped} already-known calls (imported or rejected)")
+
+        return jsonify({
+            "calls": preview,
+            "meta": {
+                "effective_days": effective_days,
+                "last_scan_at": last_scan_dt.isoformat() if last_scan_dt else None,
+                "skipped_known": skipped,
+            }
+        })
 
     except Exception as e:
         print(f"[preview] Error: {e}")
@@ -270,11 +308,28 @@ def scan_process():
         _save_dashboard(merged)
         print(f"[process] Done. Added {added} new calls ({len(merged['calls'])} total).")
 
+        # Record imported IDs in ledger
+        record_imported(OUTPUT_DIR, selected_ids)
+
         return jsonify(merged)
 
     except Exception as e:
         print(f"[process] Error: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/scan/reject', methods=['POST'])
+def scan_reject():
+    """Record call IDs that the user chose not to import, so they don't re-appear in future scans."""
+    body = request.get_json(force=True)
+    call_ids = body.get("call_ids", [])
+
+    if not call_ids:
+        return jsonify({"error": "No call_ids provided"}), 400
+
+    record_rejected(OUTPUT_DIR, call_ids)
+    print(f"[reject] Recorded {len(call_ids)} rejected call(s)")
+    return jsonify({"status": "ok", "rejected_count": len(call_ids)})
 
 
 @app.route('/api/analysis/extract', methods=['POST'])
