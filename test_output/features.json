@@ -1,8 +1,8 @@
 {
   "stats": {
-    "total_mentions": 637,
+    "total_mentions": 617,
     "unique_calls": 85,
-    "unique_features": 145,
+    "unique_features": 122,
     "generated": "2026-03-23"
   },
   "mentions": [
@@ -6674,7 +6674,7 @@
       "speaker": "Robert Llewellyn (Rob Llewellyn)",
       "company": "Rob Llewellyn",
       "contact_title": "",
-      "keyword": "Competitive Payment Processing Rates",
+      "keyword": "International Payment Processing",
       "category": "Commerce & Checkout",
       "confidence": null,
       "type": "prospect_request",
@@ -6692,7 +6692,7 @@
       "speaker": "Robert Llewellyn (Rob Llewellyn)",
       "company": "Rob Llewellyn",
       "contact_title": "",
-      "keyword": "VAT Configuration by Seller Country",
+      "keyword": "International Payment Processing",
       "category": "Commerce & Checkout",
       "confidence": null,
       "type": "prospect_request",
@@ -7052,7 +7052,7 @@
       "speaker": "Steve Kinney (Steve Kinney Audio)",
       "company": "Steve Kinney Audio",
       "contact_title": "",
-      "keyword": "YouTube Shopping Integration",
+      "keyword": "Third-party Integration",
       "category": "Platform & Integrations",
       "confidence": null,
       "type": "prospect_request",
@@ -7934,7 +7934,7 @@
       "speaker": "Steve Kinney (Steve Kinney Audio)",
       "company": "Steve Kinney Audio",
       "contact_title": "",
-      "keyword": "Video Embedding in Community",
+      "keyword": "Community Features",
       "category": "Engagement & Community",
       "confidence": null,
       "type": "prospect_request",
@@ -7970,7 +7970,7 @@
       "speaker": "Steve Kinney (Steve Kinney Audio)",
       "company": "Steve Kinney Audio",
       "contact_title": "",
-      "keyword": "SSO with Discord",
+      "keyword": "SSO / SAML",
       "category": "Platform & Integrations",
       "confidence": null,
       "type": "prospect_request",
@@ -8014,24 +8014,6 @@
       "ts": "~25:00",
       "ts_sec": 1500,
       "link": "https://app.fireflies.ai/view/01KJFZYVA6H3WCHZ5MFV3KC811?t=1500",
-      "transcript": "https://app.fireflies.ai/view/01KJFZYVA6H3WCHZ5MFV3KC811"
-    },
-    {
-      "mention_id": "9c8daa0a9e4e",
-      "call_id": "01KJFZYVA6H3WCHZ5MFV3KC811",
-      "call_title": "Connect With Teachable",
-      "call_date": "2026-03-04",
-      "speaker": "Steve Kinney (Steve Kinney Audio)",
-      "company": "Steve Kinney Audio",
-      "contact_title": "",
-      "keyword": "Sponsored Ad Read Partnership",
-      "category": "Commerce & Checkout",
-      "confidence": null,
-      "type": "prospect_request",
-      "text": "Maybe there's an agreement in there that we can land on where for a year I have sponsored ad reads where I have. And it wouldn't be like you guys pay me, but it would absorb or offset cost of xyz.",
-      "ts": "~34:00",
-      "ts_sec": 2040,
-      "link": "https://app.fireflies.ai/view/01KJFZYVA6H3WCHZ5MFV3KC811?t=2040",
       "transcript": "https://app.fireflies.ai/view/01KJFZYVA6H3WCHZ5MFV3KC811"
     },
     {
@@ -8234,25 +8216,6 @@
       "competitor_context": "Factorial"
     },
     {
-      "mention_id": "8da932562e7f",
-      "call_id": "01KM5ZJ9Q8TT2RNWGBJZV2ETMC",
-      "call_title": "Meeting with Teachable ",
-      "call_date": "2026-03-20",
-      "speaker": "Tracy Sanchez Salazar (GoLabs)",
-      "company": "GoLabs",
-      "contact_title": "COO",
-      "keyword": "Organization Hierarchy / Nesting",
-      "category": "Organizations & Multi-tenancy",
-      "confidence": 0.4,
-      "type": "prospect_interest",
-      "text": "This is good like if we were, I don't know, like a school maybe or a company that would, you know that it's like very focused on that kind of stuff. But we are more like on the staff augmentation project.",
-      "ts": "~08:00",
-      "ts_sec": 480,
-      "link": "https://app.fireflies.ai/view/01KM5ZJ9Q8TT2RNWGBJZV2ETMC?t=480",
-      "transcript": "https://app.fireflies.ai/view/01KM5ZJ9Q8TT2RNWGBJZV2ETMC",
-      "competitor_context": null
-    },
-    {
       "mention_id": "2e5854f2a6f2",
       "call_id": "01KM5ZJ9Q8TT2RNWGBJZV2ETMC",
       "call_title": "Meeting with Teachable ",
@@ -8268,25 +8231,6 @@
       "ts": "~05:00",
       "ts_sec": 300,
       "link": "https://app.fireflies.ai/view/01KM5ZJ9Q8TT2RNWGBJZV2ETMC?t=300",
-      "transcript": "https://app.fireflies.ai/view/01KM5ZJ9Q8TT2RNWGBJZV2ETMC",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "6d8bf1cb818b",
-      "call_id": "01KM5ZJ9Q8TT2RNWGBJZV2ETMC",
-      "call_title": "Meeting with Teachable ",
-      "call_date": "2026-03-20",
-      "speaker": "Tracy Sanchez Salazar (GoLabs)",
-      "company": "GoLabs",
-      "contact_title": "COO",
-      "keyword": "Completion Tracking",
-      "category": "Reporting & Analytics",
-      "confidence": 0.4,
-      "type": "prospect_interest",
-      "text": "But I think it's automated because we get alerts about like pretty much everything.",
-      "ts": "~10:00",
-      "ts_sec": 600,
-      "link": "https://app.fireflies.ai/view/01KM5ZJ9Q8TT2RNWGBJZV2ETMC?t=600",
       "transcript": "https://app.fireflies.ai/view/01KM5ZJ9Q8TT2RNWGBJZV2ETMC",
       "competitor_context": null
     },
@@ -8732,8 +8676,8 @@
       "call_id": "01KKYK1C3BB778YE6QDWWSRE0E",
       "call_title": "Teachable <> DOT Compliance Salesforce Integration",
       "call_date": "2026-03-19",
-      "speaker": "Ibrahim Haleem Khan (DOT Compliance)",
-      "company": "DOT Compliance",
+      "speaker": "Ibrahim Haleem Khan (Dot Compliance)",
+      "company": "Dot Compliance",
       "contact_title": "",
       "keyword": "Third-party Integration",
       "category": "Platform & Integrations",
@@ -8751,8 +8695,8 @@
       "call_id": "01KKYK1C3BB778YE6QDWWSRE0E",
       "call_title": "Teachable <> DOT Compliance Salesforce Integration",
       "call_date": "2026-03-19",
-      "speaker": "Bryan Aho (DOT Compliance)",
-      "company": "DOT Compliance",
+      "speaker": "Bryan Aho (Dot Compliance)",
+      "company": "Dot Compliance",
       "contact_title": "",
       "keyword": "SSO / SAML",
       "category": "Platform & Integrations",
@@ -8770,8 +8714,8 @@
       "call_id": "01KKYK1C3BB778YE6QDWWSRE0E",
       "call_title": "Teachable <> DOT Compliance Salesforce Integration",
       "call_date": "2026-03-19",
-      "speaker": "Bryan Aho (DOT Compliance)",
-      "company": "DOT Compliance",
+      "speaker": "Bryan Aho (Dot Compliance)",
+      "company": "Dot Compliance",
       "contact_title": "",
       "keyword": "Headless / API Access",
       "category": "Platform & Integrations",
@@ -8789,8 +8733,8 @@
       "call_id": "01KKYK1C3BB778YE6QDWWSRE0E",
       "call_title": "Teachable <> DOT Compliance Salesforce Integration",
       "call_date": "2026-03-19",
-      "speaker": "Bryan Aho (DOT Compliance)",
-      "company": "DOT Compliance",
+      "speaker": "Bryan Aho (Dot Compliance)",
+      "company": "Dot Compliance",
       "contact_title": "",
       "keyword": "Certificate Automation",
       "category": "Compliance & Credentialing",
@@ -8808,8 +8752,8 @@
       "call_id": "01KKYK1C3BB778YE6QDWWSRE0E",
       "call_title": "Teachable <> DOT Compliance Salesforce Integration",
       "call_date": "2026-03-19",
-      "speaker": "Ibrahim Haleem Khan (DOT Compliance)",
-      "company": "DOT Compliance",
+      "speaker": "Ibrahim Haleem Khan (Dot Compliance)",
+      "company": "Dot Compliance",
       "contact_title": "",
       "keyword": "Webhook Support",
       "category": "Platform & Integrations",
@@ -8827,8 +8771,8 @@
       "call_id": "01KKYK1C3BB778YE6QDWWSRE0E",
       "call_title": "Teachable <> DOT Compliance Salesforce Integration",
       "call_date": "2026-03-19",
-      "speaker": "Ibrahim Haleem Khan (DOT Compliance)",
-      "company": "DOT Compliance",
+      "speaker": "Ibrahim Haleem Khan (Dot Compliance)",
+      "company": "Dot Compliance",
       "contact_title": "",
       "keyword": "Quiz / Assessment Builder",
       "category": "Assessments & Quizzes",
@@ -8846,8 +8790,8 @@
       "call_id": "01KKYK1C3BB778YE6QDWWSRE0E",
       "call_title": "Teachable <> DOT Compliance Salesforce Integration",
       "call_date": "2026-03-19",
-      "speaker": "Bryan Aho (DOT Compliance)",
-      "company": "DOT Compliance",
+      "speaker": "Bryan Aho (Dot Compliance)",
+      "company": "Dot Compliance",
       "contact_title": "",
       "keyword": "Compliance Controls",
       "category": "Compliance & Credentialing",
@@ -8865,8 +8809,8 @@
       "call_id": "01KKYK1C3BB778YE6QDWWSRE0E",
       "call_title": "Teachable <> DOT Compliance Salesforce Integration",
       "call_date": "2026-03-19",
-      "speaker": "Bryan Aho (DOT Compliance)",
-      "company": "DOT Compliance",
+      "speaker": "Bryan Aho (Dot Compliance)",
+      "company": "Dot Compliance",
       "contact_title": "",
       "keyword": "Bulk User Import",
       "category": "User Management",
@@ -8884,8 +8828,8 @@
       "call_id": "01KKYK1C3BB778YE6QDWWSRE0E",
       "call_title": "Teachable <> DOT Compliance Salesforce Integration",
       "call_date": "2026-03-19",
-      "speaker": "Bryan Aho (DOT Compliance)",
-      "company": "DOT Compliance",
+      "speaker": "Bryan Aho (Dot Compliance)",
+      "company": "Dot Compliance",
       "contact_title": "",
       "keyword": "Third-party Integration",
       "category": "Platform & Integrations",
@@ -9086,7 +9030,7 @@
       "ts_sec": 1080,
       "link": "https://app.fireflies.ai/view/01KM385WZD344XSFXEXCXXXJQ7?t=1080",
       "transcript": "https://app.fireflies.ai/view/01KM385WZD344XSFXEXCXXXJQ7",
-      "competitor_context": "NEEDS_REVIEW"
+      "competitor_context": "EdApp (Safety Culture)"
     },
     {
       "mention_id": "295bd6dbf186",
@@ -9336,25 +9280,6 @@
       "competitor_context": null
     },
     {
-      "mention_id": "bb292669202c",
-      "call_id": "01KKYKF7N141R6EG2R9GMCA3MH",
-      "call_title": "Connect with Teachable",
-      "call_date": "2026-03-18",
-      "speaker": "Felicia Rattray (Micro School Institute)",
-      "company": "Micro School Institute",
-      "contact_title": "Founder & School Principal",
-      "keyword": "Integrated One-on-One Coaching Sessions",
-      "category": "Engagement & Community",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "It's primarily a combination of professional development and business. I want to create a training and certification institute where adult students, teachers, educators, principals come to this online platform.",
-      "ts": "~03:00",
-      "ts_sec": 180,
-      "link": "https://app.fireflies.ai/view/01KKYKF7N141R6EG2R9GMCA3MH?t=180",
-      "transcript": "https://app.fireflies.ai/view/01KKYKF7N141R6EG2R9GMCA3MH",
-      "competitor_context": null
-    },
-    {
       "mention_id": "2b96059a2b0f",
       "call_id": "01KKYKF7N141R6EG2R9GMCA3MH",
       "call_title": "Connect with Teachable",
@@ -9370,44 +9295,6 @@
       "ts": "~12:00",
       "ts_sec": 720,
       "link": "https://app.fireflies.ai/view/01KKYKF7N141R6EG2R9GMCA3MH?t=720",
-      "transcript": "https://app.fireflies.ai/view/01KKYKF7N141R6EG2R9GMCA3MH",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "e29897f0d382",
-      "call_id": "01KKYKF7N141R6EG2R9GMCA3MH",
-      "call_title": "Connect with Teachable",
-      "call_date": "2026-03-18",
-      "speaker": "Felicia Rattray (Micro School Institute)",
-      "company": "Micro School Institute",
-      "contact_title": "Founder & School Principal",
-      "keyword": "Membership / Subscription Pricing",
-      "category": "Commerce & Checkout",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "Could I possibly have a hub where my private school students, if I wanted to write specific courses just for them, that I would want them to be able to have their own course for free.",
-      "ts": "~06:00",
-      "ts_sec": 360,
-      "link": "https://app.fireflies.ai/view/01KKYKF7N141R6EG2R9GMCA3MH?t=360",
-      "transcript": "https://app.fireflies.ai/view/01KKYKF7N141R6EG2R9GMCA3MH",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "19176dfe0b4f",
-      "call_id": "01KKYKF7N141R6EG2R9GMCA3MH",
-      "call_title": "Connect with Teachable",
-      "call_date": "2026-03-18",
-      "speaker": "Felicia Rattray (Micro School Institute)",
-      "company": "Micro School Institute",
-      "contact_title": "Founder & School Principal",
-      "keyword": "Community Features",
-      "category": "Engagement & Community",
-      "confidence": 0.4,
-      "type": "prospect_interest",
-      "text": "Yeah.",
-      "ts": "~10:00",
-      "ts_sec": 600,
-      "link": "https://app.fireflies.ai/view/01KKYKF7N141R6EG2R9GMCA3MH?t=600",
       "transcript": "https://app.fireflies.ai/view/01KKYKF7N141R6EG2R9GMCA3MH",
       "competitor_context": null
     },
@@ -9640,44 +9527,6 @@
       "competitor_context": null
     },
     {
-      "mention_id": "94f219e0c561",
-      "call_id": "01KKKQAEHCXC5N890HK3TDBT8W",
-      "call_title": "Juliette Voytilla, Tia Miller, Tori Meskin and Zach McCall",
-      "call_date": "2026-03-16",
-      "speaker": "Tori Meskin (NICUity)",
-      "company": "NICUity",
-      "contact_title": "Co-founder (inferred)",
-      "keyword": "Organization Admin Role",
-      "category": "Organizations & Multi-tenancy",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "Yeah, that's almost even better, honestly.",
-      "ts": "~11:00",
-      "ts_sec": 660,
-      "link": "https://app.fireflies.ai/view/01KKKQAEHCXC5N890HK3TDBT8W?t=660",
-      "transcript": "https://app.fireflies.ai/view/01KKKQAEHCXC5N890HK3TDBT8W",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "e05df309a726",
-      "call_id": "01KKKQAEHCXC5N890HK3TDBT8W",
-      "call_title": "Juliette Voytilla, Tia Miller, Tori Meskin and Zach McCall",
-      "call_date": "2026-03-16",
-      "speaker": "Tori Meskin (NICUity)",
-      "company": "NICUity",
-      "contact_title": "Co-founder (inferred)",
-      "keyword": "Organization-level Reporting",
-      "category": "Reporting & Analytics",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "Yeah, that's almost even better, honestly.",
-      "ts": "~11:00",
-      "ts_sec": 660,
-      "link": "https://app.fireflies.ai/view/01KKKQAEHCXC5N890HK3TDBT8W?t=660",
-      "transcript": "https://app.fireflies.ai/view/01KKKQAEHCXC5N890HK3TDBT8W",
-      "competitor_context": null
-    },
-    {
       "mention_id": "32ecb288c0a4",
       "call_id": "01KKKQAEHCXC5N890HK3TDBT8W",
       "call_title": "Juliette Voytilla, Tia Miller, Tori Meskin and Zach McCall",
@@ -9904,25 +9753,6 @@
       "link": "https://app.fireflies.ai/view/01KKHX9BGA0RQBDSAYNAXTWNNB?t=1740",
       "transcript": "https://app.fireflies.ai/view/01KKHX9BGA0RQBDSAYNAXTWNNB",
       "competitor_context": null
-    },
-    {
-      "mention_id": "7f78f0a37755",
-      "call_id": "01KKHX9BGA0RQBDSAYNAXTWNNB",
-      "call_title": "Connect with Teachable",
-      "call_date": "2026-03-17",
-      "speaker": "Kim Wall (ACOA)",
-      "company": "ACOA",
-      "contact_title": "Owner (inferred)",
-      "keyword": "Zapier Integration",
-      "category": "Platform & Integrations",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "So we've just moved on a little while ago, moved on to Zoho, going to move on to Zoho, Billing with Stripe and we're currently with a business called My Academy for the LMS.",
-      "ts": "~02:00",
-      "ts_sec": 120,
-      "link": "https://app.fireflies.ai/view/01KKHX9BGA0RQBDSAYNAXTWNNB?t=120",
-      "transcript": "https://app.fireflies.ai/view/01KKHX9BGA0RQBDSAYNAXTWNNB",
-      "competitor_context": "My Academy"
     },
     {
       "mention_id": "9dc95ecec253",
@@ -10305,25 +10135,6 @@
       "competitor_context": null
     },
     {
-      "mention_id": "f5d28a83a97a",
-      "call_id": "01KKM1W76B7M4CW8MN2FY14MS8",
-      "call_title": "Connect with Teachable",
-      "call_date": "2026-03-17",
-      "speaker": "Oleksandra Bilkun (Preply)",
-      "company": "Preply",
-      "contact_title": "Academy Lead (inferred)",
-      "keyword": "White Label Mobile App",
-      "category": "Design & Branding",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "And branding it and make it more like custom would be an extra cost, right?",
-      "ts": "~29:00",
-      "ts_sec": 1740,
-      "link": "https://app.fireflies.ai/view/01KKM1W76B7M4CW8MN2FY14MS8?t=1740",
-      "transcript": "https://app.fireflies.ai/view/01KKM1W76B7M4CW8MN2FY14MS8",
-      "competitor_context": null
-    },
-    {
       "mention_id": "c58f0cc23ea9",
       "call_id": "01KKM1W76B7M4CW8MN2FY14MS8",
       "call_title": "Connect with Teachable",
@@ -10590,44 +10401,6 @@
       "competitor_context": null
     },
     {
-      "mention_id": "2aa83108d479",
-      "call_id": "01KK9GXNB54WM2HBCJHY8VCZQQ",
-      "call_title": "Teachable <> Speravita",
-      "call_date": "2026-03-16",
-      "speaker": "Jennifer Roush (Speravita)",
-      "company": "Speravita",
-      "contact_title": "CEO (inferred)",
-      "keyword": "Content Ready by Launch Date",
-      "category": "Curriculum & Content",
-      "confidence": 0.8,
-      "type": "prospect_request",
-      "text": "our goal would be, and I know we've talked about this before, is just to kind of have at least our initial. It wouldn't be our full course, but at least some initial content ready to go by the beginning of May",
-      "ts": "~10:00",
-      "ts_sec": 600,
-      "link": "https://app.fireflies.ai/view/01KK9GXNB54WM2HBCJHY8VCZQQ?t=600",
-      "transcript": "https://app.fireflies.ai/view/01KK9GXNB54WM2HBCJHY8VCZQQ",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "63d6a769fdc4",
-      "call_id": "01KK9GXNB54WM2HBCJHY8VCZQQ",
-      "call_title": "Teachable <> Speravita",
-      "call_date": "2026-03-16",
-      "speaker": "Jennifer Roush (Speravita)",
-      "company": "Speravita",
-      "contact_title": "CEO (inferred)",
-      "keyword": "White Glove Onboarding",
-      "category": "Platform & Integrations",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "Okay. Yeah, I mean, I think, I think then I feel okay going forward with it.",
-      "ts": "~12:00",
-      "ts_sec": 720,
-      "link": "https://app.fireflies.ai/view/01KK9GXNB54WM2HBCJHY8VCZQQ?t=720",
-      "transcript": "https://app.fireflies.ai/view/01KK9GXNB54WM2HBCJHY8VCZQQ",
-      "competitor_context": null
-    },
-    {
       "mention_id": "c55e2b504510",
       "call_id": "01KK9GXNB54WM2HBCJHY8VCZQQ",
       "call_title": "Teachable <> Speravita",
@@ -10692,8 +10465,8 @@
       "speaker": "Sivaranjani P (Welugu Foundation)",
       "company": "Welugu Foundation",
       "contact_title": "Program Director (inferred)",
-      "keyword": "Student Institution Tracking",
-      "category": "Reporting & Analytics",
+      "keyword": "Student Custom Fields / Onboarding",
+      "category": "User Management",
       "confidence": 1.0,
       "type": "prospect_request",
       "text": "is there a possibility to collect information on which med school or which institution they belong to?",
@@ -10730,7 +10503,7 @@
       "speaker": "Sivaranjani P (Welugu Foundation)",
       "company": "Welugu Foundation",
       "contact_title": "Program Director (inferred)",
-      "keyword": "Reflection Prompts / Open-Ended Responses",
+      "keyword": "Open-ended Questions / Journal",
       "category": "Assessments & Quizzes",
       "confidence": 1.0,
       "type": "prospect_request",
@@ -10757,25 +10530,6 @@
       "ts": "~11:30",
       "ts_sec": 690,
       "link": "https://app.fireflies.ai/view/01KKMAWRFXF557JWCSNY1QXS71?t=690",
-      "transcript": "https://app.fireflies.ai/view/01KKMAWRFXF557JWCSNY1QXS71",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "d06982249538",
-      "call_id": "01KKMAWRFXF557JWCSNY1QXS71",
-      "call_title": "30-minute Meeting",
-      "call_date": "2026-03-13",
-      "speaker": "Sivaranjani P (Welugu Foundation)",
-      "company": "Welugu Foundation",
-      "contact_title": "Program Director (inferred)",
-      "keyword": "Blog / External Content Link",
-      "category": "Platform & Integrations",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "Is that space available here or does it go have to go back to our.",
-      "ts": "~13:00",
-      "ts_sec": 780,
-      "link": "https://app.fireflies.ai/view/01KKMAWRFXF557JWCSNY1QXS71?t=780",
       "transcript": "https://app.fireflies.ai/view/01KKMAWRFXF557JWCSNY1QXS71",
       "competitor_context": null
     },
@@ -10844,7 +10598,7 @@
       "speaker": "Welugu Team (Welugu Foundation)",
       "company": "Welugu Foundation",
       "contact_title": "Physician / Founder",
-      "keyword": "Free Course Hosting (No Revenue Collection)",
+      "keyword": "Freemium / Free Course Support",
       "category": "Commerce & Checkout",
       "confidence": 1.0,
       "type": "prospect_request",
@@ -10920,7 +10674,7 @@
       "speaker": "Chandra Nayan Uttarkar (Welugu Foundation)",
       "company": "Welugu Foundation",
       "contact_title": "Technical Lead (inferred)",
-      "keyword": "Aggregated Survey Responses",
+      "keyword": "Quiz / Assessment Reporting",
       "category": "Reporting & Analytics",
       "confidence": 1.0,
       "type": "prospect_request",
@@ -11015,8 +10769,8 @@
       "speaker": "Welugu Team (Welugu Foundation)",
       "company": "Welugu Foundation",
       "contact_title": "Physician / Founder",
-      "keyword": "Auto-Scroll Transcript",
-      "category": "Curriculum & Content",
+      "keyword": "Learner UX / Course Journey",
+      "category": "Design & Branding",
       "confidence": 0.8,
       "type": "prospect_interest",
       "text": "and is there a transcript auto scroll transcript option?",
@@ -11053,7 +10807,7 @@
       "speaker": "Elaine F (Johnson Health Center)",
       "company": "Johnson Health Center",
       "contact_title": "Procurement Manager",
-      "keyword": "Nonprofit Discount",
+      "keyword": "SMB / Flexible Pricing Tiers",
       "category": "Commerce & Checkout",
       "confidence": 1.0,
       "type": "prospect_request",
@@ -11065,25 +10819,6 @@
       "competitor_context": null
     },
     {
-      "mention_id": "a983b4a3a824",
-      "call_id": "01KKKMJH5D4CYD66MQGEZEJC17",
-      "call_title": "fui-tduj-vyz",
-      "call_date": "2026-03-13",
-      "speaker": "Elaine F (Johnson Health Center)",
-      "company": "Johnson Health Center",
-      "contact_title": "Procurement Manager",
-      "keyword": "Health / Nutrition Course Content",
-      "category": "Curriculum & Content",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "she might have something specific for diabetes management or, you know, IDs or, or whatever and construct certain, you know, nutritional guidelines associated with that.",
-      "ts": "~04:00",
-      "ts_sec": 240,
-      "link": "https://app.fireflies.ai/view/01KKKMJH5D4CYD66MQGEZEJC17?t=240",
-      "transcript": "https://app.fireflies.ai/view/01KKKMJH5D4CYD66MQGEZEJC17",
-      "competitor_context": null
-    },
-    {
       "mention_id": "75debe4f8203",
       "call_id": "01KKKMJH5D4CYD66MQGEZEJC17",
       "call_title": "fui-tduj-vyz",
@@ -11091,7 +10826,7 @@
       "speaker": "Elaine F (Johnson Health Center)",
       "company": "Johnson Health Center",
       "contact_title": "Procurement Manager",
-      "keyword": "PDF Quotation / Contract Export",
+      "keyword": "Purchase Order / Invoice Billing",
       "category": "Commerce & Checkout",
       "confidence": 0.8,
       "type": "prospect_request",
@@ -11118,25 +10853,6 @@
       "ts": "~10:00",
       "ts_sec": 600,
       "link": "https://app.fireflies.ai/view/01KKKMJH5D4CYD66MQGEZEJC17?t=600",
-      "transcript": "https://app.fireflies.ai/view/01KKKMJH5D4CYD66MQGEZEJC17",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "ea4beff42cbe",
-      "call_id": "01KKKMJH5D4CYD66MQGEZEJC17",
-      "call_title": "fui-tduj-vyz",
-      "call_date": "2026-03-13",
-      "speaker": "Elaine F (Johnson Health Center)",
-      "company": "Johnson Health Center",
-      "contact_title": "Procurement Manager",
-      "keyword": "Renewal Notifications",
-      "category": "Platform & Integrations",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "I try to keep everything associated with an engagement in our contracts database. So that we know when it's up for renewal.",
-      "ts": "~10:30",
-      "ts_sec": 630,
-      "link": "https://app.fireflies.ai/view/01KKKMJH5D4CYD66MQGEZEJC17?t=630",
       "transcript": "https://app.fireflies.ai/view/01KKKMJH5D4CYD66MQGEZEJC17",
       "competitor_context": null
     },
@@ -11186,7 +10902,7 @@
       "speaker": "The Real Jason Duncan (The Exeter Club)",
       "company": "The Exeter Club",
       "contact_title": "Founder",
-      "keyword": "Event Calendar & Registration",
+      "keyword": "Hybrid Scheduling",
       "category": "Engagement & Community",
       "confidence": 1.0,
       "type": "prospect_request",
@@ -11236,25 +10952,6 @@
       "competitor_context": null
     },
     {
-      "mention_id": "c2fbce050139",
-      "call_id": "01KKVW0C6JK3DJAH547WWSYNJN",
-      "call_title": "Jason Duncan and Kevin Codde",
-      "call_date": "2026-03-16",
-      "speaker": "The Real Jason Duncan (The Exeter Club)",
-      "company": "The Exeter Club",
-      "contact_title": "Founder",
-      "keyword": "Organization Hierarchy / Nesting",
-      "category": "Organizations & Multi-tenancy",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "The only reason we would need to do group is if it were simpler to do that for the coaches. As opposed to the members.",
-      "ts": "~35:00",
-      "ts_sec": 2100,
-      "link": "https://app.fireflies.ai/view/01KKVW0C6JK3DJAH547WWSYNJN?t=2100",
-      "transcript": "https://app.fireflies.ai/view/01KKVW0C6JK3DJAH547WWSYNJN",
-      "competitor_context": null
-    },
-    {
       "mention_id": "f7687039d722",
       "call_id": "01KKVW0C6JK3DJAH547WWSYNJN",
       "call_title": "Jason Duncan and Kevin Codde",
@@ -11281,7 +10978,7 @@
       "speaker": "The Real Jason Duncan (The Exeter Club)",
       "company": "The Exeter Club",
       "contact_title": "Founder",
-      "keyword": "Member Login Tracking",
+      "keyword": "Completion Tracking",
       "category": "Reporting & Analytics",
       "confidence": 0.6,
       "type": "prospect_interest",
@@ -11331,25 +11028,6 @@
       "competitor_context": "Kajabi"
     },
     {
-      "mention_id": "9750421649e1",
-      "call_id": "01KKM7F2HJSDEB9NBYNV27DK6H",
-      "call_title": "Vyagale Maryland and Kevin Codde",
-      "call_date": "2026-03-13",
-      "speaker": "Maryland Vyagale (Vyagale Academy)",
-      "company": "Vyagale Academy",
-      "contact_title": "CEO & Founder",
-      "keyword": "Organization Hierarchy / Nesting",
-      "category": "Organizations & Multi-tenancy",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "So I, I'm in and out of meetings left and right. I'm. I'm the one who is the CEO and founder of this. I said micro school.",
-      "ts": "~02:00",
-      "ts_sec": 120,
-      "link": "https://app.fireflies.ai/view/01KKM7F2HJSDEB9NBYNV27DK6H?t=120",
-      "transcript": "https://app.fireflies.ai/view/01KKM7F2HJSDEB9NBYNV27DK6H",
-      "competitor_context": null
-    },
-    {
       "mention_id": "45396acc99bb",
       "call_id": "01KKM7F2HJSDEB9NBYNV27DK6H",
       "call_title": "Vyagale Maryland and Kevin Codde",
@@ -11376,8 +11054,8 @@
       "speaker": "Maryland Vyagale (Vyagale Academy)",
       "company": "Vyagale Academy",
       "contact_title": "CEO & Founder",
-      "keyword": "AI Course Feedback to Students",
-      "category": "Assessments & Quizzes",
+      "keyword": "AI Tutor / Copilot Integration",
+      "category": "Platform & Integrations",
       "confidence": 0.8,
       "type": "prospect_request",
       "text": "What about AI and feedback and all of this to clients?",
@@ -11433,8 +11111,8 @@
       "speaker": "Maryland Vyagale (Vyagale Academy)",
       "company": "Vyagale Academy",
       "contact_title": "CEO & Founder",
-      "keyword": "Teacher-to-Parent Feedback Form",
-      "category": "Assessments & Quizzes",
+      "keyword": "Quiz / Assessment Reporting",
+      "category": "Reporting & Analytics",
       "confidence": 1.0,
       "type": "prospect_request",
       "text": "What I'm wondering though, is there a way to develop something where teachers can give the feedback to the parents like after each. They can say, Juana did well in this area, she needs improvement in this.",
@@ -11479,44 +11157,6 @@
       "ts": "~19:30",
       "ts_sec": 1170,
       "link": "https://app.fireflies.ai/view/01KKM7F2HJSDEB9NBYNV27DK6H?t=1170",
-      "transcript": "https://app.fireflies.ai/view/01KKM7F2HJSDEB9NBYNV27DK6H",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "2e3ee8ddce60",
-      "call_id": "01KKM7F2HJSDEB9NBYNV27DK6H",
-      "call_title": "Vyagale Maryland and Kevin Codde",
-      "call_date": "2026-03-13",
-      "speaker": "Maryland Vyagale (Vyagale Academy)",
-      "company": "Vyagale Academy",
-      "contact_title": "CEO & Founder",
-      "keyword": "Volume Discounts Over Time",
-      "category": "Commerce & Checkout",
-      "confidence": 0.6,
-      "type": "prospect_interest",
-      "text": "As we continue to grow, do you all work towards discounts or what have you in the future? You know, as we start those serious Numbers start coming through.",
-      "ts": "~17:00",
-      "ts_sec": 1020,
-      "link": "https://app.fireflies.ai/view/01KKM7F2HJSDEB9NBYNV27DK6H?t=1020",
-      "transcript": "https://app.fireflies.ai/view/01KKM7F2HJSDEB9NBYNV27DK6H",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "aeee39497f37",
-      "call_id": "01KKM7F2HJSDEB9NBYNV27DK6H",
-      "call_title": "Vyagale Maryland and Kevin Codde",
-      "call_date": "2026-03-13",
-      "speaker": "Maryland Vyagale (Vyagale Academy)",
-      "company": "Vyagale Academy",
-      "contact_title": "CEO & Founder",
-      "keyword": "Flexible Session Duration (15/30 min)",
-      "category": "Curriculum & Content",
-      "confidence": 0.8,
-      "type": "prospect_request",
-      "text": "My classes are only 15 or 30 minutes. Am I able to tailor the template for that as well?",
-      "ts": "~29:00",
-      "ts_sec": 1740,
-      "link": "https://app.fireflies.ai/view/01KKM7F2HJSDEB9NBYNV27DK6H?t=1740",
       "transcript": "https://app.fireflies.ai/view/01KKM7F2HJSDEB9NBYNV27DK6H",
       "competitor_context": null
     },
@@ -11631,25 +11271,6 @@
       "ts": "~32:00",
       "ts_sec": 1920,
       "link": "https://app.fireflies.ai/view/01KKKYXKZYDVEMP307CFG0MG9Y?t=1920",
-      "transcript": "https://app.fireflies.ai/view/01KKKYXKZYDVEMP307CFG0MG9Y",
-      "competitor_context": null
-    },
-    {
-      "mention_id": "6be2a9f07fba",
-      "call_id": "01KKKYXKZYDVEMP307CFG0MG9Y",
-      "call_title": "Meeting with Teachable",
-      "call_date": "2026-03-13",
-      "speaker": "Todd (WIAA Officials)",
-      "company": "WIAA Officials",
-      "contact_title": "Director of Officials (inferred)",
-      "keyword": "Headless / API Access",
-      "category": "Platform & Integrations",
-      "confidence": 0.6,
-      "type": "prospect_request",
-      "text": "figure out how to. What we need to do to just get this Linked up.",
-      "ts": "~42:00",
-      "ts_sec": 2520,
-      "link": "https://app.fireflies.ai/view/01KKKYXKZYDVEMP307CFG0MG9Y?t=2520",
       "transcript": "https://app.fireflies.ai/view/01KKKYXKZYDVEMP307CFG0MG9Y",
       "competitor_context": null
     }
@@ -11795,7 +11416,8 @@
       "alternative_segment": "Professional Training & Development",
       "suggested_new_segment": null,
       "company_domain": "speravita.com",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KG8DBQ8MRVVY6R18W0SQ99X7",
@@ -11948,7 +11570,8 @@
       "alternative_segment": "Coaches & Consultants",
       "suggested_new_segment": null,
       "company_domain": "southerncrosscoaching.com.au",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KG8DBQ8M376ATH254SBQH6X2",
@@ -12075,7 +11698,8 @@
       "alternative_segment": "Academic & Higher Education",
       "suggested_new_segment": null,
       "company_domain": "bayareadiscoverymuseum.org",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KG5MKT5KW9MM47M96P3DVHJT",
@@ -12094,7 +11718,8 @@
       "segment_confidence": null,
       "segment_reasoning": "Junk - empty or failed recording",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KGK0S3TVKT6FZ6HN4TWGHJBH",
@@ -12232,7 +11857,8 @@
       "alternative_segment": "Corporate Education & Customer Training",
       "suggested_new_segment": null,
       "company_domain": "lta.gov.sg",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KGN4PT9YVSHZJE86J8THBX0W",
@@ -12397,7 +12023,8 @@
       "alternative_segment": null,
       "suggested_new_segment": null,
       "company_domain": "dotcompliancegroup.com",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KG0TD79BR1B1FN8TDWRPMPAS",
@@ -12523,7 +12150,8 @@
       "alternative_segment": null,
       "suggested_new_segment": null,
       "company_domain": "southerncrosscoaching.com.au",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KFXJC3VJV91SFF5PRNCY3XBY",
@@ -12745,7 +12373,8 @@
       "alternative_segment": null,
       "suggested_new_segment": null,
       "company_domain": "dotcompliancegroup.com",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KH4P5ZAKDS06QNRRA8PWX3ZX",
@@ -12928,7 +12557,8 @@
       "alternative_segment": null,
       "suggested_new_segment": null,
       "company_domain": "ellynsatterinstitute.org",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KH42KW5MA1PBFY0K8X7RGXKE",
@@ -12947,7 +12577,8 @@
       "segment_confidence": null,
       "segment_reasoning": "Junk - empty or failed recording",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KH9S8XRSHHFYQCWWMT9GDNQW",
@@ -13111,7 +12742,8 @@
       "alternative_segment": "Corporate Education",
       "suggested_new_segment": null,
       "company_domain": "redroverk12.com",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KGG6JGCCJD4DHZ346EF66B4D",
@@ -13275,7 +12907,8 @@
       "alternative_segment": "Health & Wellness",
       "suggested_new_segment": null,
       "company_domain": "transcend-strategy.com",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KGT7X1N1GNAKWGNV8RH09JF9",
@@ -13294,7 +12927,8 @@
       "segment_reasoning": "Prospect never joined the call. No segment signals available.",
       "alternative_segment": null,
       "suggested_new_segment": null,
-      "analyzed": true
+      "analyzed": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KGSVCEQV93YVSD8NTK04QH7B",
@@ -13464,7 +13098,8 @@
       "alternative_segment": "CE & Credentialing",
       "suggested_new_segment": null,
       "company_domain": "purelifeministries.org",
-      "domain_confidence": "low"
+      "domain_confidence": "low",
+      "competitor_mentions": []
     },
     {
       "id": "01KGSMR21SY88YC3P4JE88BEYF",
@@ -13641,7 +13276,8 @@
       "alternative_segment": "Professional Training",
       "suggested_new_segment": null,
       "company_domain": "newyorkepoxy.com",
-      "domain_confidence": "high"
+      "domain_confidence": "high",
+      "competitor_mentions": []
     },
     {
       "id": "01KH1GC7T9PKQWFANY68TQCB71",
@@ -13722,7 +13358,8 @@
             "prospect_term": "the pointy end",
             "standard_term": "final stage of evaluation"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "company_domain": "unitehealth.com.au",
       "domain_confidence": "low",
@@ -13730,7 +13367,8 @@
       "segment_confidence": 0.92,
       "segment_reasoning": "Unite Health is a Pilates instructor certification company with 14 years in operation. Primary business is training fitness professionals, with 80% in-person and expanding to online. Fits squarely into health/wellness practitioner education.",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHPVRHPXAJJBE95SQRDTFZMD",
@@ -13801,7 +13439,8 @@
             "prospect_term": "casting a wide net",
             "standard_term": "evaluating multiple platforms broadly"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Professional Training & Development",
@@ -13834,7 +13473,8 @@
       "segment_confidence": null,
       "segment_reasoning": "Junk - empty or failed recording",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHPVJH3VAMV0MYHDZXKFJK4J",
@@ -13853,7 +13493,8 @@
       "segment_confidence": null,
       "segment_reasoning": "Junk - empty or failed recording",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KH4M845APVEBYBXREXXWMFN3",
@@ -13872,7 +13513,8 @@
       "segment_confidence": null,
       "segment_reasoning": "Junk - empty or failed recording",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KH2W1XVA9DXYFS3C9B3GM30N",
@@ -14115,7 +13757,8 @@
       "segment_confidence": 0.7,
       "segment_reasoning": "Pure Life Ministries is delivering a structured counseling program combining digital curriculum with one-on-one coaching sessions, fitting the Coaches & Consultants segment. While they are a nonprofit/ministry, their core use case is individualized coaching at scale paired with course content.",
       "alternative_segment": "Health, Wellness & Fitness",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHC4HB9PKYWVJVVYX5QG4VAN",
@@ -14282,7 +13925,8 @@
       "segment_confidence": 0.95,
       "segment_reasoning": "DMEMI Fitness Academy is a fitness certification provider offering trainer certifications for Pilates, fitness instruction, and similar disciplines, directly matching the Health, Wellness & Fitness segment.",
       "alternative_segment": "Continuing Education & Credentialing",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KH1GC7TAXXCNX1Z4BDJWE55R",
@@ -14467,7 +14111,8 @@
       "segment_confidence": 0.9,
       "segment_reasoning": "Six String Fingerpicking is an independent music education business selling structured guitar courses online with community engagement, fitting the Course Creators & Digital Educators segment perfectly.",
       "alternative_segment": "Health, Wellness & Fitness",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHVG2TY3NAGV2ATCNM5KB3YP",
@@ -14570,7 +14215,8 @@
       "segment_confidence": 0.75,
       "segment_reasoning": "KeshArt appears to be an individual/small business selling art education courses online to a large Indian audience, fitting the course creator profile.",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHV8H55H0MKN4Q4MFHHP51D0",
@@ -14842,7 +14488,7 @@
         ],
         "competitors_mentioned": [
           {
-            "name": "NEEDS_REVIEW",
+            "name": "Digiforma",
             "context": "Currently using Digiforma (French LMS) which has limitations. Switching from it.",
             "timestamp": "~02:00",
             "ts_seconds": 120
@@ -14880,7 +14526,7 @@
       "suggested_new_segment": null,
       "competitor_mentions": [
         {
-          "competitor": "NEEDS_REVIEW",
+          "competitor": "Digiforma",
           "context": "Currently using Digiforma, a French LMS platform, which has limitations. Switching from it because it 'doesn't work for us right now'. Digiforma has automatic file upload feedback that Teachable lacks.",
           "timestamp": "~02:00",
           "mention_type": "switching_from"
@@ -14904,7 +14550,8 @@
       "segment_confidence": null,
       "segment_reasoning": "Junk - empty or failed recording",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHPW6Y3TDJ7SXY8NQDHQ5SGR",
@@ -15016,7 +14663,8 @@
       "segment_confidence": 0.75,
       "segment_reasoning": "CoxCoach appears to be a coaching business with both B2C and B2B clients. The company name and email domain suggest coaching as the core business.",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHRV5JJXE3WMYGXV6RGBZ7YD",
@@ -15139,7 +14787,8 @@
       "segment_confidence": 0.95,
       "segment_reasoning": "Herd is training external channel partners (dealers) on their own products. Education supports their core business (trucking accessories), it is not their business.",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHRM84F8SJ1NXH467KB139C4",
@@ -15232,7 +14881,8 @@
       "segment_confidence": 0.85,
       "segment_reasoning": "Media Pro is a professional design training center (Adobe/Apple authorized) selling skills courses to professionals and teachers. Classic B2B training provider.",
       "alternative_segment": "Course Creators & Digital Educators",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJ8B7SQZ976GA4K0GNW3CBSX",
@@ -15393,7 +15043,7 @@
       "suggested_new_segment": null,
       "competitor_mentions": [
         {
-          "competitor": "NEEDS_REVIEW",
+          "competitor": "Knowledge City",
           "context": "City currently uses Knowledge City ($60K/yr license) as complementary LMS for its library of 10,000+ standardized courses (Microsoft Suite, leadership, computer training). They keep Teachable for custom courses and public-facing training.",
           "timestamp": "~05:00",
           "mention_type": "currently_using"
@@ -15473,7 +15123,8 @@
       "segment_confidence": 0.82,
       "segment_reasoning": "Company is transitioning internal employee training (onboarding, compliance, recurring safety courses) from in-person to online delivery \u2014 a textbook corporate training use case.",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJ5KP032WDJJYTKTPWQYKBAN",
@@ -15648,7 +15299,8 @@
       "segment_confidence": 0.82,
       "segment_reasoning": "Motors 1 is a professional services firm building internal training for employees and project managers, with plans to monetize their TTP expertise externally. Combines internal workforce development with professional knowledge commercialization.",
       "alternative_segment": "Corporate Education & Customer Training",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHVBCJZ0ARDGRQG6RWSSHQBQ",
@@ -15667,7 +15319,8 @@
       "segment_confidence": null,
       "segment_reasoning": "Junk - empty or failed recording",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHS96BMM38NAQS36PEFJB6T3",
@@ -16079,7 +15732,8 @@
       "segment_confidence": 0.75,
       "segment_reasoning": "Airielle is building a professional basketball coaching certification program to train coaches internationally at scale, which aligns with professional skills training not tied to a specific license.",
       "alternative_segment": "Coaches & Consultants",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHVZH9YF5TFPWE4R96GMFXNQ",
@@ -16276,7 +15930,7 @@
       "suggested_new_segment": null,
       "competitor_mentions": [
         {
-          "competitor": "NEEDS_REVIEW",
+          "competitor": "Articulate 360",
           "context": "Thomas Magee mentioned recently using Articulate 360 as a course authoring tool, noting its scroll-based navigation style ('It's almost like you scroll to the next thing as opposed to flipping to the next thing').",
           "timestamp": "~10:00",
           "mention_type": "currently_using"
@@ -16476,7 +16130,8 @@
       "segment_confidence": 0.8,
       "segment_reasoning": "Koltin serves an elderly membership community with educational content, has existing app/website infrastructure, and needs to organize members into groups \u2014 consistent with a membership organization delivering education to its member base.",
       "alternative_segment": "Continuing Education & Credentialing",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KH2W1XVD9N67H435T4ECAJ34",
@@ -16728,7 +16383,8 @@
       "segment_confidence": null,
       "segment_reasoning": "Junk - empty or failed recording",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHP2NW7T2ADENB2HJDBMJ9SP",
@@ -16921,7 +16577,7 @@
       "suggested_new_segment": null,
       "competitor_mentions": [
         {
-          "competitor": "NEEDS_REVIEW",
+          "competitor": "TagMango",
           "context": "Sawan mentions using TagMango alongside Teachable, in the context of Indian digital payment infrastructure. TagMango is an Indian creator/course platform that competes in the same space as Teachable in the Indian market.",
           "timestamp": "~10:30",
           "mention_type": "currently_using"
@@ -17059,14 +16715,7 @@
             "ts_seconds": 630
           }
         ],
-        "competitors_mentioned": [
-          {
-            "name": "NEEDS_REVIEW",
-            "context": "Unnamed competitor offering pay-per-student pricing at ~$0.75/student with no subscription fee and unlimited students",
-            "timestamp": "~10:30",
-            "ts_seconds": 630
-          }
-        ],
+        "competitors_mentioned": [],
         "barriers_to_adoption": [
           "E-wallet payment method not supported by Stripe or Teachable Pay",
           "Price sensitivity \u2014 $12K/year prohibitive for low-ticket course model",
@@ -17101,14 +16750,7 @@
       "segment_reasoning": "Jozeph is an individual course creator with 800k social media followers, selling low-ticket digital courses to convert his online audience into paying students on Teachable",
       "alternative_segment": "Academic & Higher Education",
       "suggested_new_segment": null,
-      "competitor_mentions": [
-        {
-          "competitor": "NEEDS_REVIEW",
-          "context": "Jozeph referenced an unnamed competitor platform offering per-student pricing at approximately $0.75 per student with no subscription fee and unlimited student capacity. He positioned it as a viable alternative if the Teachable pricing negotiation fails.",
-          "timestamp": "~10:30",
-          "mention_type": "compared_to"
-        }
-      ]
+      "competitor_mentions": []
     },
     {
       "id": "01KH9QVG2EET43JE7DDWCQSK6N",
@@ -17275,7 +16917,8 @@
       "segment_confidence": 0.7,
       "segment_reasoning": "Koltin is a senior membership organization providing wellness classes (yoga, exercise, painting) alongside insurance and clinical services, fitting the health/wellness space though with a unique senior community twist.",
       "alternative_segment": "Industry Associations & Membership Orgs",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KH74P9VD2R7ENXEJW9BFAQA8",
@@ -17294,7 +16937,8 @@
       "segment_confidence": null,
       "segment_reasoning": "Junk - empty or failed recording",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KGJ1QGGW6PT1T3PT4H2AW57R",
@@ -17461,7 +17105,8 @@
       "segment_confidence": 0.75,
       "segment_reasoning": "Fundacion Flor is a nonprofit foundation delivering professional development courses (leadership, finance) that wants to expand to online delivery and sell to both individuals and companies. While they are a foundation, their primary use case is professional training content sold B2B and B2C.",
       "alternative_segment": "Course Creators & Digital Educators",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJT3E8T619FJ7GAQF4VACGN5",
@@ -17621,14 +17266,16 @@
             "theme": "general"
           }
         ],
-        "terminology": []
+        "terminology": [],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Course Creators & Digital Educators",
       "segment_confidence": 0.85,
       "segment_reasoning": "Existing Teachable customer selling self-paced courses to college students in Quebec. Building a scalable content business around academic tutoring. Classic course creator/digital educator pattern.",
       "alternative_segment": "Academic & Higher Education",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJQQ3BSXSXAXYM27RWZTTGXS",
@@ -17667,14 +17314,16 @@
             "theme": "general"
           }
         ],
-        "terminology": []
+        "terminology": [],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Professional Training & Development",
       "segment_confidence": 0.7,
       "segment_reasoning": "Career readiness training for university students on breaking into different industries. Free training, high volume (20K/year). Professional development / workforce readiness use case.",
       "alternative_segment": "Academic & Higher Education",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJQNZKMRV19Q7CR5J8WAFZQ6",
@@ -17741,14 +17390,16 @@
             "prospect_term": "CEU",
             "standard_term": "Continuing Education Unit"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Continuing Education & Credentialing",
       "segment_confidence": 0.8,
       "segment_reasoning": "Speravita provides healthcare-related training across 100+ centers with CEU requirements. Jennifer explicitly mentions doing 'CEU stuff for my nursing license.' Seat-based B2B training model with compliance-oriented completion requirements. Classic continuing education pattern.",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJDQGTTKM5GQ579HP695CJD0",
@@ -17767,7 +17418,8 @@
       "alternative_segment": null,
       "suggested_new_segment": null,
       "is_junk": true,
-      "analyzed": true
+      "analyzed": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KJFXDG350ZEHYTBA7T8HN5CX",
@@ -17846,7 +17498,8 @@
       "alternative_segment": null,
       "suggested_new_segment": null,
       "is_junk": false,
-      "analyzed": false
+      "analyzed": false,
+      "competitor_mentions": []
     },
     {
       "id": "01KJFTPB8HAND09HZCRY28TBDF",
@@ -17865,7 +17518,8 @@
       "alternative_segment": null,
       "suggested_new_segment": null,
       "is_junk": true,
-      "analyzed": true
+      "analyzed": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KHY1Q8QKJ21K2T2HCD1NPHC7",
@@ -17934,7 +17588,8 @@
             "prospect_term": "capacity building",
             "standard_term": "Professional training and skills development"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "company_domain": "iccwbo.org",
       "domain_confidence": "high",
@@ -17942,7 +17597,8 @@
       "segment_confidence": 0.75,
       "segment_reasoning": "ICC is delivering professional e-commerce skills training for SME leaders across 10 markets, funded by a corporate tech partner. While ICC is technically a membership organization, this specific program is a professional training initiative targeting small business leaders, not a member benefit. B2B training at scale with multi-market deployment.",
       "alternative_segment": "Industry Associations & Membership Orgs",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJ871KCS48SJ9GR3BDF8YRW2",
@@ -17994,14 +17650,16 @@
             "prospect_term": "Charles",
             "standard_term": "Charles (Dutch WhatsApp/messaging management platform)"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Course Creators & Digital Educators",
       "segment_confidence": 0.85,
       "segment_reasoning": "Agency creating and selling a digital course (pizza making) to consumers via an influencer's community. Building a scalable content business around a food influencer brand. Classic course creator pattern with emphasis on volume sales and marketing funnels.",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJDG0BDMDF4WNV4E1CS9P1KY",
@@ -18057,14 +17715,16 @@
             "prospect_term": "ABAWD",
             "standard_term": "Able-Bodied Adults Without Dependents (SNAP work requirement category)"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Government & Public Sector Education",
       "segment_confidence": 0.9,
       "segment_reasoning": "Government-funded job readiness training program for SNAP recipients in Illinois. Education is a public service to help citizens maintain benefits, not a revenue product. Funded by philanthropy now, to be procured by state government. Classic public sector training use case.",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJB9NSP3MS5YX6ESPV4YS0TW",
@@ -18118,14 +17778,16 @@
             "theme": "general"
           }
         ],
-        "terminology": []
+        "terminology": [],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Corporate Education & Customer Training",
       "segment_confidence": 0.65,
       "segment_reasoning": "Trinity Church is using the platform for internal volunteer training and onboarding, which mirrors the corporate education pattern of training employees/stakeholders on organizational processes. While a church, the use case (volunteer onboarding, compliance-like training, internal education) fits corporate education better than other segments.",
       "alternative_segment": "Coaches & Consultants",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJB9KH2MH2AD4XSTNVEQNQQ9",
@@ -18144,7 +17806,8 @@
       "alternative_segment": null,
       "suggested_new_segment": null,
       "is_junk": true,
-      "analyzed": true
+      "analyzed": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KJAVVH4A48DWW52M2E39BTRN",
@@ -18213,7 +17876,8 @@
             "prospect_term": "thin slice",
             "standard_term": "micro-learning / modular course design"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Corporate Education & Customer Training",
@@ -18223,7 +17887,7 @@
       "suggested_new_segment": null,
       "competitor_mentions": [
         {
-          "competitor": "NEEDS_REVIEW",
+          "competitor": "Study Fetch",
           "mention_type": "evaluated",
           "context": "Evaluated Study Fetch, a student-driven AI learning platform that generates quizzes and learning games from uploaded content. Cost prohibitive and had HIPAA data ownership concerns."
         }
@@ -18291,14 +17955,16 @@
             "prospect_term": "job cards",
             "standard_term": "Task reference cards / SOPs for custodial procedures"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Corporate Education & Customer Training",
       "segment_confidence": 0.9,
       "segment_reasoning": "Waxie is a janitorial supply company building a customer training platform to teach custodians how to use their products. Education supports their core business (selling supplies), not IS their business. Classic customer education use case with B2B organizations, seat management, and white label needs.",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJ5F37740W07JJP4PQQC9D3E",
@@ -18350,14 +18016,16 @@
             "prospect_term": "rituals",
             "standard_term": "Habit tracking / daily action items assigned by coaches"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Health, Wellness & Fitness",
       "segment_confidence": 0.75,
       "segment_reasoning": "Spain-based retreat center offering wellness retreats, coaching, and yoga training. Core business is health/wellness experiences with coaching and community supporting that. Education (online guide/coach training) supplements the wellness offering.",
       "alternative_segment": "Coaches & Consultants",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJ64NZW6M9ZNB793GSFEJV7R",
@@ -18416,14 +18084,16 @@
             "prospect_term": "payment orchestration",
             "standard_term": "payment gateway/processor"
           }
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "domain_confidence": "unresolved",
       "segment": "Course Creators & Digital Educators",
       "segment_confidence": 0.6,
       "segment_reasoning": "Small business selling digital content (Japanese literature, manga) to consumers via subscriptions and one-off purchases. Not a traditional 'course' but fits the digital content sales model. Primary product is self-paced digital content sold to consumers.",
       "alternative_segment": null,
-      "suggested_new_segment": "Digital Content & E-commerce"
+      "suggested_new_segment": "Digital Content & E-commerce",
+      "competitor_mentions": []
     },
     {
       "id": "01KJ3JWKJHQT4VZ3535X964J27",
@@ -18442,7 +18112,8 @@
       "segment_reasoning": "Internal vendor meeting with Storylane, not a prospect call.",
       "alternative_segment": null,
       "suggested_new_segment": null,
-      "analyzed": true
+      "analyzed": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KJWM9VRP85A4QRAVVTBEZ39E",
@@ -18735,7 +18406,8 @@
       "segment_confidence": 0.75,
       "segment_reasoning": "UK-based individual selling online courses on Teachable. Limited segment signals in this short contract-focused call.",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KK9DY89NAF1SCNV8F073AEH3",
@@ -19318,7 +18990,8 @@
       "segment_confidence": 0.9,
       "segment_reasoning": "SaaS company building structured onboarding courses for their external customers (medical practice end users). Classic customer training use case to improve product adoption.",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJZNWG6EZG2113FBJHWKVV0B",
@@ -19395,7 +19068,8 @@
       "segment_confidence": 0.75,
       "segment_reasoning": "Fire alarm contractor building internal employee training program for technicians. Professional upskilling and certification tracking.",
       "alternative_segment": "Continuing Education & Credentialing",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJQD2SS99ZK90R4XW7G8N2VA",
@@ -19408,7 +19082,8 @@
       "hubspot_note": "CALL DATE: 2026-03-05\nATTENDEES: zach.mccall@teachable.com, ignaciobasello@baszstudio.com\nCOMPANY: Baszstudio\n\n---\nSUMMARY\n(Pending CC analysis)\n\n---\nQUALIFICATION\nBudget: \nAuthority: \nNeed: \nTimeline: \n\n---\nRISKS / OBJECTIONS\n- \n\n---\nNEXT STEPS\nZach:\n- \n\nCustomer:\n- \n\n---\nTRANSCRIPT: https://app.fireflies.ai/view/01KJQD2SS99ZK90R4XW7G8N2VA",
       "transcript_text": "",
       "analyzed": true,
-      "is_junk": true
+      "is_junk": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KJWK0C4KVPM5Q9R9DMR9B7VZ",
@@ -19554,7 +19229,8 @@
       "segment_confidence": 0.8,
       "segment_reasoning": "Job board company offering free training courses to B2B customers as value-add and lead generation tool. Training content for their business customers on recruitment skills.",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJQPK31CJ8KEDGBPVWJJN3SZ",
@@ -19940,7 +19616,8 @@
       "segment_confidence": 0.9,
       "segment_reasoning": "Individual audio production educator creating and selling online courses with a planned tiered membership/community model. YouTube channel as marketing funnel.",
       "alternative_segment": "Coaches & Consultants",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJDM031QZ02CKSPTDAERS6HT",
@@ -19953,7 +19630,8 @@
       "hubspot_note": "CALL DATE: 2026-03-03\nATTENDEES: zach.mccall@teachable.com, sale@nihonsmart.cloud\nCOMPANY: Nihonsmart\n\n---\nSUMMARY\n(Pending CC analysis)\n\n---\nQUALIFICATION\nBudget: \nAuthority: \nNeed: \nTimeline: \n\n---\nRISKS / OBJECTIONS\n- \n\n---\nNEXT STEPS\nZach:\n- \n\nCustomer:\n- \n\n---\nTRANSCRIPT: https://app.fireflies.ai/view/01KJDM031QZ02CKSPTDAERS6HT",
       "transcript_text": "",
       "analyzed": true,
-      "is_junk": true
+      "is_junk": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KJRC7JYT5GX679216C5A49HY",
@@ -20229,7 +19907,8 @@
       "segment_confidence": 0.3,
       "segment_reasoning": "Insufficient information in transcript to determine segment. Company name and use case details were shared via chat, not captured in transcript.",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KJ5FVFFDKWR4KESQS83NP5CT",
@@ -20315,7 +19994,8 @@
       "segment_confidence": 0.55,
       "segment_reasoning": "Norway-based company building an academy with multiple clients and programs. Likely B2B training provider, but insufficient detail to confirm segment with high confidence.",
       "alternative_segment": "Coaches & Consultants",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KM5ZJ9Q8TT2RNWGBJZV2ETMC",
@@ -20344,7 +20024,8 @@
         "decision_factors": [
           "Cost effectiveness",
           "Consolidation of tools"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Corporate Education & Customer Training",
       "segment_confidence": 0.8,
@@ -20353,7 +20034,7 @@
       "suggested_new_segment": null,
       "competitor_mentions": [
         {
-          "competitor": "NEEDS_REVIEW",
+          "competitor": "Factorial",
           "context": "Tracy mentioned they are trialing Factorial, a talent management/HR system, for employee onboarding and lifecycle tracking. They chose it because it's cost-effective for their needs.",
           "timestamp": "04:00",
           "mention_type": "currently_using"
@@ -20390,7 +20071,8 @@
           "SSO + API capabilities",
           "SCORM/xAPI support timing",
           "Coaching and community features"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Professional Training & Development",
       "segment_confidence": 0.7,
@@ -20441,7 +20123,8 @@
           "SCORM support timing",
           "Account manager value",
           "PCI compliance documentation"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Continuing Education & Credentialing",
       "segment_confidence": 0.9,
@@ -20450,7 +20133,7 @@
       "suggested_new_segment": null,
       "competitor_mentions": [
         {
-          "competitor": "NEEDS_REVIEW",
+          "competitor": "WordPress + LMS Plugin",
           "context": "Jesse explicitly compared Enterprise SLA value against rolling their own WordPress + LearnDash + WooCommerce stack, citing deeper API access, modularity, interactivity, URL customization, and data control as advantages of self-hosted.",
           "timestamp": "17:00",
           "mention_type": "compared_to"
@@ -20487,13 +20170,15 @@
           "Certificate API access",
           "API rate limits",
           "Tom Lorimer's technical feasibility assessment"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Continuing Education & Credentialing",
       "segment_confidence": 0.9,
       "segment_reasoning": "DOT compliance training with certification requirements for drivers - regulatory credentialing use case",
       "alternative_segment": "Corporate Education & Customer Training",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KM3G1MWW88S9KPEDVH9KQ12E",
@@ -20522,13 +20207,15 @@
         "decision_factors": [
           "Price",
           "Student limit management"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Health, Wellness & Fitness",
       "segment_confidence": 0.85,
       "segment_reasoning": "Plan for Fit is a fitness/wellness course platform based in Thailand",
       "alternative_segment": "Course Creators & Digital Educators",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KKVX33484EXDQR86JEH1D2D4",
@@ -20541,7 +20228,8 @@
       "hubspot_note": "CALL DATE: 2026-03-19\nATTENDEES: jerome.olaloye@teachable.com, abhinav.r@interviewkickstart.com, zach.mccall@teachable.com, anmol.gulwani@interviewkickstart.com\nCOMPANY: Interviewkickstart\n\n---\nSUMMARY\n(Pending CC analysis)\n\n---\nQUALIFICATION\nBudget: \nAuthority: \nNeed: \nTimeline: \n\n---\nRISKS / OBJECTIONS\n- \n\n---\nNEXT STEPS\nZach:\n- \n\nCustomer:\n- \n\n---\nTRANSCRIPT: https://app.fireflies.ai/view/01KKVX33484EXDQR86JEH1D2D4",
       "transcript_text": "",
       "analyzed": true,
-      "is_junk": true
+      "is_junk": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KM385WZD344XSFXEXCXXXJQ7",
@@ -20575,7 +20263,8 @@
           "Discussion boards",
           "Ease of migration",
           "Deadline urgency"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Professional Training & Development",
       "segment_confidence": 0.7,
@@ -20584,7 +20273,7 @@
       "suggested_new_segment": null,
       "competitor_mentions": [
         {
-          "competitor": "NEEDS_REVIEW",
+          "competitor": "EdApp (Safety Culture)",
           "context": "Mar is currently using EdApp which is being discontinued end of March after being acquired by Safety Culture. Safety Culture offered seamless migration with no platform changes, making it the zero-effort alternative.",
           "timestamp": "02:00",
           "mention_type": "currently_using"
@@ -20617,13 +20306,15 @@
           "SSO feasibility",
           "Alternative access control methods",
           "Timeline to go live before June"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Corporate Education & Customer Training",
       "segment_confidence": 0.7,
       "segment_reasoning": "Jobcloud providing internal training content to users with SSO from their platform",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KKYSDTC3PH1478NM47MQ1Y2X",
@@ -20654,13 +20345,15 @@
           "Price",
           "Organizations feature",
           "Shopify integration"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Continuing Education & Credentialing",
       "segment_confidence": 0.85,
       "segment_reasoning": "Medical training for doctors and nurses in Australia - healthcare continuing education",
       "alternative_segment": "Health, Wellness & Fitness",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KM18HPT1H6CTZXBD0NH2GGXY",
@@ -20689,13 +20382,15 @@
           "Video hosting",
           "Quiz/assessment capabilities",
           "Department grouping"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Corporate Education & Customer Training",
       "segment_confidence": 0.85,
       "segment_reasoning": "Industrial company building internal employee training for safety and operations",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KKYKF7N141R6EG2R9GMCA3MH",
@@ -20723,13 +20418,15 @@
           "Certification capabilities",
           "Website embedding",
           "Ease of use"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Academic & Higher Education",
       "segment_confidence": 0.75,
       "segment_reasoning": "Micro school principal creating certification program for educators - academic/education focus",
       "alternative_segment": "Course Creators & Digital Educators",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KM0VTT8YTDP9M70GZRGH8PY5",
@@ -20757,13 +20454,15 @@
           "Price point",
           "Ease of migration",
           "Company-level dashboard grouping"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Professional Training & Development",
       "segment_confidence": 0.8,
       "segment_reasoning": "Tech Strides runs a startup incubation program with structured 12-module curriculum for founders",
       "alternative_segment": "Coaches & Consultants",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KM0VS52EZ50934R4D0XDFXFA",
@@ -20775,7 +20474,8 @@
       "transcript": "https://app.fireflies.ai/view/01KM0VS52EZ50934R4D0XDFXFA",
       "hubspot_note": "CALL DATE: 2026-03-18\nATTENDEES: partnerships@techstrides.co\nCOMPANY: Techstrides\n\n---\nSUMMARY\n(Pending CC analysis)\n\n---\nQUALIFICATION\nBudget: \nAuthority: \nNeed: \nTimeline: \n\n---\nRISKS / OBJECTIONS\n- \n\n---\nNEXT STEPS\nZach:\n- \n\nCustomer:\n- \n\n---\nTRANSCRIPT: https://app.fireflies.ai/view/01KM0VS52EZ50934R4D0XDFXFA",
       "transcript_text": "Kevin Codde: Hi.\nKevin Codde: How are we doing today?\nVidushi Trehan: Hi, Kevin.\nVidushi Trehan: I'm good.\nVidushi Trehan: How are you?\nKevin Codde: I'm doing great.\nKevin Codde: Thank you for asking.\nKevin Codde: Can you see me?\nVidushi Trehan: Sorry.\nKevin Codde: Sorry.\nKevin Codde: Is my camera on?\nKevin Codde: On your side?\nVidushi Trehan: Yeah, I can see you, but I can't hear you.\nVidushi Trehan: Well, I don't know if it's my.\nVidushi Trehan: I think my speaker is working fine.\nVidushi Trehan: Can you check your mic?\nKevin Codde: Yeah.\nKevin Codde: Let me try to rejoin really quick.\nVidushi Trehan: Okay.\nVidushi Trehan: Thank you.\nVidushi Trehan: Okay.",
-      "is_junk": true
+      "is_junk": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KM0TRCA0WX0JC06QBSQ4Z03X",
@@ -20788,7 +20488,8 @@
       "hubspot_note": "CALL DATE: 2026-03-18\nATTENDEES: partnerships@techstrides.co\nCOMPANY: Techstrides\n\n---\nSUMMARY\n(Pending CC analysis)\n\n---\nQUALIFICATION\nBudget: \nAuthority: \nNeed: \nTimeline: \n\n---\nRISKS / OBJECTIONS\n- \n\n---\nNEXT STEPS\nZach:\n- \n\nCustomer:\n- \n\n---\nTRANSCRIPT: https://app.fireflies.ai/view/01KM0TRCA0WX0JC06QBSQ4Z03X",
       "transcript_text": "",
       "analyzed": true,
-      "is_junk": true
+      "is_junk": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KKHX9BGA0RQBDSAYNAXTWNNB",
@@ -20821,7 +20522,8 @@
           "Content migration support",
           "International scalability",
           "Gamification and modern content format"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Continuing Education & Credentialing",
       "segment_confidence": 0.85,
@@ -20866,13 +20568,15 @@
           "White labeling",
           "Bulk course purchasing for senior living communities",
           "Post-evaluation survey capability"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Continuing Education & Credentialing",
       "segment_confidence": 0.95,
       "segment_reasoning": "ANCC-accredited provider building continuing education nursing courses with CE credit requirements",
       "alternative_segment": "Health Wellness & Fitness",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KHPK5E9J5KX3JXED8N0J3B0V",
@@ -20885,7 +20589,8 @@
       "hubspot_note": "CALL DATE: 2026-03-17\nATTENDEES: zach.mccall@teachable.com, patricia.porreca@flor.org.ar, ines.gerardi@flor.org.ar\nCOMPANY: Flor\n\n---\nSUMMARY\n(Pending CC analysis)\n\n---\nQUALIFICATION\nBudget: \nAuthority: \nNeed: \nTimeline: \n\n---\nRISKS / OBJECTIONS\n- \n\n---\nNEXT STEPS\nZach:\n- \n\nCustomer:\n- \n\n---\nTRANSCRIPT: https://app.fireflies.ai/view/01KHPK5E9J5KX3JXED8N0J3B0V",
       "transcript_text": "",
       "analyzed": true,
-      "is_junk": true
+      "is_junk": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KKM1W76B7M4CW8MN2FY14MS8",
@@ -20922,7 +20627,8 @@
           "Scalability for 100K+ users",
           "White labeling",
           "Learning paths between courses"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Corporate Education & Customer Training",
       "segment_confidence": 0.85,
@@ -20962,13 +20668,15 @@
           "Invoicing capability within Teachable",
           "Ease of bulk enrollment",
           "Organization admin access for hospital managers"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Health, Wellness & Fitness",
       "segment_confidence": 0.85,
       "segment_reasoning": "NICUity provides NICU nursing education and continuing education for hospital nursing staff",
       "alternative_segment": "Continuing Education & Credentialing",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KK9C6NE05J3KDSVF5QWXBX76",
@@ -21002,13 +20710,15 @@
           "Member vs non-member pricing",
           "Community with special interest groups",
           "Affordability"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Industry Associations & Membership Orgs",
       "segment_confidence": 0.95,
       "segment_reasoning": "AAMN is a professional nursing association with membership, volunteer board, offering specialty certification",
       "alternative_segment": "Continuing Education & Credentialing",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KKVW0C6JK3DJAH547WWSYNJN",
@@ -21043,7 +20753,8 @@
           "Branded mobile app availability",
           "Payment processor flexibility (Fluid Pay)",
           "Ease of use comparable to Kajabi"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Coaches & Consultants",
       "segment_confidence": 0.9,
@@ -21087,13 +20798,15 @@
           "Dedicated onboarding support",
           "Multi-year price lock",
           "May launch readiness"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Corporate Education & Customer Training",
       "segment_confidence": 0.8,
       "segment_reasoning": "Speravita trains 118 centers with a training department, suggesting corporate/organizational training model",
       "alternative_segment": "Professional Training & Development",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KK9GXMD3W51X2B8SE0ZMCJH7",
@@ -21106,7 +20819,8 @@
       "hubspot_note": "CALL DATE: 2026-03-16\nATTENDEES: zach.mccall@teachable.com, kerriann.thomas@movementfoundation.com, megan.price@movementschool.com\nCOMPANY: Movementfoundation\n\n---\nSUMMARY\n(Pending CC analysis)\n\n---\nQUALIFICATION\nBudget: \nAuthority: \nNeed: \nTimeline: \n\n---\nRISKS / OBJECTIONS\n- \n\n---\nNEXT STEPS\nZach:\n- \n\nCustomer:\n- \n\n---\nTRANSCRIPT: https://app.fireflies.ai/view/01KK9GXMD3W51X2B8SE0ZMCJH7",
       "transcript_text": "",
       "analyzed": true,
-      "is_junk": true
+      "is_junk": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KKMAWRFXF557JWCSNY1QXS71",
@@ -21140,13 +20854,15 @@
           "Open-ended reflection capability",
           "Student progress tracking",
           "Commenting within lessons"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Health, Wellness & Fitness",
       "segment_confidence": 0.75,
       "segment_reasoning": "Nonprofit focused on compassion training for healthcare systems, targeting medical schools and residency programs",
       "alternative_segment": "Academic & Higher Education",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KKM7F2HJSDEB9NBYNV27DK6H",
@@ -21180,7 +20896,8 @@
           "Course licensing and bundle sales",
           "Scalability for global expansion",
           "Monthly payment option"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Academic & Higher Education",
       "segment_confidence": 0.8,
@@ -21211,7 +20928,8 @@
       "hubspot_note": "CALL DATE: 2026-03-13\nATTENDEES: ceo@vyagalesacademy.com\nCOMPANY: Vyagalesacademy\n\n---\nSUMMARY\n(Pending CC analysis)\n\n---\nQUALIFICATION\nBudget: \nAuthority: \nNeed: \nTimeline: \n\n---\nRISKS / OBJECTIONS\n- \n\n---\nNEXT STEPS\nZach:\n- \n\nCustomer:\n- \n\n---\nTRANSCRIPT: https://app.fireflies.ai/view/01KKM7D90BTKH4KAVA7PZV9PN0",
       "transcript_text": "Kevin Codde: Hello?\nKevin Codde: Hi.\nKevin Codde: Can you hear me?\nKevin Codde: Okay, it.",
       "analyzed": true,
-      "is_junk": true
+      "is_junk": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KKKYXKZYDVEMP307CFG0MG9Y",
@@ -21245,13 +20963,15 @@
           "Pilot proof of concept success",
           "Tom Lorimer as implementation partner",
           "Relationship-driven decision (likes Kevin and Tom)"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Industry Associations & Membership Orgs",
       "segment_confidence": 0.85,
       "segment_reasoning": "Washington state officiating body managing eligibility training for sports officials across the state, membership-driven",
       "alternative_segment": "Compliance & Credentialing",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KKKYVA1WWKKTYD8S8BMWQ33Q",
@@ -21263,7 +20983,8 @@
       "transcript": "https://app.fireflies.ai/view/01KKKYVA1WWKKTYD8S8BMWQ33Q",
       "hubspot_note": "CALL DATE: 2026-03-13\nATTENDEES: tstordahl@woa-officials.com, tom@purplehippo.io, clark.evans@arbitersports.com\nCOMPANY: Woa-Officials\n\n---\nSUMMARY\n- **Technical Issues:** Minor difficulties with video visibility and camera setup at the meeting's start.  \n- **Account Confusion Resolved:** Quick correction after initial login issue by Tom Lorimer, both parties could see each other.  \n- **Camera Adjustment:** Tom switched to a DSLR, requiring some adjustments for proper placement.  \n- **Troubleshooting Steps:** Kevin to log out and back in to fix client-side video issues; casual atmosphere maintained.\n\n---\nQUALIFICATION\nBudget: \nAuthority: \nNeed: \nTimeline: \n\n---\nRISKS / OBJECTIONS\n- \n\n---\nNEXT STEPS\nZach:\n- \n\nCustomer:\n- \n\n---\nTRANSCRIPT: https://app.fireflies.ai/view/01KKKYVA1WWKKTYD8S8BMWQ33Q",
       "transcript_text": "Tom Lorimer: Okay.\nTom Lorimer: I think it made this time.\nKevin Codde: Hello.\nKevin Codde: Hi.\nKevin Codde: How are we doing?\nKevin Codde: I'm\nTom Lorimer: doing good.\nTom Lorimer: I was in the wrong account.\nKevin Codde: Oh, sorry.\nKevin Codde: I don't know why my thing is all messed up right now.\nKevin Codde: I can't even see you.\nTom Lorimer: I can see myself.\nTom Lorimer: I can see you as well.\nKevin Codde: You can see me?\nKevin Codde: Okay,\nTom Lorimer: I can see myself.\nTom Lorimer: So I'm guessing it's working.\nKevin Codde: Okay.\nKevin Codde: I don't know why mine is.\nTom Lorimer: That is a close up.\nKevin Codde: Mine's a close up.\nTom Lorimer: No, my.\nTom Lorimer: I've got a different camera now.\nTom Lorimer: I used to use a webcam, but I got my, like, dslr and I'm not.\nTom Lorimer: I'm not used to it because it's off to the side.\nKevin Codde: Oh, got you.\nKevin Codde: Here, let me try logging out and logging back in.\nKevin Codde: I'm not sure.\nKevin Codde: Yeah,\nTom Lorimer: sure.",
-      "is_junk": true
+      "is_junk": true,
+      "competitor_mentions": []
     },
     {
       "id": "01KKKPNS8P05GWXESBYR0JNCJ0",
@@ -21298,13 +21019,15 @@
           "Bulk upload for existing content",
           "Certificate generation",
           "Data portability if leaving platform"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Health, Wellness & Fitness",
       "segment_confidence": 0.8,
       "segment_reasoning": "Nonprofit focused on compassion training for healthcare systems, targeting medical schools and residency programs",
       "alternative_segment": "Academic & Higher Education",
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     },
     {
       "id": "01KKKMJH5D4CYD66MQGEZEJC17",
@@ -21335,13 +21058,15 @@
           "Contractor familiarity with platform",
           "Growth plan course capacity (25 courses)",
           "Quick start process"
-        ]
+        ],
+        "competitors_mentioned": []
       },
       "segment": "Health, Wellness & Fitness",
       "segment_confidence": 0.9,
       "segment_reasoning": "Federally qualified health center creating nutritional and dietary courses for patient community through fitness center and teaching kitchen",
       "alternative_segment": null,
-      "suggested_new_segment": null
+      "suggested_new_segment": null,
+      "competitor_mentions": []
     }
   ],
   "recap": "This week's calls reveal a clear pattern: the continuing education / compliance training ICP is gaining traction across both internal strategy and external prospects. Dot Compliance (compliance training for commercial drivers) progressed from initial hands-on testing to detailed integration planning with all content uploaded. BADM (nonprofit) is ready to sign an Unlimited contract. Speravita (nonprofit pregnancy resource centers) brought Teachable's product team into a deep organizational scoping call with 115 centers and Q2 launch plans. The Singapore Land Transport Authority is moving toward Q2 launch for vulnerable commuter training in Mandarin. Simon & Sabine's Australian coaching program has a clear automation blocker but is willing to commit if the integration architecture is feasible. Anne Blocker / ESI, a long-time customer on two platforms, gave extensive feedback that perfectly aligns with the Learning Experience team's top 3 priorities (learning paths, quizzes, certificates). Internally, the sales council rallied behind targeting CE credential providers, while the win/loss review surfaced recurring blockers: SCORM, cart/bundle checkout, custom checkout fields, and pricing page confusion continue to cost deals.",
@@ -21519,6 +21244,46 @@
       "short_description": "India-based creator platform for courses, workshops, memberships, and communities.",
       "description": "Creator platform for live workshops, pre-recorded courses, memberships, and communities. Strong in Indian/Asian markets with localized payment options. 6,700+ creators, $112M+ in sales.",
       "differentiator": "India-first with localized payments. Low-cost all-in-one for creators in emerging markets."
+    },
+    {
+      "id": "digiforma",
+      "name": "Digiforma",
+      "type": "lms",
+      "short_description": "French LMS platform for vocational training organizations.",
+      "description": "French LMS for vocational training. Mentioned by Axio-Formation as platform they're switching from.",
+      "differentiator": "French market. Vocational training focus. Auto file upload feedback."
+    },
+    {
+      "id": "knowledge-city",
+      "name": "Knowledge City",
+      "type": "lms",
+      "short_description": "Corporate training library with 10,000+ standardized courses.",
+      "description": "Corporate training content library with pre-built courses for Microsoft Suite, leadership, etc. Used alongside Teachable by City of Albuquerque.",
+      "differentiator": "Pre-built course library (10K+ courses). Complementary to custom course platforms."
+    },
+    {
+      "id": "study-fetch",
+      "name": "Study Fetch",
+      "type": "adjacent",
+      "short_description": "AI learning platform that generates quizzes and learning games from uploaded content.",
+      "description": "Student-driven AI learning platform. Evaluated by Choices & Community Living but rejected for cost and HIPAA concerns.",
+      "differentiator": "AI-generated quizzes from content. Student-facing. HIPAA concerns for healthcare use."
+    },
+    {
+      "id": "edapp",
+      "name": "EdApp (Safety Culture)",
+      "type": "lms",
+      "short_description": "Mobile-first microlearning LMS being sunset after Safety Culture acquisition.",
+      "description": "Mobile microlearning LMS discontinued March 2026 after Safety Culture acquisition. Creates migration opportunities.",
+      "differentiator": "Mobile-first microlearning. Being sunset \u2014 users forced to migrate."
+    },
+    {
+      "id": "factorial",
+      "name": "Factorial",
+      "type": "adjacent",
+      "short_description": "HR/talent management platform with employee onboarding and lifecycle tracking.",
+      "description": "HR platform for onboarding and employee lifecycle. Not an LMS \u2014 adjacent tool for different use case.",
+      "differentiator": "HR/talent management. Handles onboarding, benefits, time tracking \u2014 not courses."
     }
   ],
   "competitor_types": {
@@ -21687,6 +21452,46 @@
       "short_description": "WhatsApp and Instagram CRM with unified inbox, sales automation, and omnichannel support. Targets e-commerce, healthcare, and small business.",
       "description": "WhatsApp/Instagram-focused CRM with unified inbox, sales automation, omnichannel messaging, and customer scoring.",
       "differentiator": "Omnichannel CRM for WhatsApp/Instagram. Not a course platform \u2014 adjacent tool for customer communication."
+    },
+    {
+      "id": "digiforma",
+      "name": "Digiforma",
+      "type": "lms",
+      "short_description": "French LMS platform for vocational training organizations.",
+      "description": "French LMS for vocational training. Mentioned by Axio-Formation as platform they're switching from.",
+      "differentiator": "French market. Vocational training focus. Auto file upload feedback."
+    },
+    {
+      "id": "knowledge-city",
+      "name": "Knowledge City",
+      "type": "lms",
+      "short_description": "Corporate training library with 10,000+ standardized courses.",
+      "description": "Corporate training content library with pre-built courses for Microsoft Suite, leadership, etc. Used alongside Teachable by City of Albuquerque.",
+      "differentiator": "Pre-built course library (10K+ courses). Complementary to custom course platforms."
+    },
+    {
+      "id": "study-fetch",
+      "name": "Study Fetch",
+      "type": "adjacent",
+      "short_description": "AI learning platform that generates quizzes and learning games from uploaded content.",
+      "description": "Student-driven AI learning platform. Evaluated by Choices & Community Living but rejected for cost and HIPAA concerns.",
+      "differentiator": "AI-generated quizzes from content. Student-facing. HIPAA concerns for healthcare use."
+    },
+    {
+      "id": "edapp",
+      "name": "EdApp (Safety Culture)",
+      "type": "lms",
+      "short_description": "Mobile-first microlearning LMS being sunset after Safety Culture acquisition.",
+      "description": "Mobile microlearning LMS discontinued March 2026 after Safety Culture acquisition. Creates migration opportunities.",
+      "differentiator": "Mobile-first microlearning. Being sunset \u2014 users forced to migrate."
+    },
+    {
+      "id": "factorial",
+      "name": "Factorial",
+      "type": "adjacent",
+      "short_description": "HR/talent management platform with employee onboarding and lifecycle tracking.",
+      "description": "HR platform for onboarding and employee lifecycle. Not an LMS \u2014 adjacent tool for different use case.",
+      "differentiator": "HR/talent management. Handles onboarding, benefits, time tracking \u2014 not courses."
     }
   ],
   "prospecting_snapshot": {
@@ -21730,7 +21535,6 @@
           "Kajabi",
           "Udemy",
           "Fiducare",
-          "NEEDS_REVIEW",
           "TagMango"
         ],
         "example_companies": [
@@ -21781,8 +21585,7 @@
           "AI Course Generation"
         ],
         "top_competitors": [
-          "Thinkific",
-          "NEEDS_REVIEW"
+          "Thinkific"
         ],
         "example_companies": [
           "Choices & Community Living",
@@ -21805,7 +21608,6 @@
           "Certificate Automation"
         ],
         "top_competitors": [
-          "NEEDS_REVIEW",
           "Skool",
           "Thinkific",
           "Kajabi",
@@ -21833,7 +21635,6 @@
         ],
         "top_competitors": [
           "Skillshare",
-          "NEEDS_REVIEW",
           "Knowledge City",
           "ClassMarker"
         ],
@@ -21856,7 +21657,6 @@
           "SSO / SAML"
         ],
         "top_competitors": [
-          "NEEDS_REVIEW",
           "Articulate 360"
         ],
         "example_companies": [
@@ -21865,20 +21665,6 @@
           "Lines for Life",
           "Unite Health",
           "DMEMI Fitness Academy"
-        ]
-      },
-      {
-        "name": "NEEDS_REVIEW",
-        "company_count": 1,
-        "avg_calls": 2.0,
-        "avg_score": 55.0,
-        "top_features": [
-          "International Payment Methods",
-          "Multi-client School Structure"
-        ],
-        "top_competitors": [],
-        "example_companies": [
-          "NEEDS_REVIEW"
         ]
       },
       {
@@ -21894,7 +21680,6 @@
           "Automated Assessment Delivery"
         ],
         "top_competitors": [
-          "NEEDS_REVIEW",
           "Learn Worlds",
           "Confluence (Atlassian)",
           "Kajabi"
@@ -24120,18 +23905,14 @@
         "feature": "International Payment Methods",
         "mention_count": 1,
         "unique_companies": 1,
-        "segments": [
-          "NEEDS_REVIEW"
-        ],
+        "segments": [],
         "trend": "stable"
       },
       {
         "feature": "Multi-client School Structure",
         "mention_count": 1,
         "unique_companies": 1,
-        "segments": [
-          "NEEDS_REVIEW"
-        ],
+        "segments": [],
         "trend": "stable"
       },
       {
@@ -24561,19 +24342,6 @@
         "context": ""
       },
       {
-        "competitor": "NEEDS_REVIEW",
-        "mention_count": 8,
-        "segments": [
-          "Coaches & Consultants",
-          "Corporate Education & Customer Training",
-          "Course Creators & Digital Educators",
-          "Government & Public Sector Education",
-          "Health, Wellness & Fitness",
-          "Professional Training & Development"
-        ],
-        "context": ""
-      },
-      {
         "competitor": "Kajabi",
         "mention_count": 7,
         "segments": [
@@ -24865,7 +24633,7 @@
         ],
         "competitors_mentioned": [
           {
-            "competitor": "NEEDS_REVIEW",
+            "competitor": "Knowledge City",
             "context": "City currently uses Knowledge City ($60K/yr license) as complementary LMS for its library of 10,000+ standardized courses (Microsoft Suite, leadership, computer training). They keep Teachable for custom courses and public-facing training.",
             "timestamp": "~05:00",
             "mention_type": "currently_using"
@@ -24921,7 +24689,7 @@
         ],
         "competitors_mentioned": [
           {
-            "competitor": "NEEDS_REVIEW",
+            "competitor": "Study Fetch",
             "mention_type": "evaluated",
             "context": "Evaluated Study Fetch, a student-driven AI learning platform that generates quizzes and learning games from uploaded content. Cost prohibitive and had HIPAA data ownership concerns."
           }
@@ -25382,7 +25150,6 @@
       "Rob Llewellyn",
       "\u00c1lvaro S\u00e1nchez Teruelo",
       "Farhan Raja",
-      "NEEDS_REVIEW",
       "Emerging See Response",
       "Swiss Job Board (Thomas Grobost)",
       "Kendra Allen (Independent Creator)",
@@ -27416,19 +27183,19 @@
       }
     },
     "Dot Compliance": {
-      "score": 76,
+      "score": 136,
       "breakdown": {
-        "mentions": 14,
-        "calls": 2,
-        "recent_calls": 0,
+        "mentions": 23,
+        "calls": 3,
+        "recent_calls": 1,
         "competitor_mentions": false,
-        "last_activity": "2026-02-04"
+        "last_activity": "2026-03-19"
       }
     },
     "Speravita": {
-      "score": 93,
+      "score": 86,
       "breakdown": {
-        "mentions": 14,
+        "mentions": 12,
         "calls": 3,
         "recent_calls": 2,
         "competitor_mentions": false,
@@ -27716,12 +27483,12 @@
       }
     },
     "Jozeph Danial": {
-      "score": 46,
+      "score": 38,
       "breakdown": {
         "mentions": 8,
         "calls": 1,
         "recent_calls": 0,
-        "competitor_mentions": true,
+        "competitor_mentions": false,
         "last_activity": "2026-02-17"
       }
     },
@@ -27866,9 +27633,9 @@
       }
     },
     "Steve Kinney Audio": {
-      "score": 99,
+      "score": 94,
       "breakdown": {
-        "mentions": 14,
+        "mentions": 13,
         "calls": 2,
         "recent_calls": 2,
         "competitor_mentions": true,
@@ -27946,9 +27713,9 @@
       }
     },
     "GoLabs": {
-      "score": 39,
+      "score": 35,
       "breakdown": {
-        "mentions": 4,
+        "mentions": 2,
         "calls": 1,
         "recent_calls": 1,
         "competitor_mentions": true,
@@ -27973,16 +27740,6 @@
         "recent_calls": 1,
         "competitor_mentions": true,
         "last_activity": "2026-03-20"
-      }
-    },
-    "DOT Compliance": {
-      "score": 65,
-      "breakdown": {
-        "mentions": 9,
-        "calls": 1,
-        "recent_calls": 1,
-        "competitor_mentions": false,
-        "last_activity": "2026-03-19"
       }
     },
     "Plan for Fit": {
@@ -28036,9 +27793,9 @@
       }
     },
     "Micro School Institute": {
-      "score": 36,
+      "score": 30,
       "breakdown": {
-        "mentions": 5,
+        "mentions": 2,
         "calls": 1,
         "recent_calls": 1,
         "competitor_mentions": false,
@@ -28056,9 +27813,9 @@
       }
     },
     "NICUity": {
-      "score": 46,
+      "score": 42,
       "breakdown": {
-        "mentions": 7,
+        "mentions": 5,
         "calls": 1,
         "recent_calls": 1,
         "competitor_mentions": false,
@@ -28066,9 +27823,9 @@
       }
     },
     "ACOA": {
-      "score": 77,
+      "score": 75,
       "breakdown": {
-        "mentions": 11,
+        "mentions": 10,
         "calls": 1,
         "recent_calls": 1,
         "competitor_mentions": true,
@@ -28086,9 +27843,9 @@
       }
     },
     "Preply": {
-      "score": 95,
+      "score": 93,
       "breakdown": {
-        "mentions": 14,
+        "mentions": 13,
         "calls": 1,
         "recent_calls": 1,
         "competitor_mentions": true,
@@ -28106,9 +27863,9 @@
       }
     },
     "Welugu Foundation": {
-      "score": 125,
+      "score": 123,
       "breakdown": {
-        "mentions": 21,
+        "mentions": 20,
         "calls": 2,
         "recent_calls": 2,
         "competitor_mentions": false,
@@ -28116,9 +27873,9 @@
       }
     },
     "Johnson Health Center": {
-      "score": 36,
+      "score": 32,
       "breakdown": {
-        "mentions": 5,
+        "mentions": 3,
         "calls": 1,
         "recent_calls": 1,
         "competitor_mentions": false,
@@ -28126,9 +27883,9 @@
       }
     },
     "The Exeter Club": {
-      "score": 69,
+      "score": 67,
       "breakdown": {
-        "mentions": 10,
+        "mentions": 9,
         "calls": 1,
         "recent_calls": 1,
         "competitor_mentions": true,
@@ -28136,9 +27893,9 @@
       }
     },
     "Vyagale Academy": {
-      "score": 74,
+      "score": 65,
       "breakdown": {
-        "mentions": 11,
+        "mentions": 8,
         "calls": 1,
         "recent_calls": 1,
         "competitor_mentions": true,
@@ -28146,9 +27903,9 @@
       }
     },
     "WIAA Officials": {
-      "score": 50,
+      "score": 45,
       "breakdown": {
-        "mentions": 6,
+        "mentions": 5,
         "calls": 1,
         "recent_calls": 1,
         "competitor_mentions": false,

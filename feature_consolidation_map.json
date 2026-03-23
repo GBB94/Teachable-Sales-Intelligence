@@ -934,5 +934,69 @@
   "Video Replay Repository": {
     "canonical": "On-Demand Replay / Recorded Webinars",
     "category": "Curriculum & Content"
+  },
+  "AI Course Feedback to Students": {
+    "canonical": "AI Tutor / Copilot Integration",
+    "category": "Platform & Integrations"
+  },
+  "Aggregated Survey Responses": {
+    "canonical": "Quiz / Assessment Reporting",
+    "category": "Reporting & Analytics"
+  },
+  "Auto-Scroll Transcript": {
+    "canonical": "Learner UX / Course Journey",
+    "category": "Design & Branding"
+  },
+  "Event Calendar & Registration": {
+    "canonical": "Hybrid Scheduling",
+    "category": "Engagement & Community"
+  },
+  "Free Course Hosting (No Revenue Collection)": {
+    "canonical": "Freemium / Free Course Support",
+    "category": "Commerce & Checkout"
+  },
+  "Member Login Tracking": {
+    "canonical": "Completion Tracking",
+    "category": "Reporting & Analytics"
+  },
+  "Reflection Prompts / Open-Ended Responses": {
+    "canonical": "Open-ended Questions / Journal",
+    "category": "Assessments & Quizzes"
+  },
+  "Student Institution Tracking": {
+    "canonical": "Student Custom Fields / Onboarding",
+    "category": "User Management"
+  },
+  "Teacher-to-Parent Feedback Form": {
+    "canonical": "Quiz / Assessment Reporting",
+    "category": "Reporting & Analytics"
+  },
+  "SSO with Discord": {
+    "canonical": "SSO / SAML",
+    "category": "Platform & Integrations"
+  },
+  "VAT Configuration by Seller Country": {
+    "canonical": "International Payment Processing",
+    "category": "Commerce & Checkout"
+  },
+  "Video Embedding in Community": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "YouTube Shopping Integration": {
+    "canonical": "Third-party Integration",
+    "category": "Platform & Integrations"
+  },
+  "Nonprofit Discount": {
+    "canonical": "SMB / Flexible Pricing Tiers",
+    "category": "Commerce & Checkout"
+  },
+  "PDF Quotation / Contract Export": {
+    "canonical": "Purchase Order / Invoice Billing",
+    "category": "Commerce & Checkout"
+  },
+  "Competitive Payment Processing Rates": {
+    "canonical": "International Payment Processing",
+    "category": "Commerce & Checkout"
   }
 }
