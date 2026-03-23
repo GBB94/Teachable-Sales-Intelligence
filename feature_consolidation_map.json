@@ -662,5 +662,277 @@
   "Sponsored Ad Read Partnership": {
     "canonical": "Sponsored Ad Read Partnership",
     "category": "Commerce & Checkout"
+  },
+  "API": {
+    "canonical": "Headless / API Access",
+    "category": "Platform & Integrations"
+  },
+  "API Access on Growth Plan": {
+    "canonical": "Headless / API Access",
+    "category": "Platform & Integrations"
+  },
+  "API Integration with External System (Arbiter)": {
+    "canonical": "Headless / API Access",
+    "category": "Platform & Integrations"
+  },
+  "Assignments": {
+    "canonical": "File Upload & Grading",
+    "category": "Assessments & Quizzes"
+  },
+  "Bulk Upload": {
+    "canonical": "Content Migration",
+    "category": "Curriculum & Content"
+  },
+  "Bulk Upload / Content Migration": {
+    "canonical": "Content Migration",
+    "category": "Curriculum & Content"
+  },
+  "Certificate of Completion": {
+    "canonical": "Certificate Automation",
+    "category": "Compliance & Credentialing"
+  },
+  "Certificates": {
+    "canonical": "Certificate Automation",
+    "category": "Compliance & Credentialing"
+  },
+  "Coaching": {
+    "canonical": "Integrated One-on-One Coaching Sessions",
+    "category": "Engagement & Community"
+  },
+  "Cohort / Group Management": {
+    "canonical": "Group Enrollment",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "Community": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Community Moderation / Prompts": {
+    "canonical": "Comment Moderation",
+    "category": "Engagement & Community"
+  },
+  "Continuing Education Credits": {
+    "canonical": "Certificate Automation",
+    "category": "Compliance & Credentialing"
+  },
+  "Coupons": {
+    "canonical": "Coupon / Discount Codes",
+    "category": "Commerce & Checkout"
+  },
+  "Course Archiving": {
+    "canonical": "Content Portability / Export",
+    "category": "Curriculum & Content"
+  },
+  "Course Compliance": {
+    "canonical": "Compliance Controls",
+    "category": "Compliance & Credentialing"
+  },
+  "Course Duplication / Migration": {
+    "canonical": "Content Migration",
+    "category": "Curriculum & Content"
+  },
+  "Course Export / Portability": {
+    "canonical": "Content Portability / Export",
+    "category": "Platform & Integrations"
+  },
+  "Course Filtering": {
+    "canonical": "Course Filtering / Catalog",
+    "category": "Curriculum & Content"
+  },
+  "Course Licensing / Bundle Sales": {
+    "canonical": "Course Bundles",
+    "category": "Commerce & Checkout"
+  },
+  "Custom Branded Mobile App": {
+    "canonical": "White Label Mobile App",
+    "category": "Design & Branding"
+  },
+  "Custom URL": {
+    "canonical": "Custom Domain",
+    "category": "Design & Branding"
+  },
+  "Customizable Dashboard": {
+    "canonical": "Reporting Dashboard",
+    "category": "Reporting & Analytics"
+  },
+  "Drip Content": {
+    "canonical": "Drip / Timed Content Release",
+    "category": "Curriculum & Content"
+  },
+  "Embed Content": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "Employee Onboarding": {
+    "canonical": "Learning Paths",
+    "category": "Curriculum & Content"
+  },
+  "Enrollment Links": {
+    "canonical": "Self-enrollment via Link",
+    "category": "User Management"
+  },
+  "In-Course Comments / Discussion": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Installment Payments for Subscription": {
+    "canonical": "Payment Plans / Installments",
+    "category": "Commerce & Checkout"
+  },
+  "Lesson-Level Comments / Discussion": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Local Payment Methods": {
+    "canonical": "International Payment Processing",
+    "category": "Commerce & Checkout"
+  },
+  "Memberships": {
+    "canonical": "Membership / Subscription Pricing",
+    "category": "Commerce & Checkout"
+  },
+  "Multi-Admin Seats": {
+    "canonical": "Multiple Admin Roles & Permissions",
+    "category": "User Management"
+  },
+  "Multilingual Content": {
+    "canonical": "Multi-language Support",
+    "category": "Curriculum & Content"
+  },
+  "Multiple Admin Users on Builder Plan": {
+    "canonical": "Multiple Admin Roles & Permissions",
+    "category": "User Management"
+  },
+  "Multiple Admin Users on Lower Plans": {
+    "canonical": "Multiple Admin Roles & Permissions",
+    "category": "User Management"
+  },
+  "Organizations": {
+    "canonical": "Organization Hierarchy / Nesting",
+    "category": "Organizations & Multi-tenancy"
+  },
+  "PCI Compliance": {
+    "canonical": "Compliance Controls",
+    "category": "Compliance & Credentialing"
+  },
+  "PDF / Digital Downloads": {
+    "canonical": "Digital Downloads",
+    "category": "Curriculum & Content"
+  },
+  "Pre/Post Course Surveys": {
+    "canonical": "Pre/Post Survey Integration",
+    "category": "Assessments & Quizzes"
+  },
+  "Progress Tracking": {
+    "canonical": "Completion Tracking",
+    "category": "Reporting & Analytics"
+  },
+  "Quizzes": {
+    "canonical": "Quiz / Assessment Builder",
+    "category": "Assessments & Quizzes"
+  },
+  "Recurring / Subscription Payments": {
+    "canonical": "Membership / Subscription Pricing",
+    "category": "Commerce & Checkout"
+  },
+  "Salesforce Integration": {
+    "canonical": "Third-party Integration",
+    "category": "Platform & Integrations"
+  },
+  "Single Sign-On": {
+    "canonical": "SSO / SAML",
+    "category": "Platform & Integrations"
+  },
+  "Student Comments": {
+    "canonical": "Community Features",
+    "category": "Engagement & Community"
+  },
+  "Student Limits": {
+    "canonical": "Unlimited Student Enrollment",
+    "category": "User Management"
+  },
+  "Surveys": {
+    "canonical": "Pre/Post Survey Integration",
+    "category": "Assessments & Quizzes"
+  },
+  "Video Hosting": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "Webhooks": {
+    "canonical": "Webhook Support",
+    "category": "Platform & Integrations"
+  },
+  "Website / LMS Integration (Embed)": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "Website Integration (Course Link)": {
+    "canonical": "Embedded Course Widget",
+    "category": "Platform & Integrations"
+  },
+  "WooCommerce Integration": {
+    "canonical": "Third-party Integration",
+    "category": "Platform & Integrations"
+  },
+  "xAPI Support": {
+    "canonical": "SCORM Support",
+    "category": "Platform & Integrations"
+  },
+  "XML File Support": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "Comment Visibility in Admin Dashboard": {
+    "canonical": "Comment Moderation",
+    "category": "Engagement & Community"
+  },
+  "Course Completion Webhook / Data Push": {
+    "canonical": "Webhook Support",
+    "category": "Platform & Integrations"
+  },
+  "Shopify Integration": {
+    "canonical": "Shopify Integration",
+    "category": "Platform & Integrations"
+  },
+  "Lecture-Level Completion Tracking": {
+    "canonical": "Completion Tracking",
+    "category": "Reporting & Analytics"
+  },
+  "Subscription Auto-Expiry": {
+    "canonical": "Access Duration / Expiration",
+    "category": "Compliance & Credentialing"
+  },
+  "Dedicated Onboarding Specialist": {
+    "canonical": "White Glove Onboarding",
+    "category": "Platform & Integrations"
+  },
+  "Membership Portal (Non-Course)": {
+    "canonical": "Membership / Subscription Pricing",
+    "category": "Commerce & Checkout"
+  },
+  "Admin Portal / Reporting for Centers": {
+    "canonical": "Organization-level Reporting",
+    "category": "Reporting & Analytics"
+  },
+  "Custom Field Mapping for Eligibility": {
+    "canonical": "Student Custom Fields / Onboarding",
+    "category": "User Management"
+  },
+  "Data Export on Cancellation": {
+    "canonical": "Content Portability / Export",
+    "category": "Platform & Integrations"
+  },
+  "Scrollable PDF Preview in Lessons": {
+    "canonical": "Multi-format Content Upload",
+    "category": "Curriculum & Content"
+  },
+  "Third-Party Payment Processor Integration": {
+    "canonical": "International Payment Processing",
+    "category": "Commerce & Checkout"
+  },
+  "Video Replay Repository": {
+    "canonical": "On-Demand Replay / Recorded Webinars",
+    "category": "Curriculum & Content"
   }
 }

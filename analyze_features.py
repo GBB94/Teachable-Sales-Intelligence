@@ -203,6 +203,32 @@ def cmd_extract(args):
             print(f"  - {name}")
         print()
 
+    # Load and display consolidation rules
+    base_dir_extract = os.path.dirname(os.path.abspath(__file__))
+    consol_path_extract = os.path.join(base_dir_extract, "feature_consolidation_map.json")
+    if os.path.exists(consol_path_extract):
+        with open(consol_path_extract, "r") as f:
+            consol_map = json.load(f)
+        # Group by canonical name for compact display
+        canonical_to_variants = {}
+        for variant, entry in consol_map.items():
+            canon = entry["canonical"]
+            canonical_to_variants.setdefault(canon, []).append(variant)
+        # Only show entries with actual variant names
+        rules = {k: v for k, v in canonical_to_variants.items() if v}
+        if rules:
+            print(f"{'='*70}")
+            print(f"FEATURE NAME RULES ({len(rules)} canonical names with known variants):")
+            print("NEVER use the variant names below. Always use the canonical name.")
+            print("The validate-extraction command will ERROR on variant names.")
+            print(f"{'─'*70}")
+            for canon in sorted(rules.keys()):
+                variants = sorted(rules[canon])
+                print(f"  {canon}")
+                for v in variants:
+                    print(f"    x  {v}")
+            print()
+
     data = _extract_data_from_html(args.dashboard)
     all_calls = data.get("calls", [])
 
@@ -2396,7 +2422,18 @@ def cmd_validate_extraction(args):
         valid_categories = {c["name"] for c in cats.get("categories", [])}
 
     canonical_names = _load_canonical_names()
+    canonical_names_set = set(canonical_names)
     alias_map = _load_company_aliases()
+
+    # Load consolidation map for known-variant enforcement
+    consolidation_map = {}
+    consol_path = os.path.join(base_dir, "feature_consolidation_map.json")
+    if os.path.exists(consol_path):
+        with open(consol_path, "r") as f:
+            consolidation_map = json.load(f)
+
+    fix_mode = getattr(args, 'fix', False)
+    fixes_applied = 0
 
     errors = []
     warnings = []
@@ -2427,11 +2464,30 @@ def cmd_validate_extraction(args):
                     hint = f' (did you mean "{suggestion}"?)' if suggestion else ""
                     errors.append(f"[{call_id[:12]}] Invalid category '{category}' for '{feature}'{hint}")
 
-            # Feature name fuzzy match
-            if canonical_names and feature and feature not in canonical_names:
+            # Canonical feature name enforcement (known variants)
+            if consolidation_map and feature and feature in consolidation_map:
+                entry = consolidation_map[feature]
+                canonical = entry["canonical"]
+                canon_cat = entry.get("category", category)
+                if fix_mode:
+                    feat["feature"] = canonical
+                    feat["category"] = canon_cat
+                    fixes_applied += 1
+                    warnings.append(f"[{call_id[:12]}] AUTO-FIXED: '{feature}' -> '{canonical}' (category: '{canon_cat}')")
+                else:
+                    errors.append(f"[{call_id[:12]}] Non-canonical feature name '{feature}'. Use '{canonical}' instead.")
+
+            # Feature name fuzzy match (for names not in consolidation map)
+            elif canonical_names and feature and feature not in canonical_names_set:
                 close = get_close_matches(feature, canonical_names, n=1, cutoff=0.8)
                 if close:
-                    warnings.append(f"[{call_id[:12]}] Feature '{feature}' similar to existing '{close[0]}'. Did you mean '{close[0]}'?")
+                    if fix_mode:
+                        old_feature = feature
+                        feat["feature"] = close[0]
+                        fixes_applied += 1
+                        warnings.append(f"[{call_id[:12]}] AUTO-FIXED: '{old_feature}' -> '{close[0]}' (fuzzy match)")
+                    else:
+                        warnings.append(f"[{call_id[:12]}] Feature '{feature}' similar to existing '{close[0]}'. Did you mean '{close[0]}'?")
 
             # Company alias check
             if alias_map and company:
@@ -2460,11 +2516,19 @@ def cmd_validate_extraction(args):
                 warnings.append(f"[{call_id[:12]}] Duplicate: '{feature}' + '{company}' appears multiple times")
             seen_combos.add(combo)
 
+    # Write back fixed file if --fix was used and fixes were applied
+    if fix_mode and fixes_applied > 0:
+        with open(args.analysis_json, 'w') as f:
+            json.dump(raw, f, indent=2)
+
     # Print results
     print(f"Validation results:")
     print(f"  Calls checked: {len(features_by_call)}")
     total_feats = sum(len(f) for f in features_by_call.values() if isinstance(f, list))
     print(f"  Features checked: {total_feats}")
+
+    if fix_mode and fixes_applied > 0:
+        print(f"\n  FIXES APPLIED: {fixes_applied}")
 
     if errors:
         print(f"\n  ERRORS ({len(errors)}):")
@@ -2591,6 +2655,8 @@ def main():
     p_valext = sub.add_parser("validate-extraction",
                                help="Validate extraction JSON before injection")
     p_valext.add_argument("analysis_json", help="Path to the extraction JSON file to validate")
+    p_valext.add_argument("--fix", action="store_true",
+                          help="Auto-fix known variant names to canonical names and write back")
 
     args = parser.parse_args()
     if args.command == "extract":
