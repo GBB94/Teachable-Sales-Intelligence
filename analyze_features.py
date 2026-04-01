@@ -149,7 +149,7 @@ def _extract_data_from_html(html_path: str) -> dict:
 
 
 def _write_data_to_html(html_path: str, data: dict):
-    """Rewrite the dashboard HTML with updated DATA JSON."""
+    """Rewrite the dashboard HTML with updated DATA JSON and performance JSON."""
     with open(html_path, "r") as f:
         html = f.read()
 
@@ -167,6 +167,33 @@ def _write_data_to_html(html_path: str, data: dict):
     semi_idx = html.index(";", json_end)
 
     new_html = html[:start_idx] + start_marker + data_json + html[semi_idx:]
+
+    # Inject performance.json if available (handles both placeholder and baked PERF)
+    output_dir = os.path.dirname(html_path)
+    perf_path = os.path.join(output_dir, "performance.json")
+    perf_json = "null"
+    if os.path.exists(perf_path):
+        with open(perf_path, "r") as f:
+            perf_json = f.read().strip()
+
+    if "{{PERFORMANCE_JSON}}" in new_html:
+        new_html = new_html.replace("{{PERFORMANCE_JSON}}", perf_json)
+    else:
+        # PERF already baked as `let PERF = {...};` -- replace in-place
+        perf_match = re.search(r"let PERF = ", new_html)
+        if perf_match:
+            p_start = perf_match.end()
+            p_decoder = json.JSONDecoder()
+            try:
+                _, p_end = p_decoder.raw_decode(new_html, p_start)
+                new_html = (new_html[:perf_match.start()] +
+                            "let PERF = " + perf_json +
+                            new_html[p_end:])
+            except (json.JSONDecodeError, ValueError):
+                pass  # Leave PERF as-is if we can't parse it
+
+    # Replace SEGMENT_DEFS placeholder if still present
+    new_html = new_html.replace("{{SEGMENT_DEFS_JSON}}", "{}")
 
     with open(html_path, "w") as f:
         f.write(new_html)

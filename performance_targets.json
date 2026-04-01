@@ -1,0 +1,38 @@
+{
+  "month": "2026-04",
+  "_note": "Update 'month' and targets at start of each month. Commit and push to take effect on next sync.",
+  "targets": [
+    {
+      "rep_email": "zach.mccall@teachable.com",
+      "meetings_booked": 12,
+      "deals_created": 20,
+      "recorded_calls": 25,
+      "emails_sent": 200
+    },
+    {
+      "rep_email": "jerome.olaloye@teachable.com",
+      "meetings_booked": 10,
+      "deals_created": 25,
+      "recorded_calls": 20,
+      "emails_sent": 150
+    },
+    {
+      "rep_email": "kevin.codde@teachable.com",
+      "meetings_booked": 10,
+      "deals_created": 20,
+      "recorded_calls": 20,
+      "emails_sent": 150
+    }
+  ],
+  "stage_thresholds": {
+    "1187656316": 14,
+    "1187656317": 21,
+    "1187656318": 14,
+    "1187656319": 7,
+    "1187656320": 7,
+    "1187555188": 7,
+    "1187555189": 14,
+    "1187555190": 7,
+    "1187555191": 7
+  }
+}

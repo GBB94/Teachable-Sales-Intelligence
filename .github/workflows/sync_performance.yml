@@ -1,0 +1,89 @@
+name: Sync Performance Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 1'   # weekly: Mondays 6:17am UTC = 2:17am ET
+    - cron: '17 6 * * *'   # daily: every day 6:17am UTC = 2:17am ET
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check sync schedule
+        id: check
+        run: |
+          SCHEDULE=$(python3 -c "
+          import json, sys
+          try:
+              c = json.load(open('sync_config.json'))
+              print(c.get('schedule', 'manual'))
+          except Exception:
+              print('manual')
+          ")
+          echo "schedule=$SCHEDULE" >> $GITHUB_OUTPUT
+          EVENT="${{ github.event_name }}"
+          TRIGGER="${{ github.event.schedule }}"
+
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "Manual trigger -- running."
+            exit 0
+          fi
+
+          if [ "$SCHEDULE" = "manual" ]; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "Schedule is 'manual' -- skipping."
+            exit 0
+          fi
+
+          if [ "$SCHEDULE" = "daily" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "Schedule is 'daily' -- running."
+            exit 0
+          fi
+
+          # Weekly: only fire on the Monday cron
+          if [ "$SCHEDULE" = "weekly" ] && echo "$TRIGGER" | grep -q '17 6 \* \* 1'; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "Schedule is 'weekly' and today is Monday -- running."
+            exit 0
+          fi
+
+          echo "should_run=false" >> $GITHUB_OUTPUT
+          echo "Schedule is '$SCHEDULE' but today is not the right day -- skipping."
+
+      - name: Set up Python
+        if: steps.check.outputs.should_run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        if: steps.check.outputs.should_run == 'true'
+        run: pip install -r requirements.txt
+
+      - name: Fetch performance data
+        if: steps.check.outputs.should_run == 'true'
+        run: python3 fetch_performance.py --days 90
+        env:
+          MIXMAX_API_TOKEN: ${{ secrets.MIXMAX_API_TOKEN }}
+          HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
+          FIREFLIES_API_KEY: ${{ secrets.FIREFLIES_API_KEY }}
+
+      - name: Rebuild dashboard HTML
+        if: steps.check.outputs.should_run == 'true'
+        run: python3 rebuild_dashboard.py
+
+      - name: Commit updated files
+        if: steps.check.outputs.should_run == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: performance sync [${{ steps.check.outputs.schedule }}]"
+          file_pattern: "test_output/performance.json test_output/index.html"

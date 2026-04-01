@@ -1,0 +1,5 @@
+{
+  "schedule": "weekly",
+  "_schedule_options": ["manual", "weekly", "daily"],
+  "_note": "Change 'schedule' to control automated sync frequency. manual = only when you click Run workflow on GitHub. weekly = every Monday (~20 Netlify build minutes/month). daily = every day (~150 Netlify build minutes/month, half the free-tier budget). Commit and push after changing."
+}

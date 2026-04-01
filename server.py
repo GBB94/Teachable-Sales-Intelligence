@@ -135,9 +135,19 @@ def _render_dashboard(data):
             data["prospecting_seeds"] = seeds
     except Exception:
         pass  # Snapshot not available, Prospecting tab will show empty state
+    # Load performance data if available
+    perf_data = None
+    perf_path = os.path.join(OUTPUT_DIR, 'performance.json')
+    if os.path.exists(perf_path):
+        with open(perf_path, 'r') as f:
+            perf_data = json.load(f)
+
     with open(TEMPLATE_PATH, 'r') as f:
         template = f.read()
-    return template.replace('{{DATA_JSON}}', json.dumps(data))
+    html = template.replace('{{DATA_JSON}}', json.dumps(data))
+    html = html.replace('{{PERFORMANCE_JSON}}', json.dumps(perf_data) if perf_data else 'null')
+    html = html.replace('{{SEGMENT_DEFS_JSON}}', '{}')
+    return html
 
 
 def _save_dashboard(data):

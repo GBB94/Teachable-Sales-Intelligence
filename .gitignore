@@ -42,6 +42,11 @@ data/
 # Feature consolidation map
 !feature_consolidation_map.json
 
+# Performance data and targets
+!test_output/performance.json
+!performance_targets.json
+!sync_config.json
+
 # Credentials
 credentials/
 
