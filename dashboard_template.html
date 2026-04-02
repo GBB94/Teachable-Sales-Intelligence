@@ -1291,7 +1291,7 @@ body {
 .scan-overlay.open { display: flex; }
 .scan-modal {
     background: #14161e; border: 1px solid #2a2d40; border-radius: 12px;
-    width: min(560px, 92vw); max-height: 80vh; display: flex; flex-direction: column;
+    width: min(560px, 92vw); max-height: 90vh; display: flex; flex-direction: column;
     box-shadow: 0 16px 48px rgba(0,0,0,0.6);
 }
 .scan-modal-hdr {
@@ -1359,8 +1359,8 @@ body {
 
 /* Call list items in modal */
 .scan-call {
-    display: flex; align-items: flex-start; gap: 0.75rem;
-    padding: 0.7rem 0; border-bottom: 1px solid #1a1c28;
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.5rem 0; border-bottom: 1px solid #1a1c28;
 }
 .scan-call:last-child { border-bottom: none; }
 .scan-call input[type="checkbox"] {
@@ -7354,7 +7354,7 @@ async function startScan(btn) {
             body.innerHTML = '<div class="scan-empty">' + esc(emptyMsg) + '</div>';
             footer.style.display = 'none';
         } else {
-            title.textContent = 'Select Calls to Process';
+            title.textContent = _scanPreviewCalls.length + ' New Calls Found';
             renderScanCallList(meta);
             footer.style.display = 'flex';
             updateScanFooter();

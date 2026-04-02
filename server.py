@@ -263,8 +263,8 @@ def scan_preview():
         calls = retriever.get_calls(filter_criteria=filt, verbose=True, after_date=after_date)
         print(f"[preview] Found {len(calls)} calls")
 
-        # Record this scan timestamp
-        record_scan(OUTPUT_DIR)
+        # Don't record scan timestamp here — only after calls are actually
+        # processed/rejected, so unhandled calls re-appear on next scan.
 
         # Cache for /process (include all calls, even known ones, so /process can find them)
         _preview_cache = {call.id: call for call in calls}
@@ -335,8 +335,9 @@ def scan_process():
         _save_dashboard(merged)
         print(f"[process] Done. Added {added} new calls ({len(merged['calls'])} total).")
 
-        # Record imported IDs in ledger
+        # Record imported IDs in ledger and advance scan timestamp
         record_imported(OUTPUT_DIR, selected_ids)
+        record_scan(OUTPUT_DIR)
 
         return jsonify(merged)
 
