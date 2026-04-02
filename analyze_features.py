@@ -916,9 +916,15 @@ def cmd_inject(args):
         # Update the HubSpot note embedded in the call data
         override = notes_by_call.get(call_id)
         if override:
-            # Use the full CC-generated note as-is
-            call["hubspot_note"] = override
-        elif feature_lines:
+            # Append CC-generated note as an AI SUMMARY section, never replace the original
+            existing = call.get("hubspot_note", "")
+            if existing and len(existing) > len(override):
+                # Original note is richer, append summary
+                if "AI SUMMARY" not in existing:
+                    call["hubspot_note"] = existing + "\n---\nAI SUMMARY\n" + override
+            else:
+                call["hubspot_note"] = override
+        if feature_lines:
             note = call.get("hubspot_note", "")
             # Insert FEATURE REQUESTS section before the TRANSCRIPT line
             fr_section = "---\nFEATURE REQUESTS\n" + "\n".join(feature_lines)

@@ -617,6 +617,7 @@ body {
     font-family: 'DM Sans', sans-serif;
 }
 .feat-tag-more:hover { color: #9a9db0; }
+.feat-tag-more:focus-visible { outline: 2px solid #4a7cff; outline-offset: 2px; }
 /* Segment label (above call title) */
 .seg-label {
     display: block; font-size: 0.65rem; font-weight: 600;
@@ -1418,10 +1419,10 @@ body {
 
 /* Section 1: Segment overview cards */
 .seg-overview { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-/* Horizontal scroll for overview cards (Personas + Competitors) */
 #personas-view .seg-overview,
 #competitors-view .seg-overview {
     flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    align-items: stretch;
     padding-bottom: 8px; scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
 }
@@ -1433,17 +1434,18 @@ body {
 #competitors-view .seg-overview::-webkit-scrollbar-thumb { background: #2a2d3e; border-radius: 3px; }
 #personas-view .seg-overview::-webkit-scrollbar-thumb:hover,
 #competitors-view .seg-overview::-webkit-scrollbar-thumb:hover { background: #3a3d4e; }
-#personas-view .seg-overview > .seg-card,
-#personas-view .seg-overview > .seg-card-flip,
+#personas-view .seg-overview > .seg-overview-card,
+#personas-view .seg-overview > .seg-card-flip.seg-overview-card,
 #competitors-view .seg-overview > .seg-card {
     flex: 0 0 300px;
     width: 300px;
     min-width: 300px;
     max-width: 300px;
+    align-self: stretch;
     scroll-snap-align: start;
 }
-.seg-overview > .seg-card,
-.seg-overview > .seg-card-flip {
+.seg-overview > .seg-overview-card,
+.seg-overview > .seg-card-flip.seg-overview-card {
     box-sizing: border-box;
 }
 .seg-card {
@@ -1681,7 +1683,7 @@ body {
     flex: 0 0 auto; min-width: 240px; max-width: 300px; scroll-snap-align: start;
 }
 .seg-card-flip .seg-card-inner {
-    position: relative; width: 100%; min-height: 180px;
+    position: relative; width: 100%; min-height: 180px; height: 100%;
     transition: transform 0.45s ease; transform-style: preserve-3d;
 }
 .seg-card-flip.flipped .seg-card-inner { transform: rotateY(180deg); }
@@ -1704,6 +1706,20 @@ body {
     padding: 0.85rem 1rem; overflow-y: auto;
     border-left: 4px solid var(--seg-color, #4a7cff);
     display: flex; flex-direction: column;
+}
+.seg-card.seg-overview-card,
+.seg-card-flip.seg-overview-card {
+    flex: 0 0 300px;
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
+    align-self: stretch;
+    box-sizing: border-box;
+}
+.seg-card.seg-overview-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 .seg-back-name {
     font-weight: 700; font-size: 0.92rem; color: #f0f1f4;
@@ -5807,7 +5823,7 @@ function buildCalls() {
             if (extraCount > 0) {
                 const hiddenTags = features.slice(TAG_CAP).map(f => { var t = getCapabilityTier(f).tier; return '<span class="feat-tag tier-' + t + '">' + esc(f) + '</span>'; }).join('');
                 tags += '<span class="feat-tag-extra" style="display:none">' + hiddenTags + '</span>';
-                tags += '<button class="feat-tag-more" onclick="event.stopPropagation();toggleTagMore(this)">+' + extraCount + ' more</button>';
+                tags += '<span class="feat-tag-more" role="button" tabindex="0" aria-expanded="false" onclick="event.stopPropagation();toggleTagMore(this)" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();event.stopPropagation();toggleTagMore(this)}">+' + extraCount + ' more</span>';
             }
         }
         const extAttendees = extractCompany(c.attendees);
@@ -7094,6 +7110,7 @@ function toggleTagMore(btn) {
     const showing = extra.style.display !== 'none';
     extra.style.display = showing ? 'none' : 'inline';
     btn.textContent = showing ? btn.dataset.orig : 'show less';
+    btn.setAttribute('aria-expanded', showing ? 'false' : 'true');
 }
 
 function toggleCoMore(btn) {
@@ -7673,7 +7690,7 @@ function buildPersonas() {
             backHTML += '<div class="seg-back-stats">' + esc(callLabel) + ' \u00b7 ' + esc(coLabel) + '</div>';
             backHTML += '<button class="seg-back-action" onclick="event.stopPropagation();flipSegCard(this);scrollToSegGroup(\'' + safeSeg + '\')">View prospects \u2192</button>';
 
-            html += '<div class="seg-card-flip" style="--seg-color:' + color + '">' +
+            html += '<div class="seg-card-flip seg-overview-card" style="--seg-color:' + color + '">' +
                 '<div class="seg-card-inner">' +
                     '<div class="seg-card seg-card-front" onclick="flipSegCard(this)">' +
                         '<div class="seg-card-name">' + nrIcon + esc(displaySeg) + '</div>' +
@@ -7686,7 +7703,7 @@ function buildPersonas() {
             '</div>';
         } else {
             // No definition — plain card, direct scroll
-            html += '<div class="seg-card" style="--seg-color:' + color + ';flex:0 0 auto;min-width:240px;max-width:300px;scroll-snap-align:start" onclick="scrollToSegGroup(\'' + safeSeg + '\')">' +
+            html += '<div class="seg-card seg-overview-card" style="--seg-color:' + color + '" onclick="scrollToSegGroup(\'' + safeSeg + '\')">' +
                 '<div class="seg-card-name">' + nrIcon + esc(displaySeg) + '</div>' +
                 '<div class="seg-card-stat">' + callLabel + '</div>' +
                 '<div class="seg-card-sub">' + coLabel + '</div>' +
@@ -9293,6 +9310,16 @@ const _PERF_TOOLTIPS = {
         source: 'Fireflies &middot; GraphQL API',
         note: 'Does not include unrecorded calls or calls manually logged in HubSpot. Transcript % = calls with a readable full transcript.',
     },
+    pipeline_value: {
+        what: 'Total dollar value of all open deals right now, across both Sales and Pre Sales pipelines.',
+        source: 'HubSpot &middot; crm.objects.deals.read',
+        note: 'Stock metric — reflects the current snapshot, not the selected period. Switch to Pipeline view for a stage-by-stage breakdown.',
+    },
+    emails_sent: {
+        what: 'Total outbound emails sent this period across all tracked Mixmax accounts.',
+        source: 'Mixmax &middot; /livefeed',
+        note: 'Only covers reps with a Mixmax API token configured. Reply rate is a better quality signal — high volume with low reply rate may indicate targeting issues.',
+    },
 };
 
 function _perfTooltip(key) {
@@ -9307,16 +9334,13 @@ function _perfTooltip(key) {
 
 function _perfCard(label, value, fmtType, prior, sub, spark, tooltipKey) {
     const delta = _perfDelta(value, prior, fmtType);
-    const tipIcon = tooltipKey
-        ? `<span class="perf-card-tip-icon" aria-hidden="true" title="About this metric">?</span>`
-        : '';
     const tip = tooltipKey ? _perfTooltip(tooltipKey) : '';
     return `<div class="perf-card">
         <div>
-            <div class="perf-card-label">${label}${tipIcon}</div>
+            <div class="perf-card-label">${label}</div>
             <div class="perf-card-value">${_perfFmt(value, fmtType)}${delta}</div>
-            ${spark || ''}
             ${sub ? `<div class="perf-card-sub">${sub}</div>` : ''}
+            ${spark || ''}
         </div>
         ${tip}
     </div>`;
@@ -9651,6 +9675,7 @@ function buildPerfSummaryCards(slice) {
     // Deals Won
     const dealsWon      = team.deals_won       || 0;
     const dealsWonPrior = team.deals_won_prior || null;
+    const dealsWonPaceSub = _paceNote(dealsWon).replace(/^<div class="perf-card-sub ov-pace-note">|<\/div>$/g, '');
 
     // Meetings Booked
     const meetings      = team.meetings_booked       || 0;
@@ -9666,56 +9691,79 @@ function buildPerfSummaryCards(slice) {
         ? `onclick="_perfSwitchView('reps')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')_perfSwitchView('reps')" aria-label="View rep breakdown"`
         : '';
 
+    const emailsSent      = team.emails_sent       || 0;
+    const emailsSentPrior = team.emails_sent_prior || null;
+    const calls      = team.recorded_calls       || 0;
+    const callsPrior = team.recorded_calls_prior || null;
+
     let html = '<div class="perf-cards">';
 
-    // Pipeline Value
-    html += `<div class="perf-card">
-        <div class="perf-card-label">Pipeline Value</div>
-        <div class="perf-card-value">${_perfFmt(pipeVal, 'dollar')}</div>
-        <div class="perf-card-sub">${pipeCount} open deals${asOf ? ' · as of ' + asOf : ''}</div>
-    </div>`;
+    // Pipeline Value — stock metric, no prior, no sparkline, tooltip
+    html += _perfCard(
+        'Pipeline Value',
+        pipeVal, 'dollar',
+        null,
+        `${pipeCount} open deals${asOf ? ' · as of ' + asOf : ''}`,
+        null,
+        'pipeline_value'
+    );
 
-    // Deals Won
-    html += `<div class="perf-card${wonClickable ? ' ov-card-clickable' : ''}" ${clickAttr}>
-        <div class="perf-card-label">Deals Won</div>
-        <div class="perf-card-value">${_perfFmt(dealsWon, 'num')}${_perfDelta(dealsWon, dealsWonPrior, 'num')}</div>
-        ${_paceNote(dealsWon)}
-    </div>`;
+    // Deals Won — no sparkline (deals_won not in by_day), pace note as sub
+    html += _perfCard(
+        'Deals Won',
+        dealsWon, 'num',
+        dealsWonPrior,
+        dealsWonPaceSub || 'view rep breakdown →',
+        null,
+        'deals_won'
+    ).replace('<div class="perf-card">', `<div class="perf-card${wonClickable ? ' ov-card-clickable' : ''}" ${clickAttr}>`);
 
-    // Meetings Booked
+    // Meetings Booked — sparkline + attainment bar when applicable
+    // _perfCard doesn't support the attainment bar slot, so keep inline
+    // but add tooltip icon manually to match the other cards
+    const mtgTip = _perfTooltip('meetings');
     html += `<div class="perf-card${wonClickable ? ' ov-card-clickable' : ''}" ${clickAttr}>
-        <div class="perf-card-label">Meetings Booked</div>
-        <div class="perf-card-value">${_perfFmt(meetings, 'num')}${_perfDelta(meetings, meetingsPrior, 'num')}</div>
-        ${_perfSparkline(byDay, 'meetings', _perfActivePeriod)}
-        ${_attainmentBar(meetings, meetingsTarget)}
-        ${!showAttainment ? _paceNote(meetings) : ''}
+        <div>
+            <div class="perf-card-label">Meetings Booked</div>
+            <div class="perf-card-value">${_perfFmt(meetings, 'num')}${_perfDelta(meetings, meetingsPrior, 'num')}</div>
+            ${_perfSparkline(byDay, 'meetings', _perfActivePeriod)}
+            ${_attainmentBar(meetings, meetingsTarget)}
+            ${!showAttainment ? _paceNote(meetings) : ''}
+        </div>
+        ${mtgTip}
     </div>`;
 
     // Reply Rate
-    html += `<div class="perf-card">
-        <div class="perf-card-label">Reply Rate</div>
-        <div class="perf-card-value">${_perfFmt(replyRate, 'pct')}${_perfDelta(replyRate, replyRatePrior, 'pct')}</div>
-        ${_perfSparkline(byDay, 'replies', _perfActivePeriod)}
-        <div class="perf-card-sub">${team.replies || 0} replies</div>
-    </div>`;
+    html += _perfCard(
+        'Reply Rate',
+        replyRate, 'pct',
+        replyRatePrior,
+        `${team.replies || 0} replies`,
+        _perfSparkline(byDay, 'replies', _perfActivePeriod),
+        'reply_rate'
+    );
 
-    // Emails Sent
-    const emailsSent      = team.emails_sent       || 0;
-    const emailsSentPrior = team.emails_sent_prior || null;
-    html += `<div class="perf-card">
-        <div class="perf-card-label">Emails Sent</div>
-        <div class="perf-card-value">${_perfFmt(emailsSent, 'num')}${_perfDelta(emailsSent, emailsSentPrior, 'num')}</div>
-        ${_perfSparkline(byDay, 'emails_sent', _perfActivePeriod)}
-    </div>`;
+    // Emails Sent — reply rate as sub-label for context
+    html += _perfCard(
+        'Emails Sent',
+        emailsSent, 'num',
+        emailsSentPrior,
+        team.reply_rate != null ? `${_perfFmt(team.reply_rate, 'pct')} reply rate` : null,
+        _perfSparkline(byDay, 'emails_sent', _perfActivePeriod),
+        'emails_sent'
+    );
 
-    // Recorded Calls
-    const calls      = team.recorded_calls       || 0;
-    const callsPrior = team.recorded_calls_prior || null;
-    html += `<div class="perf-card">
-        <div class="perf-card-label">Recorded Calls</div>
-        <div class="perf-card-value">${_perfFmt(calls, 'num')}${_perfDelta(calls, callsPrior, 'num')}</div>
-        ${_perfSparkline(byDay, 'recorded_calls', _perfActivePeriod)}
-    </div>`;
+    // Recorded Calls — transcript coverage as sub-label
+    html += _perfCard(
+        'Recorded Calls',
+        calls, 'num',
+        callsPrior,
+        team.transcript_coverage != null
+            ? `${_perfFmt(team.transcript_coverage, 'pct')} with transcript`
+            : null,
+        _perfSparkline(byDay, 'recorded_calls', _perfActivePeriod),
+        'recorded_calls'
+    );
 
     html += '</div>';
     return html;
