@@ -229,13 +229,18 @@ def scan_preview():
     try:
         # --- Ledger: determine scan window ---
         known_ids = get_known_ids(OUTPUT_DIR)
+        # Also exclude calls already in the dashboard (covers pre-ledger imports)
+        existing_data = _load_existing_data()
+        dashboard_ids = {c["id"] for c in existing_data.get("calls", [])}
+        known_ids = known_ids | dashboard_ids
         last_scan_dt = get_last_scan_dt(OUTPUT_DIR)
 
         if last_scan_dt is not None:
             from datetime import timedelta
             delta_days = (datetime.now(timezone.utc) - last_scan_dt).days
-            # Add 1-day buffer to avoid edge-case gaps; clamp between 2 and SCAN_DAYS
-            effective_days = max(2, min(delta_days + 1, SCAN_DAYS))
+            # Add 1-day buffer to avoid edge-case gaps; minimum 2 days, no upper cap
+            # so we always cover the full window since the last scan
+            effective_days = max(2, delta_days + 1)
         else:
             effective_days = SCAN_DAYS
 

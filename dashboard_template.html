@@ -1433,9 +1433,18 @@ body {
 #competitors-view .seg-overview::-webkit-scrollbar-thumb { background: #2a2d3e; border-radius: 3px; }
 #personas-view .seg-overview::-webkit-scrollbar-thumb:hover,
 #competitors-view .seg-overview::-webkit-scrollbar-thumb:hover { background: #3a3d4e; }
-#personas-view .seg-overview .seg-card:not(.seg-card-flip .seg-card),
-#competitors-view .seg-overview .seg-card {
-    flex: 0 0 auto; min-width: 240px; max-width: 300px; scroll-snap-align: start;
+#personas-view .seg-overview > .seg-card,
+#personas-view .seg-overview > .seg-card-flip,
+#competitors-view .seg-overview > .seg-card {
+    flex: 0 0 300px;
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
+    scroll-snap-align: start;
+}
+.seg-overview > .seg-card,
+.seg-overview > .seg-card-flip {
+    box-sizing: border-box;
 }
 .seg-card {
     flex: 1 1 220px; max-width: 320px; min-width: 200px;
@@ -1680,9 +1689,14 @@ body {
 .seg-card-flip .seg-card-back {
     backface-visibility: hidden; -webkit-backface-visibility: hidden;
     border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
 }
 .seg-card-flip .seg-card-front {
     position: relative;
+    min-width: 0;
+    max-width: none;
 }
 .seg-card-flip .seg-card-back {
     position: absolute; inset: 0; transform: rotateY(180deg);
@@ -5737,6 +5751,16 @@ const SEG_LABEL_COLORS = {
     'needs_review': '#aa9a60'
 };
 
+// Estimate call duration: use stored value if plausible, otherwise estimate from transcript (~150 wpm)
+function estimateCallDuration(c) {
+    const text = c.transcript_text || '';
+    const words = text.length >= 100 ? text.split(/\s+/).length : 0;
+    const estMin = words > 0 ? Math.round(words / 150) : 0;
+    // Trust stored duration only if it's within 3x of estimate (or no transcript to compare)
+    if (c.duration > 0 && (estMin === 0 || c.duration >= estMin / 3)) return c.duration;
+    return estMin || c.duration || 0;
+}
+
 // ---- Calls view (grouped by week) ----
 function buildCalls() {
     const mentions = activeMentions();
@@ -5767,6 +5791,7 @@ function buildCalls() {
             .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     }
 
+    const CALLS_PAGE_SIZE = 15;
     let html = '';
     callList.forEach(c => {
         const callMentions = (byCall[c.id] || []).sort((a, b) => (a.ts_sec || 0) - (b.ts_sec || 0));
@@ -5889,7 +5914,7 @@ function buildCalls() {
                         '</div>' +
                     '</div>' +
                     '<div class="right">' +
-                        '<div class="card-date">' + c.date + '<br>' + c.duration + ' min &middot; ' + featureCountLabel + '</div>' +
+                        '<div class="card-date">' + c.date + '<br>' + estimateCallDuration(c) + ' min &middot; ' + featureCountLabel + '</div>' +
                     '</div>' +
                 '</button>' +
                 '<div class="card-action">' + actionBtnHTML + '</div>' +
@@ -5901,6 +5926,12 @@ function buildCalls() {
                 '</div></div>';
         }
     }); // end callList.forEach
+
+    // Load more button
+    if (callList.length > CALLS_PAGE_SIZE) {
+        const remaining = callList.length - CALLS_PAGE_SIZE;
+        html += '<div id="calls-load-more-wrap"><button class="risk-show-more perf-focus-visible" onclick="loadMoreCalls(this)">Show ' + remaining + ' more call' + (remaining > 1 ? 's' : '') + '</button></div>';
+    }
 
     // "Scan for More Calls" button at bottom
     const scanCmd = 'python retrieve_calls.py --days 30 --limit 20 --owner zach.mccall \\\n  --title-keywords demo discovery followup follow-up sales \\\n  --dashboard dashboard.html --output-dir test_output/';
@@ -5915,6 +5946,20 @@ function buildCalls() {
         : '<div style="padding:2rem;color:#3a3d4e;text-align:center">No calls with feature requests found.</div>';
     document.getElementById('calls-view').innerHTML = html || emptyMsg;
     document.getElementById('calls-view').dataset.scanCmd = scanCmd;
+
+    // Hide overflow cards
+    const allCards = document.getElementById('calls-view').querySelectorAll('.card');
+    allCards.forEach((card, i) => {
+        if (i >= CALLS_PAGE_SIZE) card.style.display = 'none';
+    });
+}
+
+function loadMoreCalls(btn) {
+    document.getElementById('calls-view').querySelectorAll('.card').forEach(card => {
+        card.style.display = '';
+    });
+    const wrap = document.getElementById('calls-load-more-wrap');
+    if (wrap) wrap.remove();
 }
 
 // ---- Shared report helpers ----
@@ -6994,7 +7039,8 @@ function toggleCat(el) {
 }
 
 function toggleCard(el) {
-    const card = el.parentElement;
+    const card = el.closest('.card');
+    if (!card) return;
     card.classList.toggle('open');
     const expanded = card.classList.contains('open');
     el.setAttribute('aria-expanded', expanded ? 'true' : 'false');
