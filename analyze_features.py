@@ -192,8 +192,18 @@ def _write_data_to_html(html_path: str, data: dict):
             except (json.JSONDecodeError, ValueError):
                 pass  # Leave PERF as-is if we can't parse it
 
-    # Replace SEGMENT_DEFS placeholder if still present
-    new_html = new_html.replace("{{SEGMENT_DEFS_JSON}}", "{}")
+    # Preserve existing baked SEGMENT_DEFS if placeholder already consumed
+    if "{{SEGMENT_DEFS_JSON}}" in new_html:
+        seg_defs = "{}"
+        try:
+            from rebuild_dashboard import extract_segment_defs_from_html
+            with open(html_path) as _sf:
+                extracted = extract_segment_defs_from_html(_sf.read())
+            if extracted:
+                seg_defs = json.dumps(extracted)
+        except Exception:
+            pass
+        new_html = new_html.replace("{{SEGMENT_DEFS_JSON}}", seg_defs)
 
     with open(html_path, "w") as f:
         f.write(new_html)

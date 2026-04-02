@@ -146,7 +146,19 @@ def _render_dashboard(data):
         template = f.read()
     html = template.replace('{{DATA_JSON}}', json.dumps(data))
     html = html.replace('{{PERFORMANCE_JSON}}', json.dumps(perf_data) if perf_data else 'null')
-    html = html.replace('{{SEGMENT_DEFS_JSON}}', '{}')
+    # Try to preserve existing SEGMENT_DEFS from baked HTML
+    seg_defs = '{}'
+    output_path = os.path.join(OUTPUT_DIR, 'index.html')
+    if os.path.exists(output_path):
+        try:
+            from rebuild_dashboard import extract_segment_defs_from_html
+            with open(output_path) as _sf:
+                extracted = extract_segment_defs_from_html(_sf.read())
+            if extracted:
+                seg_defs = json.dumps(extracted)
+        except Exception:
+            pass
+    html = html.replace('{{SEGMENT_DEFS_JSON}}', seg_defs)
     return html
 
 

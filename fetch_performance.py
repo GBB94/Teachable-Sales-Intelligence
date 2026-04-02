@@ -33,6 +33,17 @@ MIXMAX_BASE = "https://api.mixmax.com/v1"
 HUBSPOT_BASE = "https://api.hubspot.com"
 MIXMAX_RECORD_CAP = 5000
 
+
+def collect_mixmax_tokens() -> list[tuple[str, str]]:
+    """Return list of (email, token) for all configured Mixmax tokens."""
+    candidates = [
+        ("zach.mccall@teachable.com",   os.getenv("MIXMAX_API_TOKEN", "")),
+        ("jerome.olaloye@teachable.com", os.getenv("MIXMAX_API_TOKEN_JEROME", "")),
+        ("kevin.codde@teachable.com",    os.getenv("MIXMAX_API_TOKEN_KEVIN", "")),
+    ]
+    return [(email, token) for email, token in candidates if token.strip()]
+
+
 # Internal reps — canonical emails and speaker name mapping
 INTERNAL_REP_EMAILS = {
     "zach.mccall@teachable.com",
@@ -104,6 +115,35 @@ def pull_mixmax_sequences(token: str) -> list[dict]:
     seqs = data.get("results") or data if isinstance(data, list) else data.get("results", [])
     logger.info("Mixmax sequences: %d", len(seqs))
     return seqs
+
+
+def pull_all_mixmax_messages(
+    tokens: list[tuple[str, str]],
+    since: datetime,
+) -> tuple[list[dict], bool]:
+    """Pull livefeed from every configured Mixmax token and merge results."""
+    all_messages: list[dict] = []
+    any_truncated = False
+
+    for rep_email, token in tokens:
+        logger.info("Mixmax: pulling livefeed for %s", rep_email)
+        try:
+            msgs, truncated = pull_mixmax_livefeed(token, since)
+            all_messages.extend(msgs)
+            if truncated:
+                any_truncated = True
+                logger.warning(
+                    "Mixmax livefeed truncated at %d records for %s",
+                    MIXMAX_RECORD_CAP, rep_email,
+                )
+        except Exception as e:
+            logger.error("Mixmax livefeed failed for %s: %s", rep_email, e)
+
+    logger.info(
+        "Mixmax: %d total messages across %d token(s)",
+        len(all_messages), len(tokens),
+    )
+    return all_messages, any_truncated
 
 
 # ---------------------------------------------------------------------------
@@ -457,6 +497,7 @@ def is_stalled(deal: dict, thresholds: dict, today: date) -> bool:
 def build_stalled_deals_list(
     all_open_deals: list, thresholds: dict, today: date,
     stage_labels: dict, owner_map: dict, owner_id_to_email: dict,
+    stage_to_pipeline_label: dict | None = None,
 ) -> list:
     """All stalled open deals, sorted by days_in_stage desc. No cap."""
     result = []
@@ -472,6 +513,7 @@ def build_stalled_deals_list(
             "name": p.get("dealname", ""),
             "stage_id": stage_id,
             "stage_label": stage_labels.get(stage_id, stage_id),
+            "pipeline": (stage_to_pipeline_label or {}).get(stage_id, ""),
             "amount": float(p["amount"]) if p.get("amount") else None,
             "days_in_stage": days_in_current_stage(d, today),
             "rep_name": owner.get("name", owner_id),
@@ -524,23 +566,6 @@ def build_rep_detail(
         key=lambda d: d.get("properties", {}).get("createdate", ""), reverse=True
     )
 
-    recent_deals = []
-    for d in rep_open_deals[:30]:
-        p = d.get("properties", {})
-        stage_id = p.get("dealstage", "")
-        recent_deals.append({
-            "id": d.get("id", ""),
-            "name": p.get("dealname", ""),
-            "stage_id": stage_id,
-            "stage_label": stage_labels.get(stage_id, stage_id),
-            "pipeline": pipeline_labels.get(p.get("pipeline", ""), ""),
-            "amount": float(p["amount"]) if p.get("amount") else None,
-            "createdate": (p.get("createdate") or "")[:10],
-            "hs_v2_date_entered_current_stage": p.get("hs_v2_date_entered_current_stage"),
-            "days_in_stage": days_in_current_stage(d, today),
-            "stalled": is_stalled(d, thresholds, today),
-        })
-
     # Calls, date desc, cap 30
     rep_calls = [c for c in all_calls if call_owner_func(c) == rep_email]
     rep_calls.sort(key=lambda c: getattr(c, "date", "") or "", reverse=True)
@@ -572,9 +597,26 @@ def build_rep_detail(
             "outcome": p.get("hs_meeting_outcome"),
         })
 
+    # Uncapped open_deals for pipeline math (stage counts, popovers)
+    open_deals = []
+    for d in rep_open_deals:
+        p = d.get("properties", {})
+        stage_id = p.get("dealstage", "")
+        open_deals.append({
+            "id": d.get("id", ""),
+            "name": p.get("dealname", ""),
+            "stage_id": stage_id,
+            "stage_label": stage_labels.get(stage_id, stage_id),
+            "pipeline": pipeline_labels.get(p.get("pipeline", ""), ""),
+            "amount": float(p["amount"]) if p.get("amount") else None,
+            "createdate": (p.get("createdate") or "")[:10],
+            "days_in_stage": days_in_current_stage(d, today),
+            "stalled": is_stalled(d, thresholds, today),
+        })
+
     return {
         "window_days": 90,
-        "recent_deals": recent_deals,
+        "open_deals": open_deals,
         "recent_calls": recent_calls,
         "recent_meetings": recent_meetings,
     }
@@ -588,7 +630,7 @@ def build_performance_data(days: int = 90) -> dict:
     """Pull all sources and build the performance JSON."""
     load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
-    mixmax_token = os.getenv("MIXMAX_API_TOKEN", "")
+    mixmax_tokens = collect_mixmax_tokens()
     fireflies_key = os.getenv("FIREFLIES_API_KEY", "")
     hubspot_token = os.getenv("HUBSPOT_TOKEN", "")
 
@@ -599,6 +641,18 @@ def build_performance_data(days: int = 90) -> dict:
 
     now_et = datetime.now(ET)
     today = now_et.date()
+
+    # Enforce minimum so all_dates always covers the widest slice + its prior period.
+    # The 90d prior period starts 179 days back; anything less silently undercounts.
+    MIN_DAYS = 90
+    if days < MIN_DAYS:
+        logger.warning(
+            "--days %d is less than minimum %d; clamping to %d to avoid "
+            "silent undercount in 90d slice and prior-period comparisons.",
+            days, MIN_DAYS, MIN_DAYS,
+        )
+        days = MIN_DAYS
+
     window_start = today - timedelta(days=days - 1)
     # For prior period comparisons we need data going further back
     extended_start = today - timedelta(days=days * 2)
@@ -608,10 +662,12 @@ def build_performance_data(days: int = 90) -> dict:
     honesty = {
         "mixmax_truncated": False,
         "mixmax_record_count": 0,
+        "mixmax_token_count": 0,
         "unassigned_rep_count": 0,
         "fireflies_call_count": 0,
         "hubspot_sample_meetings_filtered": 0,
         "deals_missing_amount": 0,
+        "days_used": days,
     }
 
     # ------------------------------------------------------------------
@@ -621,19 +677,21 @@ def build_performance_data(days: int = 90) -> dict:
     # Mixmax
     mm_messages = []
     mm_sequences_raw = []
-    if mixmax_token:
+    if mixmax_tokens:
+        mm_messages, truncated = pull_all_mixmax_messages(mixmax_tokens, since_utc)
+        honesty["mixmax_truncated"] = truncated
+        honesty["mixmax_record_count"] = len(mm_messages)
+        honesty["mixmax_token_count"] = len(mixmax_tokens)
         try:
-            mm_messages, truncated = pull_mixmax_livefeed(mixmax_token, since_utc)
-            honesty["mixmax_truncated"] = truncated
-            honesty["mixmax_record_count"] = len(mm_messages)
-        except Exception as e:
-            logger.error("Mixmax livefeed pull failed: %s", e)
-        try:
-            mm_sequences_raw = pull_mixmax_sequences(mixmax_token)
+            mm_sequences_raw = pull_mixmax_sequences(mixmax_tokens[0][1])
         except Exception as e:
             logger.error("Mixmax sequences pull failed: %s", e)
     else:
-        logger.warning("MIXMAX_API_TOKEN not set — skipping Mixmax")
+        logger.warning(
+            "No Mixmax tokens configured. "
+            "Set MIXMAX_API_TOKEN (and optionally MIXMAX_API_TOKEN_JEROME, "
+            "MIXMAX_API_TOKEN_KEVIN) in .env"
+        )
 
     # Fireflies
     ff_calls = []
@@ -860,6 +918,8 @@ def build_performance_data(days: int = 90) -> dict:
                     "label": hs_stages.get(sid, sid),
                     "count": info["count"],
                     "value": info["value"],
+                    "stalled_count": 0,
+                    "stalled_value": 0.0,
                 })
         open_pipeline["by_pipeline"].append({
             "pipeline_id": pid,
@@ -875,6 +935,14 @@ def build_performance_data(days: int = 90) -> dict:
         for email, info in sorted(rep_pipeline_totals.items(), key=lambda x: -x[1]["value"])
     ]
 
+    # Build stage_id -> pipeline_label lookup for stalled deals
+    stage_to_pipeline_label = {}
+    for pinfo in hs_pipelines:
+        pid = pinfo["id"]
+        plabel = pipeline_label_map.get(pid, pid)
+        for sid in pipeline_stage_order.get(pid, []):
+            stage_to_pipeline_label[sid] = plabel
+
     # Collect all open deals for stalled detection
     all_open_deals = [
         d for d in hs_deals
@@ -886,10 +954,24 @@ def build_performance_data(days: int = 90) -> dict:
     stalled_list = build_stalled_deals_list(
         all_open_deals, stage_thresholds, today,
         hs_stages, hs_owners, owner_id_to_email,
+        stage_to_pipeline_label,
     )
     open_pipeline["stalled_deal_count"] = len(stalled_list)
     open_pipeline["stalled_deal_value"] = sum(d.get("amount") or 0 for d in stalled_list)
     open_pipeline["stalled_deals"] = stalled_list
+
+    # Back-fill stalled counts into by_stage
+    stage_stalled = defaultdict(lambda: {"count": 0, "value": 0.0})
+    for sd in stalled_list:
+        sid = sd.get("stage_id", "")
+        stage_stalled[sid]["count"] += 1
+        stage_stalled[sid]["value"] += sd.get("amount") or 0
+    for pipe in open_pipeline["by_pipeline"]:
+        for stage in pipe["by_stage"]:
+            ss = stage_stalled.get(stage["stage_id"])
+            if ss:
+                stage["stalled_count"] = ss["count"]
+                stage["stalled_value"] = ss["value"]
 
     # Avg days by stage
     open_pipeline["avg_days_by_stage"] = compute_avg_days_by_stage(all_open_deals, today)
@@ -970,7 +1052,7 @@ def build_performance_data(days: int = 90) -> dict:
                 "sent_in_period": info["sent"],
             })
 
-        # Per-rep breakdown
+        # Per-rep breakdown: include reps with activity, pipeline, targets, or tokens
         active_reps = set()
         for rep in rep_daily:
             for d in _date_range(p_start, p_end):
@@ -980,8 +1062,19 @@ def build_performance_data(days: int = 90) -> dict:
                     active_reps.add(rep)
                     break
 
+        # Broaden to visible_reps: also include reps with open pipeline, targets, or tokens
+        visible_reps = set(active_reps)
+        for r in (open_pipeline.get("by_rep") or []):
+            if r.get("email") and r["email"] != "unassigned":
+                visible_reps.add(r["email"])
+        for t in target_list:
+            if t.get("rep_email"):
+                visible_reps.add(t["rep_email"])
+        for email, _tok in mixmax_tokens:
+            visible_reps.add(email)
+
         by_rep = []
-        for rep in sorted(active_reps):
+        for rep in sorted(visible_reps):
             r_sent = _sum_rep(rep, "emails_sent")
             r_tracked = _sum_rep(rep, "emails_tracked")
             r_opened = _sum_rep(rep, "emails_opened")
@@ -1080,6 +1173,9 @@ def build_performance_data(days: int = 90) -> dict:
                 "emails_sent": bucket.get("emails_sent", 0),
                 "replies": bucket.get("replies", 0),
                 "recorded_calls": bucket.get("recorded_calls", 0),
+                "meetings": bucket.get("meetings_booked", 0),
+                "deals_created": bucket.get("deals_created", 0),
+                "deals_won": bucket.get("deals_won", 0),
             })
         by_day_by_rep[rep] = rep_days
 
@@ -1130,7 +1226,7 @@ def build_performance_data(days: int = 90) -> dict:
         },
         "timezone": "America/New_York",
         "sources": [s for s in ["mixmax", "fireflies", "hubspot"]
-                     if (s == "mixmax" and mixmax_token) or
+                     if (s == "mixmax" and mixmax_tokens) or
                         (s == "fireflies" and fireflies_key) or
                         (s == "hubspot" and hubspot_token)],
         "honesty": honesty,

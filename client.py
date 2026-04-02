@@ -465,6 +465,8 @@ class FirefliesRetriever:
         exclude_domains: List[str],
         exclude_speakers: List[str],
     ) -> bool:
+        if not speaker_name:
+            return False
         name_lower = speaker_name.lower()
 
         for excluded in exclude_speakers:
