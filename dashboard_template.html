@@ -11424,16 +11424,16 @@ function buildPerformance() {
 
     let html = '';
 
-    // Header with sync timestamp and refresh button
+    // Header with sync timestamp
+    // NOTE: Refresh button is built and ready — uncomment the block below to enable it.
     html += `<div class="perf-header"><h2>Performance</h2>`;
-    html += `<div class="perf-header-right">`;
     if (PERF.generated_at_et) {
         html += `<span class="perf-ts">Synced ${_perfTimeAgo(PERF.generated_at_et)}</span>`;
     }
-    html += `<button id="perf-refresh-btn" class="perf-refresh-btn perf-focus-visible"
-        onclick="_perfRefresh()" aria-label="Refresh performance data">Refresh Data</button>`;
-    html += `<span id="perf-refresh-status" class="perf-refresh-status" style="display:none"></span>`;
-    html += `</div></div>`;
+    // html += `<button id="perf-refresh-btn" class="perf-refresh-btn perf-focus-visible"
+    //     onclick="_perfRefresh()" aria-label="Refresh performance data">Refresh Data</button>`;
+    // html += `<span id="perf-refresh-status" class="perf-refresh-status" style="display:none"></span>`;
+    html += `</div>`;
 
     // Controls (period + view switch)
     html += buildPerfControls();
