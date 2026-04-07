@@ -634,6 +634,15 @@ def build_performance_data(days: int = 90) -> dict:
     fireflies_key = os.getenv("FIREFLIES_API_KEY", "")
     hubspot_token = os.getenv("HUBSPOT_TOKEN", "")
 
+    # ── Credential preflight ──
+    # Abort early if no API credentials are configured at all.
+    if not mixmax_tokens and not fireflies_key and not hubspot_token:
+        logger.error(
+            "No API credentials found. Set at least one of: "
+            "MIXMAX_API_TOKEN, FIREFLIES_API_KEY, HUBSPOT_TOKEN in .env"
+        )
+        sys.exit(1)
+
     # Load targets (Path B — file-based, no HubSpot dependency)
     targets_data = load_targets()
     target_list = targets_data.get("targets", [])
