@@ -2,6 +2,9 @@
   publish = "test_output"
   command = ""
 
+[functions]
+  directory = "netlify/functions"
+
 [[headers]]
   for = "/*"
   [headers.values]

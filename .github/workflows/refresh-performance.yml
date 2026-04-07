@@ -1,0 +1,51 @@
+name: Refresh Performance Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Lookback window in days'
+        required: false
+        default: '90'
+  # Uncomment the schedule block below to enable automatic daily refresh at 7am ET weekdays
+  # schedule:
+  #   - cron: '0 11 * * 1-5'
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run fetch_performance.py
+        env:
+          HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
+          MIXMAX_API_TOKEN: ${{ secrets.MIXMAX_API_TOKEN }}
+          MIXMAX_API_TOKEN_JEROME: ${{ secrets.MIXMAX_API_TOKEN_JEROME }}
+          MIXMAX_API_TOKEN_KEVIN: ${{ secrets.MIXMAX_API_TOKEN_KEVIN }}
+          FIREFLIES_API_KEY: ${{ secrets.FIREFLIES_API_KEY }}
+        run: |
+          python3 fetch_performance.py \
+            --days ${{ github.event.inputs.days || '90' }} \
+            --out test_output/performance.json
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test_output/performance.json
+          git diff --staged --quiet || git commit -m "chore: refresh performance data"
+          git push

@@ -2462,6 +2462,18 @@ body {
 }
 .perf-header h2 { font-size: 1.3rem; font-weight: 700; color: #fff; }
 .perf-header .perf-ts { font-size: 0.78rem; color: #5a5e72; }
+.perf-header-right {
+    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+}
+.perf-refresh-btn {
+    background: none; border: 1px solid #2a2e40; border-radius: 7px;
+    color: #8b8fa3; font-size: 0.75rem; font-weight: 600;
+    padding: 4px 12px; cursor: pointer; font-family: inherit;
+    transition: border-color 0.12s, color 0.12s;
+}
+.perf-refresh-btn:hover:not(:disabled) { border-color: #4a6cf7; color: #d0d3db; }
+.perf-refresh-btn:disabled { opacity: 0.5; cursor: default; }
+.perf-refresh-status { font-size: 0.73rem; color: #5a5e72; font-style: italic; }
 
 .perf-section { margin-bottom: 2.25rem; }
 .perf-section-hdr {
@@ -3755,6 +3767,7 @@ body {
 <script>
 let DATA = {{DATA_JSON}};
 let PERF = {{PERFORMANCE_JSON}};
+const REFRESH_SECRET = 'si-refresh-2026';
 let _perfActivePeriod = '30d';
 let _perfActiveView = 'overview';
 let _perfChartShow = { emails: true, calls: true };
@@ -9504,6 +9517,44 @@ function _perfTimeAgo(isoStr) {
     return days + (days === 1 ? ' day ago' : ' days ago');
 }
 
+async function _perfRefresh() {
+    const btn = document.getElementById('perf-refresh-btn');
+    const status = document.getElementById('perf-refresh-status');
+    if (!btn || btn.disabled) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Refreshing\u2026';
+    if (status) {
+        status.textContent = 'Fetching from HubSpot, Mixmax & Fireflies\u2026';
+        status.style.display = 'inline';
+    }
+
+    try {
+        const res = await fetch('/.netlify/functions/refresh', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-refresh-secret': REFRESH_SECRET,
+            },
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            btn.textContent = 'Triggered \u2713';
+            if (status) status.textContent = 'Data refreshing \u2014 reload in ~2 min';
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Refresh Data';
+            if (status) status.textContent = 'Error: ' + (data.error || 'Unknown error');
+        }
+    } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Refresh Data';
+        if (status) status.textContent = 'Request failed \u2014 check connection';
+    }
+}
+
 function _perfSectionHdr(title, source) {
     return `<div class="perf-section-hdr"><span class="perf-section-title">${title}</span>${source ? `<span class="perf-source-badge">${source}</span>` : ''}</div>`;
 }
@@ -11373,12 +11424,16 @@ function buildPerformance() {
 
     let html = '';
 
-    // Header with sync timestamp
+    // Header with sync timestamp and refresh button
     html += `<div class="perf-header"><h2>Performance</h2>`;
+    html += `<div class="perf-header-right">`;
     if (PERF.generated_at_et) {
         html += `<span class="perf-ts">Synced ${_perfTimeAgo(PERF.generated_at_et)}</span>`;
     }
-    html += `</div>`;
+    html += `<button id="perf-refresh-btn" class="perf-refresh-btn perf-focus-visible"
+        onclick="_perfRefresh()" aria-label="Refresh performance data">Refresh Data</button>`;
+    html += `<span id="perf-refresh-status" class="perf-refresh-status" style="display:none"></span>`;
+    html += `</div></div>`;
 
     // Controls (period + view switch)
     html += buildPerfControls();
