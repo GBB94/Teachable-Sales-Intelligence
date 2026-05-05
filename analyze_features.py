@@ -28,10 +28,23 @@ CANONICAL_NAMES_FILE = ".feature_names"
 
 # Internal Teachable employees — never the "source" of a feature request
 INTERNAL_SPEAKER_NAMES = {
-    'zach mccall', 'kevin', 'kevin codde', 'jerome', 'jerome olaloye',
-    'lennie zhu', 'sarah dean',
+    # Sales reps — first name variants safe here (unique enough in call context)
+    'zach mccall', 'zach',
+    'kevin codde', 'kevin',
+    'jerome olaloye', 'jerome',
+    # Management — full names only; 'anna' and 'ben' are too common in prospect names
+    'anna damico',
+    'ben vincent',
+    # Other Teachable employees seen on calls
+    'lennie zhu', 'lennie',
+    'sarah dean',
     'jonathan corvin-blackburn', 'jonathan corvin blackburn',
+    'chacier warhurst', 'chacier',
 }
+
+# Feature mention type constants — used in inject, cleanup, and validation
+VALID_FEATURE_TYPES = {"prospect_request", "prospect_interest"}
+DROP_FEATURE_TYPES = {"internal_discussion", "internal_request", "rep_highlighted"}
 
 
 def _is_internal_speaker(speaker: str) -> bool:
@@ -382,6 +395,11 @@ SPEAKER & COMPANY RULES:
   these speakers say, even if they pitch or demo a feature.
 - If a prospect asks about or responds to something the rep pitches, attribute
   the feature to the PROSPECT speaker who expressed the need, not to the rep.
+- If you find yourself writing an internal Teachable employee name in the
+  "speaker" field, STOP and DROP that feature entirely from the output. Do not
+  include it. Do not set type to "internal_discussion" as a workaround — simply
+  omit the feature. There is no valid case for an internal speaker in the
+  features output.
 - Every feature MUST have a "company" field with the PROSPECT company name.
   Never use "Unknown", "Teachable", or empty string.
 - Infer the company from the call title if not obvious from the speaker.
@@ -856,10 +874,9 @@ def cmd_inject(args):
         if not call_features:
             continue
 
-        calls_with_features.add(call_id)
-
         # Build feature request lines for the HubSpot note
         feature_lines = []
+        accepted_count = 0
 
         for feat in call_features:
             feature_name = feat.get("feature", "Unknown")
@@ -868,6 +885,12 @@ def cmd_inject(args):
             timestamp = feat.get("timestamp", "")
             ts_seconds = feat.get("ts_seconds")
             feat_type = feat.get("type", "prospect_request")
+
+            # Drop internal-speaker and internal-type mentions
+            if _is_internal_speaker(speaker):
+                continue
+            if feat_type in DROP_FEATURE_TYPES:
+                continue
 
             # Build deep link
             deep_link = ""
@@ -887,6 +910,7 @@ def cmd_inject(args):
                 category = "Other"
 
             mention_id = generate_mention_id(call_id, feature_name)
+            accepted_count += 1
 
             new_mentions.append({
                 "mention_id": mention_id,
@@ -912,6 +936,10 @@ def cmd_inject(args):
             ts_part = f" ({timestamp})" if timestamp else ""
             short_quote = quote[:120].replace("\n", " ")
             feature_lines.append(f"- {feature_name}{ts_part} - \"{short_quote}\"")
+
+        # Only mark this call as having features if at least one mention survived
+        if accepted_count > 0:
+            calls_with_features.add(call_id)
 
         # Update the HubSpot note embedded in the call data
         override = notes_by_call.get(call_id)
@@ -1408,17 +1436,50 @@ def validate_analysis(data, valid_categories, valid_segments, valid_competitors=
     """
     errors = []
 
-    # Check feature categories
+    # Check feature categories, types, and speakers
     for call_id, features in data.get("features", {}).items():
         for feat in features:
+            feature_name = feat.get("feature", "?")
+
+            # Category check
             category = feat.get("category", "")
             if category and category != "NEEDS_REVIEW" and category not in valid_categories:
                 errors.append({
                     "type": "invalid_category",
                     "call_id": call_id,
-                    "feature": feat.get("feature", "?"),
+                    "feature": feature_name,
                     "value": category,
                     "suggestion": _suggest_match(category, valid_categories),
+                })
+
+            # Feature type check
+            feat_type = feat.get("type", "")
+            if feat_type in DROP_FEATURE_TYPES:
+                errors.append({
+                    "type": "internal_feature_type",
+                    "call_id": call_id,
+                    "feature": feature_name,
+                    "value": feat_type,
+                    "suggestion": "Drop this mention — internal activity is not a product signal.",
+                })
+            elif feat_type and feat_type not in VALID_FEATURE_TYPES:
+                errors.append({
+                    "type": "invalid_feature_type",
+                    "call_id": call_id,
+                    "feature": feature_name,
+                    "value": feat_type,
+                    "suggestion": _suggest_match(feat_type, VALID_FEATURE_TYPES),
+                })
+
+            # Internal speaker check
+            speaker = feat.get("speaker", "")
+            if _is_internal_speaker(speaker):
+                errors.append({
+                    "type": "internal_speaker",
+                    "call_id": call_id,
+                    "feature": feature_name,
+                    "value": speaker,
+                    "suggestion": "Drop this mention — attribute to the prospect speaker or omit.",
                 })
 
     # Check segments
@@ -1748,9 +1809,13 @@ def cmd_cleanup(args):
         speaker = m.get("speaker", "")
         feat_type = m.get("type", "")
 
-        # Drop ALL mentions attributed to internal Teachable speakers.
-        # The sales rep is on every call but is never the source of a feature.
+        # Drop mentions attributed to internal Teachable speakers.
         if _is_internal_speaker(speaker):
+            removed += 1
+            continue
+
+        # Drop self-labelled internal mention types.
+        if feat_type in DROP_FEATURE_TYPES:
             removed += 1
             continue
 
