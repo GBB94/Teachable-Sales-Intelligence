@@ -43,7 +43,7 @@ INTERNAL_SPEAKER_NAMES = {
 }
 
 # Feature mention type constants — used in inject, cleanup, and validation
-VALID_FEATURE_TYPES = {"prospect_request", "prospect_interest"}
+VALID_FEATURE_TYPES = {"prospect_request", "prospect_interest", "workaround"}
 DROP_FEATURE_TYPES = {"internal_discussion", "internal_request", "rep_highlighted"}
 
 
@@ -886,10 +886,12 @@ def cmd_inject(args):
             ts_seconds = feat.get("ts_seconds")
             feat_type = feat.get("type", "prospect_request")
 
-            # Drop internal-speaker and internal-type mentions
+            # Drop internal-speaker, internal-type, and invalid-type mentions
             if _is_internal_speaker(speaker):
                 continue
             if feat_type in DROP_FEATURE_TYPES:
+                continue
+            if feat_type not in VALID_FEATURE_TYPES:
                 continue
 
             # Build deep link
@@ -1690,6 +1692,12 @@ def cmd_validate(args):
             print(f'  [{err["call_id"][:12]}] Invalid competitor "{err["value"]}"')
         elif err["type"] == "invalid_mention_type":
             print(f'  [{err["call_id"][:12]}] Invalid mention_type "{err["value"]}" for competitor "{err["feature"]}"')
+        elif err["type"] == "internal_feature_type":
+            print(f'  [{err["call_id"][:12]}] Internal type "{err["value"]}" for feature "{err["feature"]}"')
+        elif err["type"] == "invalid_feature_type":
+            print(f'  [{err["call_id"][:12]}] Invalid type "{err["value"]}" for feature "{err["feature"]}"')
+        elif err["type"] == "internal_speaker":
+            print(f'  [{err["call_id"][:12]}] Internal speaker "{err["value"]}" for feature "{err["feature"]}"')
         if err.get("suggestion"):
             print(f'    Did you mean: "{err["suggestion"]}"?')
         else:
@@ -2547,7 +2555,7 @@ def cmd_validate_extraction(args):
     warnings = []
 
     required_fields = {"feature", "category", "company", "speaker", "quote", "type"}
-    valid_types = {"prospect_request", "prospect_interest"}
+    valid_types = VALID_FEATURE_TYPES
     seen_combos = set()
 
     for call_id, feats in features_by_call.items():
@@ -2615,8 +2623,15 @@ def cmd_validate_extraction(args):
 
             # Type validation
             feat_type = feat.get("type", "")
-            if feat_type and feat_type not in valid_types:
+            if feat_type in DROP_FEATURE_TYPES:
+                errors.append(f"[{call_id[:12]}] Internal type '{feat_type}' for '{feature}'. Drop this mention.")
+            elif feat_type and feat_type not in valid_types:
                 errors.append(f"[{call_id[:12]}] Invalid type '{feat_type}' for '{feature}'. Must be: {valid_types}")
+
+            # Internal speaker check
+            speaker = feat.get("speaker", "")
+            if _is_internal_speaker(speaker):
+                errors.append(f"[{call_id[:12]}] Internal speaker '{speaker}' for '{feature}'. Drop this mention.")
 
             # Duplicate detection
             combo = (call_id, feature, company)
