@@ -60,5 +60,8 @@ scan_ledger.json
 # OS
 .DS_Store
 
+# Win/loss private extraction artifacts (contains raw note bodies)
+.win_loss_private/
+
 # Local Netlify folder
 .netlify

@@ -1,0 +1,36 @@
+name: Refresh Win/Loss Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 13 * * 1'  # Monday 9am ET
+
+jobs:
+  refresh-win-loss:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install -r requirements.txt
+
+      - name: Run fetch_lost_deals.py
+        env:
+          HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 fetch_lost_deals.py --days 180 --api-extract --out test_output/win_loss.json
+
+      - name: Rebuild dashboard HTML
+        run: python3 rebuild_dashboard.py
+
+      - name: Commit updated files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: win/loss data refresh"
+          file_pattern: "test_output/win_loss.json test_output/index.html .win_loss_cache.json"

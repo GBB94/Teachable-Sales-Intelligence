@@ -46,6 +46,32 @@ INTERNAL_SPEAKER_NAMES = {
 VALID_FEATURE_TYPES = {"prospect_request", "prospect_interest", "workaround"}
 DROP_FEATURE_TYPES = {"internal_discussion", "internal_request", "rep_highlighted"}
 
+# PD/KB classification — weak prior only, not authoritative
+# PD = Program Distributor (internal audience: employees, students, citizens)
+# KB = Knowledge Business (external audience: customers, members, practitioners)
+PD_KB_MAP = {
+    # Often PD — but verify against end-learner context
+    'Professional Training & Development':     'PD',
+    'Academic & Higher Education':             'PD',
+    'Government & Public Sector Education':    'PD',
+    # Often KB — but verify against end-learner context
+    'Course Creators & Digital Educators':     'KB',
+    'Coaches & Consultants':                   'KB',
+    'Health, Wellness & Fitness':              'KB',
+    # Ambiguous — segment alone cannot determine PD vs KB
+    'Continuing Education & Credentialing':    'unclear',
+    'Industry Associations & Membership Orgs': 'unclear',
+    'Corporate Education & Customer Training': 'unclear',
+}
+
+VALID_PD_KB = {"PD", "KB", "unclear"}
+VALID_PD_KB_SOURCES = {"extracted", "segment_inferred", "manual"}
+
+
+def _classify_pd_kb(segment: str) -> str:
+    """Best-effort PD/KB from segment — for backfill only, not authoritative."""
+    return PD_KB_MAP.get(segment or '', 'unclear')
+
 
 def _is_internal_speaker(speaker: str) -> bool:
     """Check if a speaker is an internal Teachable employee."""
@@ -512,19 +538,52 @@ For each competitor mention, capture:
 - context: 1-3 sentence summary of what was said about this competitor.
   Written from the prospect's perspective. Not a quote, a summary.
 - timestamp: Approximate location in the transcript (MM:SS)
+- speaker: Prospect speaker who mentioned this competitor. Never a Teachable employee.
 - mention_type: One of:
     "currently_using"  — prospect is actively on this platform today
     "switching_from"   — prospect is leaving or has left this platform
     "evaluated"        — prospect looked at it but didn't choose it
     "asked_about"      — prospect asked how Teachable compares
-    "compared_to"      — prospect or rep compared specific features/pricing
+    "compared_to"      — prospect compared specific features/pricing or asked how Teachable compares
 
 Do NOT count:
-- Mentions by the Teachable sales rep (only prospect mentions)
+- Mentions by the Teachable sales rep or any other Teachable employee.
+  Only prospect mentions are valid. If the attributed speaker is internal,
+  drop the competitor mention entirely.
 - Generic references to "other platforms" without naming a specific competitor
 - Mentions of tools that aren't competing with Teachable (e.g., Zoom, Stripe, Zapier)
 
 If no competitors were mentioned, return an empty array: "competitor_mentions": []
+""")
+
+    print(f"{'='*70}")
+    print("PD/KB CLASSIFICATION")
+    print(f"{'─'*70}")
+    print("""Classify this account as PD (Program Distributor) or KB (Knowledge Business)
+based on WHO THE END LEARNER IS — not the company type or industry segment.
+
+- PD: The prospect is training their own employees, students, or citizens. The learner is
+  internal. Think: corporate L&D, compliance training, staff onboarding, university courses
+  for enrolled students.
+
+- KB: The prospect is offering or selling content to an external audience. The learner pays
+  or is a member. Think: credentialing bodies selling CE to practitioners, coaches selling
+  programs, associations offering member education, creators selling courses.
+
+- unclear: Not enough signal in the transcript to determine who the end learner is.
+
+Guidance:
+- Segment is a weak prior only — do not rely on it alone. Verify against transcript context.
+  Common mappings for reference (often true, not always):
+  Professional Training -> often PD | Course Creators -> often KB |
+  Continuing Education -> could be either | Corporate Education -> could be either
+- If a company trains their customers on their OWN product (e.g. SaaS onboarding), that
+  is KB — the learner is external, even if it's not a course marketplace.
+- Assign pd_kb_confidence based on how clearly the transcript signals end-learner type:
+  1.0 = explicitly stated | 0.8 = strongly implied | 0.6 = inferred | 0.4 = weak signal
+- When in doubt, return "unclear" with low confidence. Do not guess.
+
+Include pd_kb, pd_kb_confidence, and pd_kb_reasoning in the segment_data output for each call.
 """)
 
     print(f"{'='*70}")
@@ -577,7 +636,10 @@ If no competitors were mentioned, return an empty array: "competitor_mentions": 
       "segment_confidence": 0.85,
       "segment_reasoning": "One sentence explaining why this segment fits",
       "alternative_segment": "Second-best fit or null",
-      "suggested_new_segment": "only if NEEDS_REVIEW — what you would have named it, else null"
+      "suggested_new_segment": "only if NEEDS_REVIEW — what you would have named it, else null",
+      "pd_kb": "PD | KB | unclear",
+      "pd_kb_confidence": 0.8,
+      "pd_kb_reasoning": "One sentence explaining end-learner determination"
     }
   },
   "competitor_mentions": {
@@ -586,6 +648,7 @@ If no competitors were mentioned, return an empty array: "competitor_mentions": 
         "competitor": "EXACT name from competitors list (or NEEDS_REVIEW)",
         "context": "1-3 sentence summary of what was said about this competitor",
         "timestamp": "MM:SS",
+        "speaker": "Prospect Name (Company)",
         "mention_type": "currently_using|switching_from|evaluated|asked_about|compared_to"
       }
     ]
@@ -932,6 +995,8 @@ def cmd_inject(args):
                 "link": deep_link,
                 "transcript": transcript_url,
                 "competitor_context": feat.get("competitor_context"),
+                "pd_kb": call.get("pd_kb", "unclear"),
+                "pd_kb_source": call.get("pd_kb_source", "segment_inferred"),
             })
 
             # For HubSpot note
@@ -1054,6 +1119,12 @@ def cmd_inject(args):
                     call["segment_reasoning"] = seg.get("segment_reasoning")
                     call["alternative_segment"] = seg.get("alternative_segment")
                     call["suggested_new_segment"] = seg.get("suggested_new_segment")
+                    # Store PD/KB from extraction if present
+                    if seg.get("pd_kb"):
+                        call["pd_kb"] = seg["pd_kb"]
+                        call["pd_kb_confidence"] = seg.get("pd_kb_confidence")
+                        call["pd_kb_reasoning"] = seg.get("pd_kb_reasoning")
+                        call["pd_kb_source"] = "extracted"
 
     if segment_errors:
         print("\n  SEGMENT VALIDATION FAILED — the following calls used non-canonical segment names:")
@@ -1062,6 +1133,18 @@ def cmd_inject(args):
         print(f"\n  Valid segments: {sorted(valid_segments)}")
         print("  Tip: run `python3 analyze_features.py validate <file> --fix` to auto-correct.")
         sys.exit(1)
+
+    # Classify PD/KB for newly injected calls that have segment data but no pd_kb yet
+    if segment_data_by_call:
+        for call in calls:
+            call_id = call.get("id", "")
+            if call_id in segment_data_by_call and not call.get("pd_kb"):
+                segment = call.get("segment")
+                if segment:
+                    call["pd_kb"] = _classify_pd_kb(segment)
+                    call["pd_kb_source"] = "segment_inferred"
+                    call["pd_kb_confidence"] = 0.6 if call["pd_kb"] != "unclear" else 0.0
+                    call["pd_kb_reasoning"] = f"Inferred from segment: {segment}"
 
     # Store per-call competitor mentions on each call object
     competitor_errors = []
@@ -1074,13 +1157,23 @@ def cmd_inject(args):
                     continue
                 validated = []
                 for cm in mentions_list:
+                    cm = _normalize_competitor_mention(cm)
+                    if not cm:
+                        competitor_errors.append(f'  ERROR: Call {call_id[:12]} has malformed competitor mention {cm!r}')
+                        continue
                     comp_name = cm.get("competitor", "")
+                    if not comp_name:
+                        competitor_errors.append(f'  ERROR: Call {call_id[:12]} has competitor mention with no competitor name')
+                        continue
+                    speaker = cm.get("speaker", "")
+                    if speaker and _is_internal_speaker(speaker):
+                        continue
                     # Resolve aliases (e.g. "School" -> "Skool")
                     resolved = _resolve_competitor_name(comp_name)
                     if resolved != comp_name:
                         cm["competitor"] = resolved
                         comp_name = resolved
-                    if valid_competitors and comp_name and comp_name != "NEEDS_REVIEW" and comp_name not in valid_competitors:
+                    if valid_competitors and comp_name != "NEEDS_REVIEW" and comp_name not in valid_competitors:
                         suggestion = _suggest_match(comp_name, valid_competitors)
                         hint = f' (did you mean "{suggestion}"?)' if suggestion else ""
                         competitor_errors.append(f'  ERROR: Call {call_id[:12]} mentions invalid competitor "{comp_name}"{hint}')
@@ -1388,12 +1481,52 @@ VALID_MENTION_TYPES = {"currently_using", "switching_from", "evaluated", "asked_
 # Competitor name aliases — maps informal/misspelled names to canonical form
 _COMPETITOR_ALIASES = {
     "school": "Skool",
+    "school (skool)": "Skool",
+    "learn worlds": "LearnWorlds",
+    "learn-worlds": "LearnWorlds",
+    "wap": "WapCRM",
 }
 
 
 def _resolve_competitor_name(name):
     """Resolve competitor aliases to canonical name."""
-    return _COMPETITOR_ALIASES.get(name.lower(), name)
+    if not name:
+        return name
+    raw = str(name).strip()
+    lower = raw.lower()
+    if lower in _COMPETITOR_ALIASES:
+        return _COMPETITOR_ALIASES[lower]
+    paren = re.search(r"\(([^)]+)\)", raw)
+    if paren:
+        inner = _resolve_competitor_name(paren.group(1).strip())
+        if inner and inner != raw:
+            return inner
+    return raw
+
+
+def _normalize_competitor_mention(cm):
+    """Normalize competitor mention shape before validation/injection.
+
+    Claude and older data have used both {"competitor": "..."} and
+    {"name": "..."} shapes. Injection should store one canonical shape.
+    """
+    if isinstance(cm, str):
+        name = cm.strip()
+        return {
+            "competitor": _resolve_competitor_name(name),
+            "context": "",
+            "timestamp": "",
+            "mention_type": "asked_about",
+        }
+    if not isinstance(cm, dict):
+        return None
+    normalized = dict(cm)
+    name = str(normalized.get("competitor") or normalized.get("name") or "").strip()
+    normalized.pop("name", None)
+    normalized["competitor"] = _resolve_competitor_name(name)
+    if not normalized.get("mention_type"):
+        normalized["mention_type"] = "asked_about"
+    return normalized
 
 
 def _load_valid_names():
@@ -1498,15 +1631,84 @@ def validate_analysis(data, valid_categories, valid_segments, valid_competitors=
                 "suggestion": _suggest_match(segment, valid_segments),
             })
 
+    # Check PD/KB classification
+    for call_id, seg in data.get("segment_data", {}).items():
+        if not seg:
+            continue
+        pd_kb = seg.get("pd_kb", "")
+        if pd_kb and pd_kb not in VALID_PD_KB:
+            errors.append({
+                "type": "invalid_pd_kb",
+                "call_id": call_id,
+                "feature": None,
+                "value": pd_kb,
+                "suggestion": "Must be one of: PD, KB, unclear",
+            })
+        pd_kb_source = seg.get("pd_kb_source", "")
+        if pd_kb_source and pd_kb_source not in VALID_PD_KB_SOURCES:
+            errors.append({
+                "type": "invalid_pd_kb_source",
+                "call_id": call_id,
+                "feature": None,
+                "value": pd_kb_source,
+                "suggestion": "Must be one of: extracted, segment_inferred, manual",
+            })
+
     # Check competitor mentions
     if valid_competitors:
         for call_id, mentions in data.get("competitor_mentions", {}).items():
             if not isinstance(mentions, list):
                 continue
             for cm in mentions:
-                comp = cm.get("competitor", "")
+                if isinstance(cm, str):
+                    errors.append({
+                        "type": "invalid_competitor_shape",
+                        "call_id": call_id,
+                        "feature": None,
+                        "value": cm,
+                        "suggestion": 'Use {"competitor": "...", "speaker": "...", "context": "...", "mention_type": "..."}',
+                    })
+                elif isinstance(cm, dict) and not cm.get("competitor") and cm.get("name"):
+                    errors.append({
+                        "type": "invalid_competitor_shape",
+                        "call_id": call_id,
+                        "feature": None,
+                        "value": cm.get("name"),
+                        "suggestion": 'Use "competitor", not legacy "name", for extracted competitor mentions.',
+                    })
+
+                normalized = _normalize_competitor_mention(cm)
+                if not normalized:
+                    errors.append({
+                        "type": "invalid_competitor_shape",
+                        "call_id": call_id,
+                        "feature": None,
+                        "value": repr(cm),
+                        "suggestion": "Use a competitor mention object.",
+                    })
+                    continue
+
+                speaker = normalized.get("speaker", "")
+                if speaker and _is_internal_speaker(speaker):
+                    errors.append({
+                        "type": "internal_competitor_speaker",
+                        "call_id": call_id,
+                        "feature": normalized.get("competitor", "?"),
+                        "value": speaker,
+                        "suggestion": "Drop this competitor mention — internal speaker activity is not a market signal.",
+                    })
+
+                comp = normalized.get("competitor", "")
                 comp = _resolve_competitor_name(comp)
-                if comp and comp != "NEEDS_REVIEW" and comp not in valid_competitors:
+                if not comp:
+                    errors.append({
+                        "type": "invalid_competitor",
+                        "call_id": call_id,
+                        "feature": None,
+                        "value": "(missing competitor)",
+                        "suggestion": None,
+                    })
+                elif comp != "NEEDS_REVIEW" and comp not in valid_competitors:
                     errors.append({
                         "type": "invalid_competitor",
                         "call_id": call_id,
@@ -1514,7 +1716,7 @@ def validate_analysis(data, valid_categories, valid_segments, valid_competitors=
                         "value": comp,
                         "suggestion": _suggest_match(comp, valid_competitors),
                     })
-                mt = cm.get("mention_type", "")
+                mt = normalized.get("mention_type", "")
                 if mt and mt not in VALID_MENTION_TYPES:
                     errors.append({
                         "type": "invalid_mention_type",
@@ -1690,6 +1892,10 @@ def cmd_validate(args):
             print(f'  [{err["call_id"][:12]}] Invalid segment "{err["value"]}"')
         elif err["type"] == "invalid_competitor":
             print(f'  [{err["call_id"][:12]}] Invalid competitor "{err["value"]}"')
+        elif err["type"] == "invalid_competitor_shape":
+            print(f'  [{err["call_id"][:12]}] Invalid competitor mention shape for "{err["value"]}"')
+        elif err["type"] == "internal_competitor_speaker":
+            print(f'  [{err["call_id"][:12]}] Internal speaker "{err["value"]}" for competitor "{err["feature"]}"')
         elif err["type"] == "invalid_mention_type":
             print(f'  [{err["call_id"][:12]}] Invalid mention_type "{err["value"]}" for competitor "{err["feature"]}"')
         elif err["type"] == "internal_feature_type":
@@ -1698,8 +1904,15 @@ def cmd_validate(args):
             print(f'  [{err["call_id"][:12]}] Invalid type "{err["value"]}" for feature "{err["feature"]}"')
         elif err["type"] == "internal_speaker":
             print(f'  [{err["call_id"][:12]}] Internal speaker "{err["value"]}" for feature "{err["feature"]}"')
+        elif err["type"] == "invalid_pd_kb":
+            print(f'  [{err["call_id"][:12]}] Invalid pd_kb "{err["value"]}"')
+        elif err["type"] == "invalid_pd_kb_source":
+            print(f'  [{err["call_id"][:12]}] Invalid pd_kb_source "{err["value"]}"')
         if err.get("suggestion"):
-            print(f'    Did you mean: "{err["suggestion"]}"?')
+            if err["type"] in {"internal_feature_type", "internal_speaker", "invalid_competitor_shape", "internal_competitor_speaker"}:
+                print(f'    Suggestion: {err["suggestion"]}')
+            else:
+                print(f'    Did you mean: "{err["suggestion"]}"?')
         else:
             print(f'    No close match found. Use "NEEDS_REVIEW" if it doesn\'t fit.')
 
@@ -2536,6 +2749,7 @@ def cmd_validate_extraction(args):
         with open(categories_path, "r") as f:
             cats = json.load(f)
         valid_categories = {c["name"] for c in cats.get("categories", [])}
+    _, _, valid_competitors = _load_valid_names()
 
     canonical_names = _load_canonical_names()
     canonical_names_set = set(canonical_names)
@@ -2639,6 +2853,41 @@ def cmd_validate_extraction(args):
                 warnings.append(f"[{call_id[:12]}] Duplicate: '{feature}' + '{company}' appears multiple times")
             seen_combos.add(combo)
 
+    competitor_mentions_by_call = raw.get("competitor_mentions", {}) if isinstance(raw, dict) else {}
+    if isinstance(competitor_mentions_by_call, dict):
+        for call_id, mentions in competitor_mentions_by_call.items():
+            if not isinstance(mentions, list):
+                errors.append(f"[{call_id[:12]}] competitor_mentions must be a list")
+                continue
+            for cm in mentions:
+                if isinstance(cm, str):
+                    errors.append(f"[{call_id[:12]}] Legacy competitor string '{cm}'. Use a competitor mention object.")
+                elif isinstance(cm, dict) and cm.get("name") and not cm.get("competitor"):
+                    errors.append(f"[{call_id[:12]}] Competitor '{cm.get('name')}' uses legacy 'name'. Use 'competitor'.")
+
+                normalized = _normalize_competitor_mention(cm)
+                if not normalized:
+                    errors.append(f"[{call_id[:12]}] Malformed competitor mention: {cm!r}")
+                    continue
+
+                comp = normalized.get("competitor", "")
+                speaker = normalized.get("speaker", "")
+                if not speaker:
+                    errors.append(f"[{call_id[:12]}] Competitor '{comp or '?'}' is missing speaker. Attribute to the prospect speaker or drop it.")
+                elif _is_internal_speaker(speaker):
+                    errors.append(f"[{call_id[:12]}] Internal speaker '{speaker}' for competitor '{comp}'. Drop this mention.")
+
+                if valid_competitors and comp and comp != "NEEDS_REVIEW" and comp not in valid_competitors:
+                    suggestion = _suggest_match(comp, valid_competitors)
+                    hint = f' (did you mean "{suggestion}"?)' if suggestion else ""
+                    errors.append(f"[{call_id[:12]}] Invalid competitor '{comp}'{hint}")
+                elif not comp:
+                    errors.append(f"[{call_id[:12]}] Competitor mention is missing competitor name")
+
+                mention_type = normalized.get("mention_type", "")
+                if mention_type and mention_type not in VALID_MENTION_TYPES:
+                    errors.append(f"[{call_id[:12]}] Invalid competitor mention_type '{mention_type}' for '{comp}'")
+
     # Write back fixed file if --fix was used and fixes were applied
     if fix_mode and fixes_applied > 0:
         with open(args.analysis_json, 'w') as f:
@@ -2649,6 +2898,8 @@ def cmd_validate_extraction(args):
     print(f"  Calls checked: {len(features_by_call)}")
     total_feats = sum(len(f) for f in features_by_call.values() if isinstance(f, list))
     print(f"  Features checked: {total_feats}")
+    total_comps = sum(len(v) for v in competitor_mentions_by_call.values() if isinstance(v, list)) if isinstance(competitor_mentions_by_call, dict) else 0
+    print(f"  Competitor mentions checked: {total_comps}")
 
     if fix_mode and fixes_applied > 0:
         print(f"\n  FIXES APPLIED: {fixes_applied}")
@@ -2669,6 +2920,59 @@ def cmd_validate_extraction(args):
         sys.exit(1)
     else:
         print("  OK to inject.")
+
+
+def cmd_enrich_pdkb(args):
+    """Best-effort PD/KB backfill for calls analyzed before extraction support.
+
+    Uses PD_KB_MAP as a weak prior. All backfilled calls are marked
+    pd_kb_source='segment_inferred'. Idempotent: skips calls already
+    marked pd_kb_source='extracted' or 'manual'.
+    """
+    data = _extract_data_from_html(args.dashboard)
+    calls = data.get("calls", [])
+    mentions = data.get("mentions", [])
+
+    # Build call_id -> pd_kb map for mention backfill
+    call_pdkb_map = {}
+    counts = {"PD": 0, "KB": 0, "unclear": 0}
+    skipped = 0
+
+    for call in calls:
+        # Don't overwrite extracted or manual classifications
+        if call.get("pd_kb_source") in ("extracted", "manual"):
+            skipped += 1
+            call_pdkb_map[call.get("id", "")] = call.get("pd_kb", "unclear")
+            continue
+
+        seg = call.get("segment", "")
+        classification = _classify_pd_kb(seg)
+        call["pd_kb"] = classification
+        call["pd_kb_confidence"] = 0.6 if classification != "unclear" else 0.0
+        call["pd_kb_reasoning"] = f"Inferred from segment: {seg or '(none)'}"
+        call["pd_kb_source"] = "segment_inferred"
+        call_pdkb_map[call.get("id", "")] = classification
+        counts[classification] += 1
+
+    # Backfill mentions — inherit from call
+    mention_updated = 0
+    for mention in mentions:
+        if mention.get("pd_kb_source") in ("extracted", "manual"):
+            continue
+        call_id = mention.get("call_id", "")
+        mention["pd_kb"] = call_pdkb_map.get(call_id, "unclear")
+        mention["pd_kb_source"] = "segment_inferred"
+        mention_updated += 1
+
+    _write_data_to_html(args.dashboard, data)
+    output_dir = os.path.dirname(args.dashboard)
+    write_canonical_json(data, output_dir)
+
+    print(f"PD/KB backfill complete:")
+    print(f"  PD: {counts['PD']}  KB: {counts['KB']}  unclear: {counts['unclear']}")
+    print(f"  Skipped (already extracted/manual): {skipped}")
+    print(f"  Mentions backfilled: {mention_updated}")
+    print(f"  Note: these are segment_inferred. Re-analyze calls for authoritative classification.")
 
 
 def main():
@@ -2781,6 +3085,11 @@ def main():
     p_valext.add_argument("--fix", action="store_true",
                           help="Auto-fix known variant names to canonical names and write back")
 
+    # Enrich PD/KB
+    p_pdkb = sub.add_parser("enrich-pdkb",
+                              help="Backfill PD/KB classification on all calls from segment data")
+    p_pdkb.add_argument("dashboard", help="Path to dashboard HTML file")
+
     args = parser.parse_args()
     if args.command == "extract":
         cmd_extract(args)
@@ -2808,6 +3117,8 @@ def main():
         cmd_rebuild_capability_map(args)
     elif args.command == "validate-extraction":
         cmd_validate_extraction(args)
+    elif args.command == "enrich-pdkb":
+        cmd_enrich_pdkb(args)
     else:
         parser.print_help()
 

@@ -148,6 +148,14 @@ def _render_dashboard(data):
         template = f.read()
     html = template.replace('{{DATA_JSON}}', json.dumps(data))
     html = html.replace('{{PERFORMANCE_JSON}}', json.dumps(perf_data) if perf_data else 'null')
+
+    # Load win/loss data if available
+    win_loss_path = os.path.join(OUTPUT_DIR, 'win_loss.json')
+    win_loss_data = None
+    if os.path.exists(win_loss_path):
+        with open(win_loss_path, 'r') as f:
+            win_loss_data = json.load(f)
+    html = html.replace('{{WIN_LOSS_JSON}}', json.dumps(win_loss_data) if win_loss_data else 'null')
     # Try to preserve existing SEGMENT_DEFS from baked HTML
     seg_defs = '{}'
     output_path = os.path.join(OUTPUT_DIR, 'index.html')

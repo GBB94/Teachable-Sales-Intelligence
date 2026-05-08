@@ -1558,6 +1558,13 @@ body {
 .comp-overview-card.comp-noise {
     background: #12141b; border-left-style: solid; opacity: 0.82;
 }
+.comp-overview-card.comp-overview-more {
+    background: #12141b; border-left: 4px solid #2a2d3e;
+    cursor: default; opacity: 0.92;
+}
+.comp-overview-card.comp-overview-more:hover {
+    border-color: #2a2d3e; transform: none;
+}
 .comp-overview-head {
     display: flex; align-items: flex-start; justify-content: space-between;
     gap: 0.75rem; margin-bottom: 0.7rem;
@@ -1921,11 +1928,14 @@ body {
     .prospect-card-header {
         grid-template-columns: auto minmax(0, 1fr);
     }
+    .prospect-main {
+        grid-column: 2; grid-row: 1;
+    }
     .prospect-recency {
-        grid-column: 2; grid-row: 1; justify-self: start; text-align: left;
+        grid-column: 2; grid-row: 2; justify-self: start; text-align: left;
     }
     .prospect-score {
-        grid-column: 2; grid-row: 2; justify-self: start;
+        grid-column: 2; grid-row: 3; justify-self: start;
     }
 }
 
@@ -2339,6 +2349,22 @@ body {
 .tier-filter-btn.active[data-tier="workaround"] { background: #2a1f0a; border-color: #92400e; color: #fbbf24; }
 .tier-filter-btn.active[data-tier="roadmap"] { background: #0a1a2e; border-color: #1e40af; color: #60a5fa; }
 .tier-filter-btn.active[data-tier="unknown"] { background: #1a1a1e; border-color: #4b5563; color: #9ca3af; }
+
+/* PD/KB toggle */
+.pdkb-wrap { display: inline-flex; flex-direction: column; gap: 3px; margin-bottom: 0.75rem; }
+.pdkb-toggle {
+    display: inline-flex; gap: 2px;
+    background: #14161e; border-radius: 8px; padding: 2px;
+}
+.pdkb-pill {
+    background: none; border: none; border-radius: 6px;
+    color: #6b7084; font-size: 0.78rem; font-weight: 600;
+    padding: 4px 14px; cursor: pointer; font-family: inherit;
+    transition: all 0.12s;
+}
+.pdkb-pill.active { background: #1e2130; color: #fff; }
+.pdkb-pill:hover:not(.active) { color: #d0d3db; }
+.pdkb-note { font-size: 0.67rem; color: #3a3e52; font-style: italic; }
 
 /* Tier stats bar */
 .tier-stats-bar {
@@ -3416,154 +3442,585 @@ body {
 .perf-att-bar { height: 3px; background: #1e2130; border-radius: 2px; margin-top: 3px; overflow: hidden; position: relative; }
 .perf-att-bar::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: var(--fill); background: var(--color); border-radius: 2px; transition: width 0.3s; }
 
-/* ── Win/Loss static page ── */
+/* ── Win/Loss redesign ──────────────────────────────────────────── */
 .wl-page {
-    max-width: 820px;
-    margin: 0 auto;
+    max-width: 1080px;
     padding: 1.5rem 1rem 4rem;
 }
-.wl-header { margin-bottom: 2rem; }
-.wl-header h2 {
-    font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 0.35rem;
-}
-.wl-subtitle { font-size: 0.9rem; color: #6b7084; margin: 0; }
 
-.wl-section {
-    margin-bottom: 2.5rem;
-    padding-bottom: 2.5rem;
-    border-bottom: 1px solid #1e2130;
+/* Null state */
+.wl-null-state {
+    text-align: center; padding: 5rem 2rem;
+    display: flex; flex-direction: column; align-items: center; gap: 1rem;
 }
-.wl-section:last-child { border-bottom: none; }
-.wl-section--action { background: rgba(74,108,247,0.04); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(74,108,247,0.15); margin-bottom: 0; }
-
-.wl-section-label {
-    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
-    color: #4a6cf7; text-transform: uppercase; margin-bottom: 0.5rem;
-}
-.wl-section-title {
-    font-size: 1.1rem; font-weight: 700; color: #f0f1f4;
-    margin: 0 0 0.85rem;
-}
-.wl-body {
-    font-size: 0.88rem; color: #9ca0b0; line-height: 1.65;
-    margin: 0 0 0.85rem;
-}
-.wl-body strong { color: #d0d3db; }
-.wl-body em { color: #c8cad4; font-style: italic; }
-.wl-body code {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
-    background: #1e2130; padding: 1px 5px; border-radius: 4px; color: #a0c4ff;
-}
-.wl-note {
-    font-size: 0.8rem; color: #5a5e72; font-style: italic;
-    background: #14161e; padding: 0.6rem 0.85rem;
-    border-radius: 8px; border-left: 2px solid #2a2e40;
+.wl-null-icon { color: #2a2e40; margin-bottom: 0.5rem; }
+.wl-null-title { font-size: 1rem; font-weight: 700; color: #3a3e52; }
+.wl-null-body  { font-size: 0.82rem; color: #2a2e40; max-width: 380px; }
+.wl-null-cmd   {
+    display: block; background: #14161e; border: 1px solid #1e2130;
+    border-radius: 8px; padding: 0.55rem 1.1rem; font-size: 0.75rem;
+    color: #4a7cff; font-family: 'JetBrains Mono', monospace; max-width: 500px;
 }
 
-.wl-stat-row {
+/* Status banner */
+.wl-status-banner {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: rgba(240,192,64,0.07); border: 1px solid rgba(240,192,64,0.2);
+    border-radius: 8px; padding: 0.6rem 1rem;
+    font-size: 0.8rem; color: #c8a832; margin-bottom: 1.25rem; line-height: 1.4;
+}
+.wl-status-banner strong { color: #f0c040; }
+.wl-status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #f0c040; flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(240,192,64,0.5);
+    animation: wl-pulse 2s ease-in-out infinite;
+}
+@keyframes wl-pulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+
+/* Page header */
+.wl-page-header { margin-bottom: 1.5rem; }
+.wl-page-title-row {
+    display: flex; align-items: baseline; gap: 0.75rem;
+    flex-wrap: wrap; margin-bottom: 0.35rem;
+}
+.wl-page-title {
+    font-size: 1.6rem; font-weight: 700; color: #fff; margin: 0;
+}
+.wl-page-meta { font-size: 0.82rem; color: #5a5e72; }
+.wl-coverage-line { font-size: 0.78rem; color: #5a5e72; }
+.wl-coverage-main { color: #8b8fa3; font-weight: 500; }
+.wl-coverage-bits { color: #3a3e52; }
+
+/* Hero KPI cards */
+.wl-kpi-row {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.75rem;
-    margin: 1rem 0 1rem;
+    margin-bottom: 2rem;
 }
-.wl-stat-card {
-    background: #14161e; border: 1px solid #1e2130;
-    border-radius: 10px; padding: 0.9rem 1rem;
+.wl-kpi-card {
+    background: #14161e;
+    border: 1px solid #1e2130;
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s;
 }
-.wl-stat-card--warn { border-color: #3d3520; }
-.wl-stat-label {
-    font-size: 0.7rem; font-weight: 600; color: #5a5e72;
-    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.35rem;
+.wl-kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: #1e2130;
 }
-.wl-stat-main {
-    font-size: 1rem; font-weight: 700; color: #fff;
-    font-family: 'JetBrains Mono', monospace; margin-bottom: 0.2rem;
+.wl-kpi-card--won::before { background: linear-gradient(90deg, #34d399, transparent); }
+.wl-kpi-card--lost::before { background: linear-gradient(90deg, #f87171, transparent); }
+.wl-kpi-card--warn { border-color: rgba(240,192,64,0.2); }
+.wl-kpi-card--warn::before { background: linear-gradient(90deg, #f0c040, transparent); }
+.wl-kpi-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: #1e2130; color: #5a5e72;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 0.75rem;
 }
-.wl-stat-card--warn .wl-stat-main { color: #f0c040; }
-.wl-stat-sub { font-size: 0.72rem; color: #5a5e72; }
-
-.wl-coverage-table {
-    background: #14161e; border: 1px solid #1e2130;
-    border-radius: 10px; overflow: hidden; margin: 1rem 0;
-}
-.wl-cov-row {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 1rem;
-    padding: 0.55rem 1rem;
-    font-size: 0.8rem;
-    border-bottom: 1px solid #1a1d2b;
-    align-items: center;
-}
-.wl-cov-row:last-child { border-bottom: none; }
-.wl-cov-header {
+.wl-kpi-icon--won  { background: rgba(52,211,153,0.1); color: #34d399; }
+.wl-kpi-icon--lost { background: rgba(248,113,113,0.1); color: #f87171; }
+.wl-kpi-icon--warn { background: rgba(240,192,64,0.1);  color: #f0c040; }
+.wl-kpi-label {
     font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.06em; color: #5a5e72;
-    background: #0f1019;
+    letter-spacing: 0.07em; color: #5a5e72; margin-bottom: 0.3rem;
 }
-.wl-cov-row span:first-child { color: #c8cad4; }
-.wl-cov-row span:last-child  { color: #6b7084; }
-.wl-cov-pct {
-    font-family: 'JetBrains Mono', monospace; font-weight: 700;
-    font-size: 0.82rem; text-align: center; white-space: nowrap;
+.wl-kpi-value {
+    font-size: 2rem; font-weight: 800; color: #fff;
+    font-family: 'JetBrains Mono', monospace; line-height: 1; margin-bottom: 0.4rem;
 }
-.wl-green { color: #4ade80; }
-.wl-amber { color: #f0c040; }
-.wl-red   { color: #ff6b6b; }
+.wl-kpi-card--won  .wl-kpi-value { color: #34d399; }
+.wl-kpi-card--lost .wl-kpi-value { color: #f87171; }
+.wl-kpi-card--warn .wl-kpi-value { color: #f0c040; }
+.wl-kpi-sub { font-size: 0.72rem; color: #5a5e72; line-height: 1.35; }
 
-.wl-phase-badge {
-    display: inline-block; font-size: 0.65rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    padding: 3px 10px; border-radius: 20px; margin-bottom: 0.6rem;
+/* Section labels */
+.wl-section-label-new {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+    color: #4a6cf7; text-transform: uppercase; margin-bottom: 0.85rem;
 }
-.wl-phase-now    { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
-.wl-phase-medium { background: rgba(240,192,64,0.10); color: #f0c040;  border: 1px solid rgba(240,192,64,0.25); }
-.wl-phase-later  { background: rgba(255,107,107,0.10); color: #ff8a8a; border: 1px solid rgba(255,107,107,0.2); }
 
-.wl-feature-list { display: flex; flex-direction: column; gap: 0.75rem; margin: 1rem 0; }
-.wl-feature {
-    background: #14161e; border: 1px solid #1e2130;
-    border-radius: 10px; padding: 0.85rem 1rem;
+/* Sort pills */
+.wl-sort-pills { display: flex; gap: 4px; }
+.wl-sort-pill {
+    background: none; border: 1px solid #1e2130; border-radius: 5px;
+    color: #5a5e72; font-size: 0.7rem; padding: 2px 9px;
+    cursor: pointer; font-family: inherit; transition: all 0.12s;
 }
-.wl-feature--blocked { border-color: #2a1f1f; }
-.wl-feature-title {
-    font-size: 0.85rem; font-weight: 700; color: #e8eaf0;
-    margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem;
+.wl-sort-pill:hover { color: #c8cad4; border-color: #2a2e40; }
+.wl-sort-pill.active { border-color: #4a6cf7; color: #7a9cff; background: rgba(74,108,247,0.06); }
+
+/* Feature Impact Matrix */
+.wl-matrix-section {
+    background: #14161e; border: 1px solid #1e2130; border-radius: 14px;
+    padding: 1.25rem 1.5rem; margin-bottom: 1.25rem;
+}
+.wl-matrix-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
+}
+.wl-matrix-legend-row {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    font-size: 0.66rem; color: #3a3e52;
+    margin-bottom: 0.6rem; padding: 0 0.25rem;
+}
+.wl-matrix-leg-feat { text-align: center; }
+.wl-matrix-leg-won  { text-align: right; }
+
+/* Matrix rows */
+.wl-matrix-rows { display: flex; flex-direction: column; gap: 2px; }
+.wl-matrix-row {
+    display: grid; grid-template-columns: 1fr 180px 1fr;
+    gap: 0.75rem; align-items: center;
+    padding: 0.5rem 0.25rem;
+    border-radius: 8px; cursor: pointer;
+    transition: background 0.1s;
+}
+.wl-matrix-row:hover { background: rgba(255,255,255,0.025); }
+.wl-matrix-left  { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
+.wl-matrix-right { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.wl-matrix-center {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 3px; text-align: center;
+}
+
+/* Bars */
+.wl-bar-wrap { width: 100%; }
+.wl-bar-track {
+    height: 8px; background: rgba(255,255,255,0.04);
+    border-radius: 4px; overflow: hidden;
+    display: flex;
+}
+.wl-bar-wrap--lost .wl-bar-track { flex-direction: row-reverse; }
+.wl-bar-wrap--won  .wl-bar-track { flex-direction: row; }
+
+.wl-bar-seg { height: 100%; transition: width 0.35s ease; }
+.wl-bar-seg--lost-known { background: #f87171; }
+.wl-bar-seg--lost-est   { background: rgba(248,113,113,0.35); }
+.wl-bar-seg--won-known  { background: #34d399; }
+.wl-bar-seg--won-est    { background: rgba(52,211,153,0.35); }
+
+.wl-bar-meta {
+    display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem;
     flex-wrap: wrap;
 }
-.wl-feature-body { font-size: 0.8rem; color: #7a7e90; line-height: 1.55; }
-.wl-feature-body code {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.74rem;
-    background: #1a1d2b; padding: 1px 4px; border-radius: 3px; color: #a0c4ff;
+.wl-bar-meta--lost { flex-direction: row-reverse; }
+.wl-bar-meta--won  { flex-direction: row; }
+.wl-bar-val   { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 600; color: #c8cad4; }
+.wl-bar-count { font-size: 0.65rem; color: #5a5e72; }
+.wl-comp-tag  { font-size: 0.62rem; color: #4a6cf7; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.wl-feat-name  { font-size: 0.8rem; font-weight: 600; color: #d0d3db; }
+.wl-feat-badge {
+    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.04em;
+    border-radius: 3px; padding: 1px 5px; text-transform: uppercase;
 }
-.wl-blocked-badge {
-    font-size: 0.62rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.06em; padding: 2px 7px; border-radius: 4px;
-    background: rgba(255,107,107,0.12); color: #ff8a8a;
-    border: 1px solid rgba(255,107,107,0.2);
+.wl-demand-chip {
+    font-size: 0.6rem; font-weight: 700; color: #8b8fa3;
+    border: 1px solid #242838; border-radius: 999px;
+    padding: 1px 7px; background: #11131b;
+}
+.wl-row-action {
+    font-size: 0.58rem; font-weight: 800; color: #7a9cff;
+    border: 1px solid rgba(74,108,247,0.22);
+    border-radius: 999px; padding: 1px 7px;
+    background: rgba(74,108,247,0.06);
+    opacity: 0.72; transition: opacity 0.12s, border-color 0.12s;
+}
+.wl-matrix-row:hover .wl-row-action,
+.wl-matrix-row:focus .wl-row-action {
+    opacity: 1; border-color: rgba(74,108,247,0.45);
+}
+.wl-badge-gap      { background: rgba(248,113,113,0.12); color: #f87171; }
+.wl-badge-strength { background: rgba(52,211,153,0.12);  color: #34d399; }
+.wl-badge-stakes   { background: rgba(251,191,36,0.12);   color: #fbbf24; }
+.wl-badge-watch    { background: rgba(100,116,139,0.12);  color: #64748b; }
+
+/* Matrix empty state */
+.wl-matrix-empty {
+    padding: 2rem 1rem; text-align: center;
+    position: relative; overflow: hidden;
+}
+.wl-matrix-empty-bars {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 1.5rem;
+}
+.wl-dummy-bar {
+    height: 8px; background: #c8cad4; border-radius: 4px;
+    margin: 0 auto;
+}
+.wl-matrix-empty-text { font-size: 0.82rem; color: #5a5e72; max-width: 420px; margin: 0 auto; }
+
+/* Estimated marker */
+.wl-est-marker { font-size: 0.75em; color: #f0c040; margin-right: 1px; }
+.wl-est-dim { color: #3a3e52; font-size: 0.72rem; }
+
+/* Mid row */
+.wl-mid-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem; margin-bottom: 1.25rem;
+}
+.wl-mid-row--single { grid-template-columns: 1fr; }
+.wl-mid-card {
+    background: #14161e; border: 1px solid #1e2130;
+    border-radius: 14px; padding: 1.25rem 1.5rem;
 }
 
-.wl-action-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
-.wl-action {
-    display: flex; gap: 1rem; align-items: flex-start;
+/* Clickable pie charts */
+.wl-donut-wrap {
+    display: flex; flex-direction: column; gap: 0.8rem;
+    align-items: center; justify-content: center; margin-top: 0.45rem;
 }
-.wl-action-number {
-    flex-shrink: 0;
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: rgba(74,108,247,0.15);
-    border: 1px solid rgba(74,108,247,0.3);
-    color: #7a9cff;
-    font-size: 0.8rem; font-weight: 700;
+.wl-donut {
+    width: 154px; height: 154px; flex-shrink: 0;
+    overflow: visible;
+    filter: drop-shadow(0 14px 26px rgba(0,0,0,0.22));
+}
+.wl-donut-seg {
+    cursor: pointer;
+    transition: opacity 0.14s, stroke-width 0.14s, filter 0.14s;
+}
+.wl-donut-seg:hover,
+.wl-donut-seg:focus {
+    opacity: 0.86;
+    stroke-width: 32;
+    outline: none;
+    filter: brightness(1.12);
+}
+.wl-donut-num {
+    font-size: 18px; font-weight: 800; fill: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}
+.wl-donut-lbl { font-size: 7.5px; fill: #8b8fa3; text-transform: uppercase; letter-spacing: 0.06em; }
+.wl-donut-legend { display: flex; flex-direction: column; gap: 0.35rem; width: 100%; }
+.wl-donut-row {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center; gap: 0.5rem; font-size: 0.78rem;
+    background: none; border: 1px solid transparent; border-radius: 6px;
+    padding: 5px 6px; color: inherit; cursor: pointer; font-family: inherit;
+    text-align: left; width: 100%; transition: background 0.12s, border-color 0.12s;
+}
+.wl-donut-row:hover,
+.wl-donut-row:focus {
+    background: rgba(255,255,255,0.025);
+    border-color: #1e2130;
+    outline: none;
+}
+.wl-donut-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.wl-donut-type  { flex: 1; color: #c8cad4; }
+.wl-donut-count { color: #fff; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; }
+.wl-donut-pct   { color: #5a5e72; font-size: 0.7rem; min-width: 2.5rem; text-align: right; }
+.wl-pie-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 1.25rem;
+}
+.wl-pie-card {
+    background:
+        radial-gradient(circle at 50% 35%, rgba(255,255,255,0.035), transparent 42%),
+        linear-gradient(180deg, #171a25 0%, #11131b 100%);
+    border: 1px solid #242838;
+    border-radius: 14px; padding: 1.05rem 1.15rem 1rem;
+    min-width: 0;
+    box-shadow: 0 18px 44px rgba(0,0,0,0.18);
+}
+.wl-pie-card .wl-section-label-new { text-align: center; margin-bottom: 0.25rem; }
+.wl-pie-card .wl-donut-wrap { gap: 0.75rem; }
+.wl-pie-card .wl-donut { width: 164px; height: 164px; }
+.wl-feature-cost-card {
+    background:
+        radial-gradient(circle at 24% 45%, rgba(248,113,113,0.12), transparent 36%),
+        radial-gradient(circle at 78% 20%, rgba(74,108,247,0.09), transparent 30%),
+        linear-gradient(180deg, #171a25 0%, #11131b 100%);
+    border: 1px solid #2a2f42;
+    border-radius: 16px;
+    padding: 1.35rem 1.55rem;
+    margin-bottom: 0.9rem;
+    box-shadow: 0 22px 54px rgba(0,0,0,0.22);
+}
+.wl-feature-cost-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; margin-bottom: 0.75rem;
+}
+.wl-feature-cost-sub {
+    font-size: 0.72rem; color: #5a5e72; font-family: 'JetBrains Mono', monospace;
+}
+.wl-feature-cost-grid {
+    display: grid; grid-template-columns: minmax(240px, 0.9fr) minmax(320px, 1.15fr);
+    gap: 1.4rem; align-items: center;
+}
+.wl-feature-cost-chart {
+    display: flex; justify-content: center; align-items: center;
+}
+.wl-feature-cost-donut {
+    width: min(310px, 100%); height: 310px;
+    filter: drop-shadow(0 22px 42px rgba(0,0,0,0.32));
+}
+.wl-feature-cost-card .wl-donut-num { font-size: 17px; }
+.wl-feature-cost-card .wl-donut-lbl { font-size: 7px; }
+.wl-feature-cost-card .wl-donut-legend { gap: 0.42rem; }
+.wl-feature-cost-card .wl-donut-row {
+    padding: 7px 8px; border-color: rgba(255,255,255,0.02);
+    background: rgba(12,14,21,0.24);
+}
+.wl-feature-cost-card .wl-donut-type { font-size: 0.82rem; font-weight: 700; }
+.wl-feature-cost-card .wl-donut-count { font-size: 0.82rem; }
+.wl-feature-cost-card .wl-donut-pct { font-size: 0.73rem; }
+.wl-matrix-footer {
     display: flex; align-items: center; justify-content: center;
+    gap: 0.75rem; padding-top: 0.9rem; flex-wrap: wrap;
 }
-.wl-action-title {
-    font-size: 0.85rem; font-weight: 700; color: #e8eaf0; margin-bottom: 0.3rem;
+.wl-matrix-count {
+    font-size: 0.7rem; color: #5a5e72;
 }
-.wl-action-body { font-size: 0.8rem; color: #7a7e90; line-height: 1.55; }
-.wl-action-body code {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.74rem;
-    background: #1a1d2b; padding: 1px 4px; border-radius: 3px; color: #a0c4ff;
+.wl-matrix-more-btn {
+    background: #14161e; border: 1px solid #1e2130; border-radius: 7px;
+    color: #7a9cff; cursor: pointer; font-family: inherit;
+    font-size: 0.75rem; font-weight: 700; padding: 0.45rem 0.9rem;
+    transition: border-color 0.12s, background 0.12s;
+}
+.wl-matrix-more-btn:hover { background: rgba(74,108,247,0.06); border-color: rgba(74,108,247,0.45); }
+
+/* Crosswalk */
+.wl-crosswalk-list { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.5rem; }
+.wl-crosswalk-row  {
+    padding: 0.45rem 0.4rem 0.7rem; margin: 0 -0.4rem;
+    border-bottom: 1px solid #1a1d2b; border-radius: 8px;
+    cursor: pointer; transition: background 0.12s, border-color 0.12s;
+}
+.wl-crosswalk-row:hover,
+.wl-crosswalk-row:focus {
+    background: rgba(74,108,247,0.045);
+    outline: none;
+}
+.wl-crosswalk-row:last-child { border-bottom: none; padding-bottom: 0; }
+.wl-crosswalk-top  { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.3rem; }
+.wl-crosswalk-name { font-size: 0.82rem; font-weight: 700; color: #d0d3db; }
+.wl-crosswalk-meta { font-size: 0.68rem; color: #5a5e72; }
+.wl-crosswalk-feats { display: flex; flex-wrap: wrap; gap: 4px; }
+.wl-crosswalk-feat-tag {
+    font-size: 0.65rem; padding: 1px 6px; border-radius: 4px;
+    background: rgba(74,108,247,0.08); color: #7a9cff;
+    border: 1px solid rgba(74,108,247,0.15);
+    cursor: pointer; font-family: inherit;
+}
+.wl-crosswalk-feat-tag:hover,
+.wl-crosswalk-feat-tag:focus { border-color: rgba(74,108,247,0.45); outline: none; }
+
+/* Pricing */
+.wl-pricing-section {
+    background: #14161e; border: 1px solid #1e2130;
+    border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem;
+}
+.wl-mid-row > .wl-pricing-section { margin-bottom: 0; }
+.wl-pricing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; }
+.wl-pricing-card {
+    background: #1a1d2b; border: 1px solid #1e2130;
+    border-radius: 10px; padding: 0.85rem 1rem;
+    cursor: pointer; transition: background 0.12s, border-color 0.12s;
+}
+.wl-pricing-card:hover,
+.wl-pricing-card:focus {
+    background: #1d2130;
+    border-color: rgba(240,192,64,0.28);
+    outline: none;
+}
+.wl-pricing-reason { font-size: 0.82rem; font-weight: 600; color: #c8cad4; margin-bottom: 0.4rem; }
+.wl-pricing-chips  { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0.5rem; }
+.wl-chip-won  { font-size: 0.65rem; font-weight: 700; padding: 1px 7px; border-radius: 4px; background: rgba(52,211,153,0.12); color: #34d399; }
+.wl-chip-lost { font-size: 0.65rem; font-weight: 700; padding: 1px 7px; border-radius: 4px; background: rgba(248,113,113,0.12); color: #f87171; }
+.wl-chip-val  { font-size: 0.65rem; font-weight: 600; padding: 1px 7px; border-radius: 4px; background: #14161e; color: #8b8fa3; border: 1px solid #1e2130; font-family: 'JetBrains Mono', monospace; }
+.wl-pricing-quote { display: flex; align-items: flex-start; gap: 0.4rem; margin-top: 4px; }
+.wl-pq-outcome {
+    font-size: 0.6rem; font-weight: 800; width: 14px; height: 14px;
+    border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+}
+.wl-pq-won  { background: rgba(52,211,153,0.15); color: #34d399; }
+.wl-pq-lost { background: rgba(248,113,113,0.15); color: #f87171; }
+.wl-pq-text { font-size: 0.72rem; color: #6b7084; font-style: italic; line-height: 1.4; }
+
+/* Deal evidence */
+.wl-evidence-section {
+    border: 1px solid #1e2130; border-radius: 14px;
+    overflow: hidden; margin-bottom: 1.25rem;
+}
+.wl-evidence-toggle {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    background: #14161e; border: none; padding: 0.9rem 1.5rem;
+    cursor: pointer; font-family: inherit; transition: background 0.12s;
+}
+.wl-evidence-toggle:hover { background: #1a1d2b; }
+.wl-evidence-chevron { font-size: 0.65rem; color: #5a5e72; transition: transform 0.2s; }
+.wl-deal-tabs {
+    display: flex; gap: 4px; padding: 0.6rem 1.5rem 0;
+    background: #14161e; border-bottom: 1px solid #1a1d2b;
+}
+.wl-deal-tab {
+    font-size: 0.75rem; font-weight: 600; padding: 5px 14px;
+    border: 1px solid #4a6cf7; border-radius: 6px;
+    background: rgba(74,108,247,0.08); color: #7a9cff;
+    cursor: pointer; font-family: inherit;
+}
+.wl-deal-tab--inactive {
+    background: none; border-color: #1e2130; color: #5a5e72;
+}
+.wl-evidence-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.75rem; padding: 0.55rem 1.5rem;
+    background: #14161e; border-bottom: 1px solid #1a1d2b;
+}
+.wl-evidence-mode-label {
+    font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em;
+    color: #4a5568; text-transform: uppercase;
+}
+.wl-evidence-mode-pills { display: flex; gap: 4px; }
+.wl-evidence-mode-pill {
+    background: none; border: 1px solid transparent; border-radius: 6px;
+    color: #5a5e72; cursor: pointer; font-family: inherit;
+    font-size: 0.7rem; font-weight: 700; padding: 0.28rem 0.65rem;
+    transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+.wl-evidence-mode-pill:hover { color: #c8cad4; border-color: #2a2e40; }
+.wl-evidence-mode-pill.active {
+    color: #7a9cff; border-color: rgba(74,108,247,0.36);
+    background: rgba(74,108,247,0.08);
+}
+.wl-deal-list { background: #14161e; }
+.wl-source-strip {
+    background: #10131c;
+    border-bottom: 1px solid #1a1d2b;
+    padding: 0.85rem 1.5rem 0.95rem;
+}
+.wl-source-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 0.75rem; margin-bottom: 0.65rem;
+}
+.wl-source-title {
+    font-size: 0.7rem; font-weight: 800; color: #8b8fa3;
+    text-transform: uppercase; letter-spacing: 0.07em;
+}
+.wl-source-count {
+    font-size: 0.68rem; color: #3a3e52; font-family: 'JetBrains Mono', monospace;
+}
+.wl-source-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0.65rem;
+}
+.wl-source-strip--mentions .wl-source-grid { grid-template-columns: 1fr; }
+.wl-source-card {
+    background: #14161e; border: 1px solid #1e2130;
+    border-radius: 9px; padding: 0.75rem 0.85rem;
+}
+.wl-source-card--mention {
+    background: rgba(20,22,30,0.72);
+    border-color: rgba(255,255,255,0.06);
+}
+.wl-source-card-head {
+    display: flex; justify-content: space-between; gap: 0.75rem;
+    margin-bottom: 0.45rem; color: #5a5e72; font-size: 0.68rem;
+}
+.wl-source-deal {
+    color: #d0d3db; font-weight: 700; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+}
+.wl-source-quote {
+    color: #c8cad4; font-size: 0.8rem; line-height: 1.45;
+    font-style: italic;
+}
+.wl-source-meta {
+    display: flex; flex-wrap: wrap; gap: 0.35rem;
+    margin-top: 0.55rem;
+}
+.wl-source-pill {
+    font-size: 0.63rem; font-weight: 700; border-radius: 4px;
+    padding: 1px 6px; background: #1a1d2b; color: #6b7084;
+    border: 1px solid #242838;
+}
+
+.wl-deal-item { border-bottom: 1px solid #16192a; }
+.wl-deal-item:last-child { border-bottom: none; }
+.wl-deal-summary {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.65rem 1.5rem; cursor: pointer; gap: 1rem;
+    list-style: none; transition: background 0.1s;
+}
+.wl-deal-summary::-webkit-details-marker { display: none; }
+.wl-deal-summary:hover { background: rgba(255,255,255,0.02); }
+.wl-deal-summary-left  { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.wl-deal-summary-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; font-size: 0.75rem; color: #5a5e72; font-family: 'JetBrains Mono', monospace; }
+
+.wl-deal-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.wl-deal-dot--won  { background: #34d399; }
+.wl-deal-dot--lost { background: #f87171; }
+.wl-deal-name { font-size: 0.82rem; font-weight: 600; color: #d0d3db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 380px; }
+.wl-outcome-tag {
+    font-size: 0.62rem; background: #1a1d2b; color: #5a5e72;
+    border-radius: 4px; padding: 1px 5px; white-space: nowrap; flex-shrink: 0;
+    border: 1px solid #1e2130;
+}
+.wl-deal-rep  { color: #4a5568; }
+.wl-deal-date { color: #3a3e52; }
+
+.wl-deal-body {
+    padding: 0.5rem 1.5rem 0.75rem 2.5rem;
+    background: #0e1017;
+    border-top: 1px solid #16192a;
+    display: flex; flex-direction: column; gap: 0.35rem;
+}
+.wl-deal-reason { font-size: 0.78rem; padding: 0.3rem 0.6rem; border-radius: 6px; }
+.wl-deal-reason--won  { background: rgba(52,211,153,0.06); color: #34d399; }
+.wl-deal-reason--lost { background: rgba(248,113,113,0.06); color: #f87171; }
+.wl-deal-feat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; padding: 2px 0; flex-wrap: wrap; }
+.wl-deal-feat-name { font-weight: 600; color: #8b8fa3; }
+.wl-deal-feat-sent { font-size: 0.65rem; border-radius: 3px; padding: 1px 5px; }
+.wl-sent-positive { background: rgba(52,211,153,0.1); color: #34d399; }
+.wl-sent-negative { background: rgba(248,113,113,0.1); color: #f87171; }
+.wl-sent-neutral  { background: rgba(100,116,139,0.1); color: #64748b; }
+.wl-deal-quote-text { font-size: 0.72rem; color: #6b7084; font-style: italic; }
+.wl-deal-pricing {
+    display: flex; align-items: flex-start; gap: 0.4rem;
+    font-size: 0.75rem; color: #c8a832;
+}
+.wl-deal-pricing-icon { flex-shrink: 0; }
+.wl-deal-comps { font-size: 0.72rem; color: #4a6cf7; }
+.wl-deal-hs-reason { font-size: 0.7rem; color: #5a5e72; font-style: italic; }
+
+/* Footnotes */
+.wl-footnotes {
+    font-size: 0.7rem; color: #3a3e52; line-height: 1.5;
+    display: flex; flex-direction: column; gap: 0.25rem;
+    margin-top: 0.5rem; padding-top: 1rem;
+    border-top: 1px solid #16192a;
+}
+.wl-legend-swatch {
+    display: inline-block; width: 10px; height: 8px;
+    border-radius: 2px; vertical-align: middle; margin: 0 2px;
+}
+.wl-legend-swatch--known { background: #f87171; }
+.wl-legend-swatch--est   { background: rgba(240,192,64,0.35); border: 1px solid rgba(240,192,64,0.2); }
+
+/* Responsive */
+@media (max-width: 780px) {
+    .wl-kpi-row  { grid-template-columns: 1fr 1fr; }
+    .wl-pie-grid { grid-template-columns: 1fr; }
+    .wl-feature-cost-grid { grid-template-columns: 1fr; }
+    .wl-feature-cost-head { flex-direction: column; gap: 0.25rem; }
+    .wl-feature-cost-donut { height: 250px; }
+    .wl-mid-row  { grid-template-columns: 1fr; }
+    .wl-matrix-row { grid-template-columns: 1fr; }
+    .wl-matrix-legend-row { display: none; }
+}
+@media (max-width: 500px) {
+    .wl-kpi-row  { grid-template-columns: 1fr; }
+    .wl-kpi-value { font-size: 1.6rem; }
 }
 
 /* Overview mid row */
@@ -3847,16 +4304,17 @@ body {
         <div class="pw-hdr">Password required</div>
         <div class="pw-sub" id="pw-sub">This action requires authentication.</div>
         <div class="pw-row">
-            <input type="password" class="pw-input" id="pw-input" placeholder="Enter password" autocomplete="off">
+            <input type="password" class="pw-input" id="action-pw-input" placeholder="Enter password" autocomplete="off">
             <button class="pw-confirm" id="pw-confirm">Confirm</button>
         </div>
-        <div class="pw-error" id="pw-error"></div>
+        <div class="pw-error" id="action-pw-error"></div>
     </div>
 </div>
 
 <script>
 let DATA = {{DATA_JSON}};
 let PERF = {{PERFORMANCE_JSON}};
+let WIN_LOSS = {{WIN_LOSS_JSON}};
 const REFRESH_SECRET = 'si-refresh-2026';
 let _perfActivePeriod = '30d';
 let _perfActiveView = 'overview';
@@ -3957,8 +4415,8 @@ function checkActionPassword(actionLabel) {
         sub.textContent = actionLabel
             ? actionLabel + ' requires authentication to continue.'
             : 'This action requires authentication.';
-        const input = document.getElementById('pw-input');
-        const error = document.getElementById('pw-error');
+        const input = document.getElementById('action-pw-input');
+        const error = document.getElementById('action-pw-error');
         input.value = '';
         error.textContent = '';
         input.classList.remove('pw-input-error');
@@ -3968,8 +4426,8 @@ function checkActionPassword(actionLabel) {
     });
 }
 function _pwSubmit() {
-    const input = document.getElementById('pw-input');
-    const error = document.getElementById('pw-error');
+    const input = document.getElementById('action-pw-input');
+    const error = document.getElementById('action-pw-error');
     if (input.value === ACTION_PASSWORD) {
         document.getElementById('pw-overlay').classList.remove('open');
         if (_pwResolve) { _pwResolve(true); _pwResolve = null; }
@@ -3988,7 +4446,7 @@ function _pwCancel() {
 }
 document.getElementById('pw-overlay').addEventListener('click', function(e) { if (e.target === this) _pwCancel(); });
 document.getElementById('pw-confirm').addEventListener('click', _pwSubmit);
-document.getElementById('pw-input').addEventListener('keydown', function(e) {
+document.getElementById('action-pw-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') _pwSubmit();
     else if (e.key === 'Escape') _pwCancel();
     else this.classList.remove('pw-input-error');
@@ -4680,8 +5138,37 @@ let excludedCalls = new Set();
 let excludedCompetitors = new Set((DATA.excluded_competitors || []).map(n => n.toLowerCase()));
 let activeDateRange = 'all';
 let showExcludedOnly = false;
+let _pdkbFilter = 'all'; // 'all' | 'PD' | 'KB'
 let toastStack = [];
 let toastIdCounter = 0;
+
+function _buildPdKbToggle() {
+    const calls = DATA.calls || [];
+    const classified = calls.filter(c => c.pd_kb && c.pd_kb !== 'unclear');
+    const inferred = classified.filter(c => c.pd_kb_source === 'segment_inferred').length;
+    const total = classified.length;
+    const showNote = total > 0 && (inferred / total) > 0.3;
+
+    const noteHtml = showNote
+        ? '<span class="pdkb-note">Some classifications are inferred from segment</span>'
+        : '';
+
+    return '<div class="pdkb-wrap">' +
+        '<div class="pdkb-toggle" role="group" aria-label="Persona filter">' +
+        ['all','PD','KB'].map(v =>
+            '<button class="pdkb-pill' + (_pdkbFilter === v ? ' active' : '') + '"' +
+            ' onclick="_setPdKbFilter(\'' + v + '\')"' +
+            ' aria-pressed="' + (_pdkbFilter === v) + '">' +
+            (v === 'all' ? 'All' : v) + '</button>'
+        ).join('') +
+        '</div>' + noteHtml + '</div>';
+}
+
+function _setPdKbFilter(val) {
+    _pdkbFilter = val;
+    if (currentTab === 'features') buildFeatures();
+    else if (currentTab === 'calls') buildCalls();
+}
 
 // Parse hash: #calls&exclude=id1,id2 or #features&exclude=id1,id2
 function parseHash() {
@@ -4693,7 +5180,7 @@ function parseHash() {
             p.slice(8).split(',').filter(Boolean).forEach(id => excludedCalls.add(id));
         } else if (p.startsWith('range=')) {
             activeDateRange = p.slice(6);
-        } else if (['features', 'calls', 'personas', 'competitors', 'reports', 'prospecting', 'performance'].includes(p)) {
+        } else if (['features', 'calls', 'personas', 'competitors', 'reports', 'prospecting', 'performance', 'winloss'].includes(p)) {
             tab = p;
         } else if (['overview', 'pipeline', 'reps', 'activity'].includes(p)) {
             _perfActiveView = p;
@@ -5039,11 +5526,58 @@ function isTeachableInternal(name) {
     return low === 'teachable' || low === 'unknown' || low === '';
 }
 
+const INTERNAL_PERSON_NAMES = new Set([
+    'zach mccall', 'zach',
+    'kevin codde', 'kevin',
+    'jerome olaloye', 'jerome',
+    'anna damico',
+    'ben vincent',
+    'lennie zhu', 'lennie',
+    'sarah dean',
+    'jonathan corvin-blackburn', 'jonathan corvin blackburn',
+    'chacier warhurst', 'chacier',
+    'carlos heber',
+]);
+
+function isInternalPersonName(name) {
+    if (!name) return false;
+    const low = String(name).toLowerCase().trim();
+    if (low.includes('(teachable)') || low.includes('teachable.com')) return true;
+    const bare = low.split('(')[0].trim();
+    return INTERNAL_PERSON_NAMES.has(bare);
+}
+
+function isInternalContact(ct) {
+    if (!ct) return true;
+    const title = String(ct.title || '').toLowerCase();
+    const email = String(ct.email || '').toLowerCase();
+    return isInternalPersonName(ct.name) || title.includes('teachable') || email.endsWith('@teachable.com');
+}
+
 function companyFromTitle(title) {
     if (!title) return '';
-    const chevron = title.match(/^(.+?)\s*<>\s*Teachable/i) || title.match(/^Teachable\s*<>\s*(.+)/i);
+    const chevron = title.match(/^(.+?)\s*<>\s*Teachable/i) || title.match(/^Teachable(?:\s*:\s*[^<>]+)?\s*<>\s*(.+)/i);
     if (chevron) return chevron[1].split(':')[0].trim();
     return '';
+}
+
+function companyFromCleanTitle(title) {
+    if (!title) return '';
+    let cleaned = title.trim();
+    const chevron = companyFromTitle(cleaned);
+    if (chevron && !isTeachableInternal(chevron)) return chevron;
+    const generic = /^(connect|reconnect|meeting|30[- ]minute|teachable followup|teachable reconnect|teachable learning paths|teachable:)/i;
+    if (generic.test(cleaned)) return '';
+    INTERNAL_PERSON_NAMES.forEach(name => {
+        if (!name.includes(' ')) return;
+        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        cleaned = cleaned.replace(new RegExp('\\s+(and|&)\\s+' + escaped + '\\s*$', 'i'), '');
+        cleaned = cleaned.replace(new RegExp('\\s*,\\s*' + escaped + '\\s*$', 'i'), '');
+    });
+    cleaned = cleaned.trim();
+    if (!cleaned || cleaned === title.trim()) return '';
+    if (/^[a-z]{2,5}-[a-z]{2,5}-[a-z]{2,5}$/i.test(cleaned)) return '';
+    return isTeachableInternal(cleaned) || isInternalPersonName(cleaned) ? '' : cleaned;
 }
 
 function companyFromAttendees(attendees) {
@@ -5663,8 +6197,10 @@ function buildFeatures() {
         fv.parentNode.insertBefore(banner, fv);
     }
 
-    // Group mentions by feature
-    const mentions = activeMentions();
+    // Group mentions by feature (PD/KB filter applied inline, not via activeMentions)
+    const mentions = (activeMentions()).filter(m =>
+        _pdkbFilter === 'all' || m.pd_kb === _pdkbFilter
+    );
     const featureGroups = {};
     mentions.forEach(m => {
         if (!featureGroups[m.keyword]) featureGroups[m.keyword] = { mentions: [], category: m.category || 'Other' };
@@ -5738,6 +6274,9 @@ function buildFeatures() {
 
     // === Build scaffold HTML (KPI bar, filters, table skeleton) ===
     let html = '<div class="feat-summary-bar" id="feat-kpi-bar"></div>';
+
+    // PD/KB toggle
+    html += _buildPdKbToggle();
 
     // Tier filter buttons
     if (Object.keys(CAPABILITY_MAP).length > 0) {
@@ -5901,17 +6440,19 @@ function buildCalls() {
         });
         callList = DATA.calls
             .filter(c => excludedCalls.has(c.id) && dateIds.has(c.id) && (allByCall[c.id] || c.pending_analysis))
+            .filter(c => _pdkbFilter === 'all' || c.pd_kb === _pdkbFilter)
             .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
         // Use allByCall for card rendering in excluded mode
         Object.assign(byCall, allByCall);
     } else {
         callList = DATA.calls
             .filter(c => (byCall[c.id] || c.pending_analysis) && dateIds.has(c.id) && !excludedCalls.has(c.id))
+            .filter(c => _pdkbFilter === 'all' || c.pd_kb === _pdkbFilter)
             .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     }
 
     const CALLS_PAGE_SIZE = 15;
-    let html = '';
+    let html = _buildPdKbToggle();
     callList.forEach(c => {
         const callMentions = (byCall[c.id] || []).sort((a, b) => (a.ts_sec || 0) - (b.ts_sec || 0));
         const features = [...new Set(callMentions.map(m => m.keyword))];
@@ -7651,6 +8192,47 @@ function segColor(segName) {
     return SEG_COLORS[(segName || '').toLowerCase()] || '#4a7cff';
 }
 
+function personaSegment(call) {
+    return call && call.segment ? call.segment : 'NEEDS_REVIEW';
+}
+
+function getPersonaCompanyCandidates(call, callMentions, includeUnidentified) {
+    const names = [];
+    const seen = new Set();
+    function add(name) {
+        const clean = String(name || '').trim();
+        if (!clean || isTeachableInternal(clean) || isInternalPersonName(clean)) return;
+        const key = clean.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        names.push(clean);
+    }
+
+    (callMentions || []).forEach(m => add(m._co));
+    if (names.length > 0) return names;
+
+    const md = call && call.marketing_data ? call.marketing_data : null;
+    if (md) add(md.company);
+    if (names.length > 0) return names;
+
+    add(companyFromTitle(call ? call.title : ''));
+    if (names.length > 0) return names;
+    add(companyFromCleanTitle(call ? call.title : ''));
+    if (names.length > 0) return names;
+    add(companyFromAttendees(call ? call.attendees : ''));
+    if (names.length > 0) return names;
+
+    if (names.length === 0 && md && Array.isArray(md.contacts)) {
+        const contact = md.contacts.find(ct => !isInternalContact(ct) && ct.name);
+        if (contact) add(contact.name);
+    }
+
+    if (names.length === 0 && includeUnidentified && call && call.id) {
+        add('Unidentified prospect ' + call.id.slice(0, 6));
+    }
+    return names;
+}
+
 function buildPersonas() {
     const callMap = {};
     DATA.calls.forEach(c => { callMap[c.id] = c; });
@@ -7666,31 +8248,35 @@ function buildPersonas() {
 
     // Tag mentions with company
     mentions.forEach(m => { m._co = m._co || getCompany(m, callMap) || reportGetCompany(m, callMap) || ''; });
+    const mentionsByCall = {};
+    mentions.forEach(m => {
+        if (!mentionsByCall[m.call_id]) mentionsByCall[m.call_id] = [];
+        mentionsByCall[m.call_id].push(m);
+    });
 
-    // Active date-filtered + non-excluded calls with segments
+    // Active date-filtered + non-excluded calls. Unsegmented prospect calls are
+    // shown under Unclassified instead of silently disappearing.
     const dateIds = activeCallIds();
     const noCoFilter = activeCompanyFilters.size === 0;
     const activeCalls = DATA.calls.filter(c =>
-        c.segment && !excludedCalls.has(c.id) && dateIds.has(c.id)
+        !excludedCalls.has(c.id) &&
+        dateIds.has(c.id) &&
+        (c.segment || getPersonaCompanyCandidates(c, mentionsByCall[c.id] || [], false).length > 0)
     );
 
     // Apply segment filter
     const noSegFilter = activeSegmentFilters.size === 0;
     let filteredCalls = activeCalls.filter(c =>
-        noSegFilter || activeSegmentFilters.has(c.segment.toLowerCase())
+        noSegFilter || activeSegmentFilters.has(personaSegment(c).toLowerCase())
     );
 
     // Fix A: Apply company filter to filteredCalls before building overview cards
     if (!noCoFilter) {
         filteredCalls = filteredCalls.filter(c => {
             // Check if call has mentions from any active company
-            const callMentions = mentions.filter(m => m.call_id === c.id);
-            const cos = new Set(callMentions.map(m => m._co).filter(Boolean));
-            if (cos.size === 0) {
-                const chevron = (c.title || '').match(/^(.+?)\s*<>\s*Teachable/i) || (c.title || '').match(/^Teachable\s*<>\s*(.+)/i);
-                if (chevron) cos.add(chevron[1].split(':')[0].trim());
-            }
-            return [...cos].some(co => activeCompanyFilters.has(co.toLowerCase()));
+            const callMentions = mentionsByCall[c.id] || [];
+            const cos = getPersonaCompanyCandidates(c, callMentions, false);
+            return cos.some(co => activeCompanyFilters.has(co.toLowerCase()));
         });
     }
 
@@ -7703,7 +8289,7 @@ function buildPersonas() {
     // Group calls by segment
     const segGroups = {};
     filteredCalls.forEach(c => {
-        const seg = c.segment;
+        const seg = personaSegment(c);
         if (!segGroups[seg]) segGroups[seg] = { calls: [], companies: new Set(), features: {} };
         segGroups[seg].calls.push(c);
     });
@@ -7719,10 +8305,10 @@ function buildPersonas() {
 
     filteredMentions.forEach(m => {
         const call = callMap[m.call_id];
-        if (!call || !call.segment) return;
-        const seg = call.segment;
+        if (!call) return;
+        const seg = personaSegment(call);
         if (!segGroups[seg]) return;
-        const co = m._co || 'Unknown';
+        const co = m._co || getPersonaCompanyCandidates(call, [m], true)[0] || 'Unknown';
         segGroups[seg].companies.add(co);
         if (!segGroups[seg].features[m.keyword]) segGroups[seg].features[m.keyword] = 0;
         segGroups[seg].features[m.keyword]++;
@@ -7730,14 +8316,9 @@ function buildPersonas() {
 
     // Also add companies from calls (even if no feature mentions)
     filteredCalls.forEach(c => {
-        const seg = c.segment;
+        const seg = personaSegment(c);
         const callMentions = filteredMentions.filter(m => m.call_id === c.id);
-        const cos = new Set(callMentions.map(m => m._co).filter(Boolean));
-        if (cos.size === 0 && noCoFilter) {
-            // Fallback: extract from call title (only when no company filter active)
-            const chevron = (c.title || '').match(/^(.+?)\s*<>\s*Teachable/i) || (c.title || '').match(/^Teachable\s*<>\s*(.+)/i);
-            if (chevron) cos.add(chevron[1].split(':')[0].trim());
-        }
+        const cos = getPersonaCompanyCandidates(c, callMentions, noCoFilter);
         cos.forEach(co => {
             if (noCoFilter || activeCompanyFilters.has(co.toLowerCase())) {
                 segGroups[seg].companies.add(co);
@@ -7851,15 +8432,30 @@ function buildPersonas() {
     }
 
     // ========== SECTION 2: Segment Comparison Table ==========
-    // Collect all features with 2+ total mentions across ALL segments
+    // Collect features across segments. Default to account incidence so one
+    // chatty call does not dominate the persona comparison.
     const allFeatureCounts = {};
+    const segNames = sortedSegs.map(([seg]) => seg);
+    function segmentFeatureCount(data, seg) {
+        const bucket = data.bySegment[seg];
+        if (!bucket) return 0;
+        if (_personaCompareMetric === 'mentions') return bucket.mentions;
+        return bucket.accounts.size;
+    }
     filteredMentions.forEach(m => {
         const call = callMap[m.call_id];
-        if (!call || !call.segment) return;
+        if (!call) return;
+        const seg = personaSegment(call);
         if (!allFeatureCounts[m.keyword]) allFeatureCounts[m.keyword] = { total: 0, bySegment: {} };
-        allFeatureCounts[m.keyword].total++;
-        if (!allFeatureCounts[m.keyword].bySegment[call.segment]) allFeatureCounts[m.keyword].bySegment[call.segment] = 0;
-        allFeatureCounts[m.keyword].bySegment[call.segment]++;
+        if (!allFeatureCounts[m.keyword].bySegment[seg]) {
+            allFeatureCounts[m.keyword].bySegment[seg] = { mentions: 0, accounts: new Set() };
+        }
+        const co = m._co || getPersonaCompanyCandidates(call, [m], true)[0] || call.id;
+        allFeatureCounts[m.keyword].bySegment[seg].mentions++;
+        allFeatureCounts[m.keyword].bySegment[seg].accounts.add(co);
+    });
+    Object.values(allFeatureCounts).forEach(data => {
+        data.total = segNames.reduce((sum, seg) => sum + segmentFeatureCount(data, seg), 0);
     });
 
     const tableFeatures = Object.entries(allFeatureCounts)
@@ -7869,9 +8465,8 @@ function buildPersonas() {
     if (tableFeatures.length > 0 && sortedSegs.length > 1) {
         // Fix D: Compute distinctiveness score for each feature
         // Distinctiveness = how concentrated a feature is in one segment vs evenly spread
-        const segNames = sortedSegs.map(([seg]) => seg);
         tableFeatures.forEach(([, data]) => {
-            const counts = segNames.map(seg => data.bySegment[seg] || 0);
+            const counts = segNames.map(seg => segmentFeatureCount(data, seg));
             const total = counts.reduce((a, b) => a + b, 0);
             if (total === 0) { data.distinctiveness = 0; return; }
             // Gini coefficient as distinctiveness measure
@@ -7881,8 +8476,11 @@ function buildPersonas() {
             data.distinctiveness = sumAbsDiff / (2 * n * mean);
         });
 
+        const metricLabel = _personaCompareMetric === 'mentions' ? 'Mentions' : 'Accounts';
         html += '<div style="display:flex;align-items:center;gap:0.5rem;margin-top:1rem">';
         html += '<div class="seg-section-title" style="margin:0">Segment Comparison</div>';
+        html += '<button class="seg-compare-sort-toggle' + (_personaCompareMetric === 'accounts' ? ' active' : '') + '" onclick="setPersonaCompareMetric(\'accounts\')">Accounts</button>';
+        html += '<button class="seg-compare-sort-toggle' + (_personaCompareMetric === 'mentions' ? ' active' : '') + '" onclick="setPersonaCompareMetric(\'mentions\')">Mentions</button>';
         html += '<button class="seg-compare-sort-toggle" id="distinctiveness-sort-btn" onclick="toggleDistinctivenessSort(this)">Sort by distinctiveness</button>';
         html += '</div>';
         html += '<div class="seg-compare-wrap"><table class="seg-compare" id="seg-compare-table">';
@@ -7897,7 +8495,7 @@ function buildPersonas() {
         let heatMax = 1;
         tableFeatures.forEach(([, data]) => {
             sortedSegs.forEach(([seg]) => {
-                const c = data.bySegment[seg] || 0;
+                const c = segmentFeatureCount(data, seg);
                 if (c > heatMax) heatMax = c;
             });
         });
@@ -7909,11 +8507,11 @@ function buildPersonas() {
         tableFeatures.forEach(([feat, data], idx) => {
             const hidden = idx >= INITIAL_ROWS ? ' style="display:none" class="seg-compare-extra"' : '';
             // Mark most distinctive cell per feature
-            const counts = segNames.map(seg => data.bySegment[seg] || 0);
+            const counts = segNames.map(seg => segmentFeatureCount(data, seg));
             const maxCount = Math.max(...counts);
             html += '<tr' + hidden + ' data-feat="' + esc(feat) + '" data-dist="' + (data.distinctiveness || 0).toFixed(4) + '"><td>' + esc(feat) + '</td>';
             sortedSegs.forEach(([seg]) => {
-                const count = data.bySegment[seg] || 0;
+                const count = segmentFeatureCount(data, seg);
                 if (count === 0) {
                     html += '<td></td>';
                 } else {
@@ -7927,7 +8525,7 @@ function buildPersonas() {
         html += '</table>';
         // Heat map legend
         html += '<div class="seg-heat-legend">';
-        html += '<span>Mentions:</span>';
+        html += '<span>' + metricLabel + ':</span>';
         [1, 2, 3].forEach(n => {
             const op = Math.min(0.15 + (n / heatMax) * 0.6, 0.75);
             html += '<span><span class="seg-heat-swatch" style="background:rgba(59,130,246,' + op.toFixed(2) + ')"></span>' + n + '</span>';
@@ -7947,12 +8545,7 @@ function buildPersonas() {
         const coData = {};
         data.calls.forEach(c => {
             const callMentions = filteredMentions.filter(m => m.call_id === c.id);
-            const cos = new Set(callMentions.map(m => m._co).filter(Boolean));
-            if (cos.size === 0) {
-                const chevron = (c.title || '').match(/^(.+?)\s*<>\s*Teachable/i) || (c.title || '').match(/^Teachable\s*<>\s*(.+)/i);
-                if (chevron) cos.add(chevron[1].split(':')[0].trim());
-                else cos.add(c.title || 'Unknown');
-            }
+            const cos = getPersonaCompanyCandidates(c, callMentions, true);
             cos.forEach(co => {
                 if (!coData[co]) coData[co] = { contacts: [], calls: [], features: [], mentionMap: {}, competitors: {}, contactTitles: {} };
                 coData[co].calls.push(c);
@@ -7991,6 +8584,7 @@ function buildPersonas() {
             d.calls.forEach(c => {
                 if (c.marketing_data && c.marketing_data.contacts) {
                     c.marketing_data.contacts.forEach(ct => {
+                        if (isInternalContact(ct)) return;
                         if (!d.contacts.find(x => x.name === ct.name)) d.contacts.push(ct);
                     });
                 }
@@ -8216,6 +8810,12 @@ function buildPersonas() {
 
 var _personaData = {}; // segment -> { companyName -> { contacts, calls, features, ... } }
 var _activePersonaKey = null;
+var _personaCompareMetric = 'accounts';
+
+function setPersonaCompareMetric(metric) {
+    _personaCompareMetric = metric === 'mentions' ? 'mentions' : 'accounts';
+    buildPersonas();
+}
 
 // Legacy stub: collapse all expanded prospect cards when switching tabs
 function closePersonaPanel() {
@@ -8528,42 +9128,45 @@ function buildCompetitors() {
     // Flatten all mentions from new format (competitor_mentions) and legacy (marketing_data.competitors_mentioned)
     const allMentions = [];
     const seen = new Set(); // deduplicate
-    activeCalls.forEach(c => {
-        (c.competitor_mentions || []).forEach(cm => {
-            const key = c.id + '|' + (cm.competitor || cm.name || '') + '|' + (cm.timestamp || '');
-            if (seen.has(key)) return;
-            seen.add(key);
-            allMentions.push({
-                competitor: cm.competitor || cm.name || '?',
-                context: cm.context || '',
-                timestamp: cm.timestamp || '',
-                mention_type: cm.mention_type || 'asked_about',
-                call_id: c.id,
-                call_title: c.title || '',
-                call_date: c.date || '',
-                company: '',
-                segment: c.segment || ''
-            });
+    function normalizeCompMention(cm) {
+        if (typeof cm === 'string') {
+            const name = cm.trim();
+            if (!name) return null;
+            return { competitor: name, context: '', timestamp: '', mention_type: 'asked_about' };
+        }
+        if (!cm || typeof cm !== 'object') return null;
+        const name = String(cm.competitor || cm.name || '').trim();
+        if (!name) return null;
+        return {
+            competitor: name,
+            context: cm.context || '',
+            timestamp: cm.timestamp || '',
+            mention_type: cm.mention_type || 'asked_about'
+        };
+    }
+    function addCompMention(c, rawMention) {
+        const cm = normalizeCompMention(rawMention);
+        if (!cm) return;
+        const key = c.id + '|' + cm.competitor + '|' + cm.timestamp;
+        if (seen.has(key)) return;
+        seen.add(key);
+        allMentions.push({
+            competitor: cm.competitor,
+            context: cm.context,
+            timestamp: cm.timestamp,
+            mention_type: cm.mention_type,
+            call_id: c.id,
+            call_title: c.title || '',
+            call_date: c.date || '',
+            company: '',
+            segment: c.segment || ''
         });
+    }
+    activeCalls.forEach(c => {
+        (c.competitor_mentions || []).forEach(cm => addCompMention(c, cm));
         // Legacy: marketing_data.competitors_mentioned
         if (c.marketing_data && c.marketing_data.competitors_mentioned) {
-            c.marketing_data.competitors_mentioned.forEach(cm => {
-                const name = cm.name || cm.competitor || '?';
-                const key = c.id + '|' + name + '|' + (cm.timestamp || '');
-                if (seen.has(key)) return;
-                seen.add(key);
-                allMentions.push({
-                    competitor: name,
-                    context: cm.context || '',
-                    timestamp: cm.timestamp || '',
-                    mention_type: cm.mention_type || 'asked_about',
-                    call_id: c.id,
-                    call_title: c.title || '',
-                    call_date: c.date || '',
-                    company: '',
-                    segment: c.segment || ''
-                });
-            });
+            c.marketing_data.competitors_mentioned.forEach(cm => addCompMention(c, cm));
         }
     });
 
@@ -8608,6 +9211,7 @@ function buildCompetitors() {
     const _compAliases = { 'wap': 'wapcrm', 'school': 'skool' };
     // Resolve a competitor name to its canonical form (for grouping/dedup)
     function resolveCompName(name) {
+        if (!name) return '';
         if (compMeta[name]) return name;
         const lower = name.toLowerCase();
         if (_compMetaLower[lower]) return DATA.competitors.find(c => c.name.toLowerCase() === lower)?.name || name;
@@ -8625,11 +9229,12 @@ function buildCompetitors() {
         if (paren) {
             const inner = paren[1];
             const resolved = resolveCompName(inner);
-            if (resolved !== inner) return resolved;
+            if (resolved && (compMeta[resolved] || _compMetaLower[resolved.toLowerCase()] || _compAliases[inner.toLowerCase()])) return resolved;
         }
         return name;
     }
     function getCompMeta(name) {
+        if (!name) return { short_description: 'Description not available.' };
         if (compMeta[name]) return compMeta[name];
         const lower = name.toLowerCase();
         if (_compMetaLower[lower]) return _compMetaLower[lower];
@@ -8711,6 +9316,8 @@ function buildCompetitors() {
         return b[1].mentions.length - a[1].mentions.length;
     });
     const activeMentionCount = sortedComps.reduce((sum, [, d]) => sum + d.mentions.length, 0);
+    const overviewLimit = compShowAll ? 12 : 8;
+    const overviewComps = sortedComps.slice(0, overviewLimit);
 
     if (sortedComps.length === 0 && Object.keys(byCompExcluded).length > 0) {
         let html = '<div class="comp-empty">All competitor mentions are excluded or filtered out.</div>';
@@ -8738,7 +9345,7 @@ function buildCompetitors() {
     html += '<button class="comp-toggle-btn' + (compShowAll ? ' active' : '') + '" onclick="setCompShowAll(true)">Show All</button>';
     html += '</div></div>';
     html += '<div class="seg-overview">';
-    sortedComps.forEach(([name, data]) => {
+    overviewComps.forEach(([name, data]) => {
         const meta = getCompMeta(name);
         const color = compColor(name);
         const tier = compTier(name, data.mentions.length);
@@ -8765,6 +9372,18 @@ function buildCompetitors() {
             descHTML +
         '</div>';
     });
+    const remainingOverview = sortedComps.length - overviewComps.length;
+    if (remainingOverview > 0) {
+        const remainingMentions = sortedComps.slice(overviewLimit).reduce((sum, [, data]) => sum + data.mentions.length, 0);
+        html += '<div class="seg-card comp-overview-card comp-overview-more">' +
+            '<div class="comp-overview-head">' +
+                '<div class="comp-overview-title">' + remainingOverview + ' more competitor' + (remainingOverview !== 1 ? 's' : '') + '</div>' +
+            '</div>' +
+            '<div class="comp-overview-stat">' + remainingMentions + ' mention' + (remainingMentions !== 1 ? 's' : '') + '</div>' +
+            '<div class="comp-overview-sub">lower-frequency competitor signals</div>' +
+            '<div class="comp-overview-desc">Kept out of the overview rail so the highest-signal competitors stay scannable.</div>' +
+        '</div>';
+    }
     html += '</div>';
 
     // ========== COLLAPSED NOISE SECTION (default mode only) ==========
@@ -9214,6 +9833,8 @@ function switchTab(tab) {
     document.getElementById('q').value = '';
     closeAllDD();
     filter('');
+    if (tab === 'features') buildFeatures();
+    if (tab === 'calls') buildCalls();
     if (tab === 'personas') buildPersonas();
     if (tab === 'competitors') buildCompetitors();
     if (tab === 'reports') buildInsights();
@@ -11672,268 +12293,813 @@ function buildPerformance() {
     }
 }
 
+/* ---------- Win/Loss ---------- */
+
+function _wlFmt(v, est) {
+    var s = '$' + Math.round(v || 0).toLocaleString();
+    return est ? '<span class="wl-est-marker">~</span>' + s : s;
+}
+function _wlFmtText(v, est) {
+    var s = '$' + Math.round(v || 0).toLocaleString();
+    return est ? '~' + s : s;
+}
+function _wlMoneyText(v) {
+    v = v || 0;
+    if (v >= 1000000) return '$' + (v / 1000000).toFixed(1) + 'M';
+    if (v >= 1000) return '$' + Math.round(v / 1000) + 'k';
+    return '$' + Math.round(v).toLocaleString();
+}
+function _wlPct(v) { return v != null ? Math.round(v * 100) + '%' : '-'; }
+function _wlCleanName(name) {
+    return String(name || '').replace(/^(WON|LOST)\s+\S+\s*[-\u2013]\s*/i, '').replace(/\s*\[(SUPPORT|OVERAGE)\]/gi, '').trim();
+}
+function _wlJsString(s) {
+    return JSON.stringify(String(s == null ? '' : s));
+}
+function _wlDealTypeBucket(value, deal) {
+    var email = String((deal && deal.rep_email) || '').toLowerCase();
+    if (email.indexOf('kevin') >= 0) return 'PD';
+    if (email.indexOf('zach') >= 0) return 'KB';
+
+    var raw = String(value || '').trim().toLowerCase();
+    if (!raw) return 'unclear';
+    if (raw === 'pd' || raw.indexOf('program') >= 0 || raw.indexOf('distributor') >= 0) return 'PD';
+    if (raw === 'kb' || raw === 'kd' || raw.indexOf('knowledge') >= 0 || raw.indexOf('business') >= 0) return 'KB';
+    return 'unclear';
+}
+function _wlDemandText(demand, compact) {
+    var total = demand ? demand.total || 0 : 0;
+    var acct = total === 1 ? 'acct' : 'accts';
+    if (!demand || (!demand.PD && !demand.KB)) return total + ' ' + acct;
+    var parts = [];
+    if (demand.PD) parts.push('PD ' + demand.PD);
+    if (demand.KB) parts.push('KB ' + demand.KB);
+    if (!compact && demand.unclear) parts.push('Unclear ' + demand.unclear);
+    return total + ' ' + acct + ' · ' + parts.join(' / ');
+}
+function _wlBuildFeatureDemandIndex(deals) {
+    var index = {};
+    function ensure(feature, scope) {
+        if (!index[feature]) index[feature] = {};
+        if (!index[feature][scope]) {
+            index[feature][scope] = { ids: new Set(), PD: 0, KB: 0, unclear: 0, total: 0 };
+        }
+        return index[feature][scope];
+    }
+    function add(feature, scope, dealId, bucket) {
+        var d = ensure(feature, scope);
+        if (d.ids.has(dealId)) return;
+        d.ids.add(dealId);
+        d.total += 1;
+        d[bucket] = (d[bucket] || 0) + 1;
+    }
+    (deals || []).forEach(function(deal) {
+        var dealId = deal.id || deal.deal_id || deal.name || '';
+        var bucket = _wlDealTypeBucket(deal.kb_or_pd_deal || deal.pd_kb || deal.deal_type, deal);
+        var features = new Set();
+        (deal.features_mentioned || []).forEach(function(feat) {
+            var name = feat.feature;
+            if (name && name !== 'NEEDS_REVIEW') features.add(name);
+        });
+        features.forEach(function(feature) {
+            add(feature, 'ALL', dealId, bucket);
+            add(feature, deal.outcome || 'ALL', dealId, bucket);
+        });
+    });
+    return index;
+}
+function _wlScrollEvidence() {
+    setTimeout(function() {
+        var list = document.querySelector('.wl-deal-list') || document.querySelector('.wl-evidence-section');
+        if (list) list.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 80);
+}
+function _wlSetEvidenceFilter(kind, value) {
+    window._wlExpanded = true;
+    window._wlDrillFeat = null;
+    window._wlLossTypeFilter = null;
+    window._wlValueFilter = null;
+    window._wlCompetitorFilter = null;
+    window._wlPricingFilter = null;
+
+    if (kind === 'outcome') {
+        window._wlDealView = value;
+    } else if (kind === 'loss_type') {
+        window._wlDealView = 'LOST';
+        window._wlLossTypeFilter = value;
+    } else if (kind === 'value_confidence') {
+        window._wlDealView = 'LOST';
+        window._wlValueFilter = value;
+    } else if (kind === 'feature') {
+        window._wlDealView = 'LOST';
+        window._wlDrillFeat = value;
+        window._wlEvidenceMode = 'mentions';
+    } else if (kind === 'competitor') {
+        window._wlDealView = 'LOST';
+        window._wlCompetitorFilter = value;
+    } else if (kind === 'pricing') {
+        window._wlDealView = 'ALL';
+        window._wlPricingFilter = value;
+    }
+
+    buildWinLoss();
+    _wlScrollEvidence();
+}
+function _wlSetEvidenceMode(mode) {
+    window._wlEvidenceMode = mode === 'accounts' ? 'accounts' : 'mentions';
+    buildWinLoss();
+    _wlScrollEvidence();
+}
+function _wlSetEvidenceOutcome(outcome) {
+    window._wlExpanded = true;
+    window._wlDealView = outcome;
+    buildWinLoss();
+    _wlScrollEvidence();
+}
+function _wlClearEvidenceFilters() {
+    window._wlDrillFeat = null;
+    window._wlLossTypeFilter = null;
+    window._wlValueFilter = null;
+    window._wlCompetitorFilter = null;
+    window._wlPricingFilter = null;
+    window._wlLossOtherTypes = [];
+    buildWinLoss();
+}
+function _wlFocusMatrix() {
+    window._wlSortKey = 'lost_risk';
+    window._wlMatrixExpanded = true;
+    buildWinLoss();
+    setTimeout(function() {
+        var matrix = document.querySelector('.wl-matrix-section');
+        if (matrix) matrix.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 80);
+}
+function _wlRenderDonut(title, centerValue, centerLabel, segments) {
+    var visible = (segments || []).filter(function(s) { return (s.value || 0) > 0; });
+    var total = visible.reduce(function(sum, s) { return sum + (s.value || 0); }, 0);
+    var r = 39, cx = 60, cy = 60, strokeW = 28, circ = 2 * Math.PI * r, offset = 0;
+    var html = '<div class="wl-pie-card"><div class="wl-section-label-new">' + esc(title) + '</div>';
+    html += '<div class="wl-donut-wrap"><svg class="wl-donut" viewBox="0 0 120 120" role="img" aria-label="' + esc(title) + '">';
+    html += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#1e2130" stroke-width="' + strokeW + '"/>';
+    visible.forEach(function(seg) {
+        var dash = total > 0 ? (seg.value / total) * circ : 0;
+        var gap = circ - dash;
+        var action = seg.action || '';
+        html += '<circle class="wl-donut-seg" cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + seg.color + '" stroke-width="' + strokeW + '"' +
+            ' stroke-dasharray="' + dash.toFixed(1) + ' ' + gap.toFixed(1) + '"' +
+            ' stroke-dashoffset="' + (-offset).toFixed(1) + '"' +
+            ' transform="rotate(-90 ' + cx + ' ' + cy + ')" tabindex="0" role="button"' +
+            ' onclick="' + action + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){' + action + ';event.preventDefault();}">' +
+            '<title>' + esc(seg.label + ': ' + seg.display + ' (' + _wlPct(total ? seg.value / total : 0) + ')') + '</title></circle>';
+        offset += dash;
+    });
+    html += '<text x="' + cx + '" y="' + (cy - 6) + '" text-anchor="middle" class="wl-donut-num">' + esc(centerValue) + '</text>' +
+        '<text x="' + cx + '" y="' + (cy + 10) + '" text-anchor="middle" class="wl-donut-lbl">' + esc(centerLabel) + '</text></svg>';
+    html += '<div class="wl-donut-legend">';
+    visible.forEach(function(seg) {
+        html += '<button type="button" class="wl-donut-row" onclick="' + (seg.action || '') + '">' +
+            '<span class="wl-donut-swatch" style="background:' + seg.color + '"></span>' +
+            '<span class="wl-donut-type">' + esc(seg.label) + '</span>' +
+            '<span class="wl-donut-count">' + esc(seg.display) + '</span>' +
+            '<span class="wl-donut-pct">' + _wlPct(total ? seg.value / total : 0) + '</span>' +
+        '</button>';
+    });
+    html += '</div></div></div>';
+    return html;
+}
+function _wlRenderFeatureCostDonut(centerValue, segments) {
+    var visible = (segments || []).filter(function(s) { return (s.value || 0) > 0; });
+    var total = visible.reduce(function(sum, s) { return sum + (s.value || 0); }, 0);
+    var r = 40, cx = 60, cy = 60, strokeW = 24, circ = 2 * Math.PI * r, offset = 0;
+    var html = '<div class="wl-feature-cost-card">' +
+        '<div class="wl-feature-cost-head">' +
+            '<div class="wl-section-label-new">Feature Gaps Costing Lost Revenue</div>' +
+            '<div class="wl-feature-cost-sub">Top gaps + other</div>' +
+        '</div>' +
+        '<div class="wl-feature-cost-grid">' +
+            '<div class="wl-feature-cost-chart">' +
+                '<svg class="wl-donut wl-feature-cost-donut" viewBox="0 0 120 120" role="img" aria-label="Missing feature cost">';
+    html += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#1e2130" stroke-width="' + strokeW + '"/>';
+    visible.forEach(function(seg) {
+        var dash = total > 0 ? (seg.value / total) * circ : 0;
+        var gap = circ - dash;
+        var action = seg.action || '';
+        html += '<circle class="wl-donut-seg" cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + seg.color + '" stroke-width="' + strokeW + '"' +
+            ' stroke-dasharray="' + dash.toFixed(1) + ' ' + gap.toFixed(1) + '"' +
+            ' stroke-dashoffset="' + (-offset).toFixed(1) + '"' +
+            ' transform="rotate(-90 ' + cx + ' ' + cy + ')" tabindex="0" role="button"' +
+            ' onclick="' + action + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){' + action + ';event.preventDefault();}">' +
+            '<title>' + esc(seg.label + ': ' + seg.display + ' (' + _wlPct(total ? seg.value / total : 0) + ')') + '</title></circle>';
+        offset += dash;
+    });
+    html += '<text x="' + cx + '" y="' + (cy - 6) + '" text-anchor="middle" class="wl-donut-num">' + esc(centerValue) + '</text>' +
+        '<text x="' + cx + '" y="' + (cy + 10) + '" text-anchor="middle" class="wl-donut-lbl">lost risk</text></svg>' +
+        '</div><div class="wl-donut-legend">';
+    visible.forEach(function(seg) {
+        html += '<button type="button" class="wl-donut-row" onclick="' + (seg.action || '') + '">' +
+            '<span class="wl-donut-swatch" style="background:' + seg.color + '"></span>' +
+            '<span class="wl-donut-type">' + esc(seg.label) + '</span>' +
+            '<span class="wl-donut-count">' + esc(seg.display) + '</span>' +
+            '<span class="wl-donut-pct">' + _wlPct(total ? seg.value / total : 0) + '</span>' +
+        '</button>';
+    });
+    html += '</div></div></div>';
+    return html;
+}
+
 function buildWinLoss() {
-    const el = document.getElementById('winloss-view');
-    el.innerHTML = `
-<div class="wl-page">
+    var el = document.getElementById('winloss-view');
+    if (!el) return;
 
-    <div class="wl-header">
-        <h2>Win / Loss Analysis</h2>
-        <p class="wl-subtitle">This is a working draft -- just thinking through how win/loss analysis could work with the data we have and what we'd need to build it. Nothing here is final.</p>
-    </div>
+    // Persistent UI state
+    var sortKey  = window._wlSortKey  || 'lost_risk';
+    var dealView = window._wlDealView || 'LOST';
+    var expanded = window._wlExpanded === true;
+    var matrixExpanded = window._wlMatrixExpanded === true;
+    var drillFeat = window._wlDrillFeat || null;
+    var lossTypeFilter = window._wlLossTypeFilter || null;
+    var valueFilter = window._wlValueFilter || null;
+    var competitorFilter = window._wlCompetitorFilter || null;
+    var pricingFilter = window._wlPricingFilter || null;
+    var evidenceMode = window._wlEvidenceMode || 'mentions';
 
-    <div class="wl-section">
-        <div class="wl-section-label">WHERE WE ARE TODAY</div>
-        <h3 class="wl-section-title">What the data looks like right now</h3>
-        <p class="wl-body">In the last 90 days, HubSpot shows <strong>114 won deals</strong> and
-        <strong>343 closed lost deals</strong> across the team. That's a 25% win rate overall --
-        but that number is misleading on its own, because the two pipelines represent completely
-        different sales motions.</p>
+    // ── NULL STATE ─────────────────────────────────────────────────────
+    if (!WIN_LOSS) {
+        el.innerHTML = '<div class="wl-page">' +
+            '<div class="wl-null-state">' +
+                '<div class="wl-null-icon">' +
+                    '<svg width="48" height="48" viewBox="0 0 48 48" fill="none">' +
+                        '<circle cx="24" cy="24" r="23" stroke="#1e2130" stroke-width="2"/>' +
+                        '<path d="M16 32 L24 16 L32 32" stroke="#3a3e52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+                        '<circle cx="24" cy="36" r="1.5" fill="#3a3e52"/>' +
+                    '</svg>' +
+                '</div>' +
+                '<div class="wl-null-title">No win/loss data yet</div>' +
+                '<div class="wl-null-body">Run the extraction script to analyse HubSpot deal notes.</div>' +
+                '<code class="wl-null-cmd">python3 fetch_lost_deals.py --days 180 --out test_output/win_loss.json</code>' +
+            '</div></div>';
+        return;
+    }
 
-        <div class="wl-stat-row">
-            <div class="wl-stat-card">
-                <div class="wl-stat-label">Sales Pipeline (AE)</div>
-                <div class="wl-stat-main">31 won &middot; 60 lost</div>
-                <div class="wl-stat-sub">~34% win rate &middot; Zach + Kevin</div>
-            </div>
-            <div class="wl-stat-card">
-                <div class="wl-stat-label">Pre Sales Pipeline (SDR)</div>
-                <div class="wl-stat-main">83 won &middot; 283 lost</div>
-                <div class="wl-stat-sub">~23% win rate &middot; Jerome</div>
-            </div>
-            <div class="wl-stat-card wl-stat-card--warn">
-                <div class="wl-stat-label">Lost deals with amount set</div>
-                <div class="wl-stat-main">5 of 343</div>
-                <div class="wl-stat-sub">Lost ARR is effectively unknown</div>
-            </div>
-            <div class="wl-stat-card wl-stat-card--warn">
-                <div class="wl-stat-label">Close reason filled in</div>
-                <div class="wl-stat-main">0 of 343</div>
-                <div class="wl-stat-sub">hs_closed_lost_reason is always null</div>
-            </div>
-        </div>
+    var S   = WIN_LOSS.summary || {};
+    var av  = S.analyzed_value || {};
+    var fv  = S.fetched_value  || {};
+    var isDryRun  = WIN_LOSS.dry_run || WIN_LOSS.extraction_status === 'dry_run';
+    var hasSignal = WIN_LOSS.has_signal_data;
+    var totalFetched  = (S.closed_won_fetched || 0) + (S.closed_lost_fetched || 0);
+    var totalAnalyzed = (S.analyzed_won_count || 0) + (S.analyzed_lost_count || 0);
+    var coveragePct   = totalFetched > 0 ? Math.round(totalAnalyzed / totalFetched * 100) : 0;
+    var lostKnown = av.lost_known || 0;
+    var lostEst   = av.lost_estimated || 0;
+    var estShare  = (lostKnown + lostEst) > 0 ? lostEst / (lostKnown + lostEst) : 0;
+    var los       = WIN_LOSS.loss_outcome_summary;
+    var crosswalk = WIN_LOSS.competitor_feature_crosswalk || [];
+    var hasLos    = los && los.by_type && los.by_type.length > 0;
+    var deals     = WIN_LOSS.deals || [];
+    var featureDemand = _wlBuildFeatureDemandIndex(deals);
 
-        <p class="wl-body">The Pre Sales losses aren't really "losses" in the AE sense --
-        they're individual course creators or small operators who didn't book a meeting after
-        Jerome reached out. Most have no amount, no close reason, and minimal call history.
-        Any aggregate win rate that mixes these two pipelines should be read with that in mind.</p>
-    </div>
+    var html = '<div class="wl-page">';
 
-    <div class="wl-section">
-        <div class="wl-section-label">THE CORE CHALLENGE</div>
-        <h3 class="wl-section-title">Calls and deals don't share a key</h3>
-        <p class="wl-body">The most valuable question this system could eventually answer is:
-        <em>which features came up in calls with companies that won vs. lost?</em> If we see
-        that "Organizations &amp; Multi-tenancy" appears in 70% of won deal calls but only 30%
-        of lost deal calls, that's a real signal about what drives conversion.</p>
+    // ── DRY RUN BANNER ────────────────────────────────────────────────
+    if (isDryRun) {
+        html += '<div class="wl-status-banner">' +
+            '<span class="wl-status-dot"></span>' +
+            '<strong>Coverage preview</strong>. No AI extraction has been run. Feature signals, competitor patterns, and pricing data are unavailable.' +
+        '</div>';
+    }
 
-        <p class="wl-body">The problem is that call transcripts and HubSpot deals live in
-        separate silos with no shared identifier. A call about "Speravita" and the deal named
-        "Speravita - 2091796" have to be matched by fuzzy name logic -- there's no foreign key.
-        Here's what that coverage looks like:</p>
+    // ── PAGE HEADER ───────────────────────────────────────────────────
+    html += '<div class="wl-page-header">' +
+        '<div class="wl-page-title-row">' +
+            '<h2 class="wl-page-title">Win / Loss Analysis</h2>' +
+            '<span class="wl-page-meta">' + (WIN_LOSS.window_days || 180) + 'd &middot; ' + esc(WIN_LOSS.pipeline || 'Sales') + ' pipeline</span>' +
+        '</div>' +
+        '<div class="wl-coverage-line">' +
+            '<span class="wl-coverage-main">' + totalAnalyzed + ' of ' + totalFetched + ' deals analysed</span>';
+    var bits = [];
+    if (S.deals_skipped_no_notes)       bits.push(S.deals_skipped_no_notes + ' no notes');
+    if (S.deals_skipped_notes_too_short) bits.push(S.deals_skipped_notes_too_short + ' too short');
+    if (S.excluded_by_owner)            bits.push(S.excluded_by_owner + ' owner-excluded');
+    if (S.deals_with_notes_no_signal)   bits.push(S.deals_with_notes_no_signal + ' no signal');
+    if (bits.length) html += ' <span class="wl-coverage-bits">&middot; ' + bits.join(' &middot; ') + '</span>';
+    html += '</div></div>';
 
-        <div class="wl-coverage-table">
-            <div class="wl-cov-row wl-cov-header">
-                <span>Signal</span><span>Coverage</span><span>Notes</span>
-            </div>
-            <div class="wl-cov-row">
-                <span>Calls with company domain</span>
-                <span class="wl-cov-pct wl-amber">30%</span>
-                <span>LLM-inferred, not from HubSpot</span>
-            </div>
-            <div class="wl-cov-row">
-                <span>Calls with high-confidence domain</span>
-                <span class="wl-cov-pct wl-amber">20%</span>
-                <span>Explicit mention or clear email domain</span>
-            </div>
-            <div class="wl-cov-row">
-                <span>Deals matchable to calls via fuzzy name</span>
-                <span class="wl-cov-pct wl-amber">~50-65%</span>
-                <span>Estimated; varies by naming consistency</span>
-            </div>
-            <div class="wl-cov-row">
-                <span>Calls with segment assigned</span>
-                <span class="wl-cov-pct wl-green">79%</span>
-                <span>Best-coverage signal we have today</span>
-            </div>
-            <div class="wl-cov-row">
-                <span>Lost deals with close reason</span>
-                <span class="wl-cov-pct wl-red">0%</span>
-                <span>Field exists in HubSpot, never filled in</span>
-            </div>
-            <div class="wl-cov-row">
-                <span>Lost deals with amount</span>
-                <span class="wl-cov-pct wl-red">1%</span>
-                <span>5 of 343 in 90d window</span>
-            </div>
-        </div>
-    </div>
+    // ── HERO KPI CARDS ────────────────────────────────────────────────
+    html += '<div class="wl-kpi-row">';
 
-    <div class="wl-section">
-        <div class="wl-phase-badge wl-phase-now">Build Now</div>
-        <h3 class="wl-section-title">Phase 1 -- Win rate metrics, no new data needed</h3>
-        <p class="wl-body">Everything in this phase is already in HubSpot. It just needs to
-        be pulled, aggregated, and displayed. No transcript linking, no fuzzy matching,
-        no new API calls.</p>
+    html += '<div class="wl-kpi-card wl-kpi-card--won">' +
+        '<div class="wl-kpi-icon wl-kpi-icon--won"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' +
+        '<div class="wl-kpi-label">Analysed Won</div>' +
+        '<div class="wl-kpi-value">' + (S.analyzed_won_count || 0) + '</div>' +
+        '<div class="wl-kpi-sub">of ' + (S.closed_won_fetched || 0) + ' fetched &middot; ' + _wlFmt(av.won_known || 0, false) + '</div>' +
+    '</div>';
 
-        <div class="wl-feature-list">
-            <div class="wl-feature">
-                <div class="wl-feature-title">Win rate by rep and pipeline</div>
-                <div class="wl-feature-body">Won vs. lost counts, win rate percentage, and
-                won ARR per rep -- separated by Sales vs. Pre Sales pipeline so the two
-                motions aren't mixed.</div>
-            </div>
-            <div class="wl-feature">
-                <div class="wl-feature-title">Monthly won/lost trend</div>
-                <div class="wl-feature-body">How win rate and won ARR have moved over the
-                last 6 months. Useful for spotting seasonal patterns or whether
-                deal quality is improving.</div>
-            </div>
-            <div class="wl-feature">
-                <div class="wl-feature-title">Average days to close (won deals)</div>
-                <div class="wl-feature-body">How long it takes from deal creation to close
-                by rep and pipeline. One of the few meaningful lost-deal metrics we can
-                compute without close reason or amount data.</div>
-            </div>
-            <div class="wl-feature">
-                <div class="wl-feature-title">Deal list with outcome</div>
-                <div class="wl-feature-body">A searchable table of all won and lost deals
-                in the window -- name, rep, pipeline, amount (won only), close date,
-                days to close. Foundation for phases 2 and 3.</div>
-            </div>
-        </div>
+    html += '<div class="wl-kpi-card wl-kpi-card--lost">' +
+        '<div class="wl-kpi-icon wl-kpi-icon--lost"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>' +
+        '<div class="wl-kpi-label">Analysed Lost</div>' +
+        '<div class="wl-kpi-value">' + (S.analyzed_lost_count || 0) + '</div>' +
+        '<div class="wl-kpi-sub">of ' + (S.closed_lost_fetched || 0) + ' fetched &middot; ' + _wlFmt(lostKnown, false) + ' known' + (lostEst > 0 ? ' + ' + _wlFmt(lostEst, true) : '') + '</div>' +
+    '</div>';
 
-        <p class="wl-body wl-note">Blocked by: nothing. Requires ~1 day of implementation
-        in <code>fetch_performance.py</code> + dashboard UI work.</p>
-    </div>
+    html += '<div class="wl-kpi-card">' +
+        '<div class="wl-kpi-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>' +
+        '<div class="wl-kpi-label">Coverage</div>' +
+        '<div class="wl-kpi-value">' + coveragePct + '%</div>' +
+        '<div class="wl-kpi-sub">' + totalAnalyzed + ' / ' + totalFetched + ' deals</div>' +
+    '</div>';
 
-    <div class="wl-section">
-        <div class="wl-phase-badge wl-phase-medium">Medium Effort</div>
-        <h3 class="wl-section-title">Phase 2 -- Connect deals to calls via company name matching</h3>
-        <p class="wl-body">This phase adds a fuzzy matching pass at analysis time that
-        links each deal to the calls we have for that company -- by matching the company name
-        fragment in the deal name against call titles and the company field in feature mentions.</p>
+    html += '<div class="wl-kpi-card' + (estShare > 0.5 ? ' wl-kpi-card--warn' : '') + '">' +
+        '<div class="wl-kpi-icon' + (estShare > 0.5 ? ' wl-kpi-icon--warn' : '') + '"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 14H2L8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none"/><path d="M8 7v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="12" r="0.75" fill="currentColor"/></svg></div>' +
+        '<div class="wl-kpi-label">Est. Share</div>' +
+        '<div class="wl-kpi-value">' + _wlPct(estShare) + '</div>' +
+        '<div class="wl-kpi-sub">of lost value (' + _wlFmt(lostEst, true) + ')</div>' +
+    '</div>';
 
-        <p class="wl-body">At ~50-65% linkage coverage, this unlocks the most analytically
-        interesting question in the system: <strong>do the features mentioned in pre-close
-        calls differ between deals that won vs. deals that lost?</strong></p>
+    html += '</div>'; // wl-kpi-row
 
-        <div class="wl-feature-list">
-            <div class="wl-feature">
-                <div class="wl-feature-title">Feature signal: won vs. lost</div>
-                <div class="wl-feature-body">For each feature category (Platform &amp; Integrations,
-                Commerce &amp; Checkout, Compliance &amp; Credentialing, etc.) -- what percentage
-                of matched won-deal calls mentioned it vs. lost-deal calls. Surfaces which
-                feature requests are actually correlated with closing.</div>
-            </div>
-            <div class="wl-feature">
-                <div class="wl-feature-title">Win rate by segment</div>
-                <div class="wl-feature-body">Continuing Ed converts at what rate vs. Course
-                Creators vs. Corporate Ed? Segment is already on 79% of calls -- linking
-                calls to deals propagates that segment label to the deal, enabling a
-                segment-level win rate table.</div>
-            </div>
-            <div class="wl-feature">
-                <div class="wl-feature-title">Competitor presence in lost deals</div>
-                <div class="wl-feature-body">When a competitor was mentioned in calls for
-                a company that went on to lose, which competitor came up? Does Kajabi
-                appear more in lost deals than Thinkific? This is already tracked per call --
-                it just needs the deal outcome linked to it.</div>
-            </div>
-        </div>
+    var outcomeLabel = {competitive_loss:'Competitive',no_decision:'No Decision',price_budget:'Price/Budget',product_gap:'Product Gap',timing:'Timing',bad_fit:'Bad Fit',unknown:'Unknown'};
+    var outcomeColor = {competitive_loss:'#f87171',no_decision:'#94a3b8',price_budget:'#f0c040',product_gap:'#c084fc',timing:'#60a5fa',bad_fit:'#fb923c',unknown:'#4b5563'};
+    window._wlLossOtherTypes = [];
+    var rows = WIN_LOSS.feature_impact_rows || [];
 
-        <p class="wl-body wl-note">Blocked by: engineering time (~1-2 weeks). The matching
-        logic is buildable today. The ~35-50% of deals that can't be matched to any call
-        stay unattributed -- they still count in win rate totals but won't appear in feature
-        or segment analysis. Coverage notes would be shown inline.</p>
-    </div>
+    // ── MAIN FEATURE COST PIE ───────────────────────────────────────────
+    var costPalette = ['#f87171', '#fb923c', '#f0c040', '#c084fc', '#60a5fa', '#b76e8a'];
+    var featureCostRows = rows.map(function(row) {
+        return {
+            feature: row.feature,
+            value: (row.lost_known_value || 0) + (row.lost_estimated_value || 0),
+            dealCount: row.lost_deal_count || 0
+        };
+    }).filter(function(row) {
+        return row.value > 0;
+    }).sort(function(a, b) {
+        return b.value - a.value;
+    });
+    if (featureCostRows.length > 0) {
+        var featureCostTotal = featureCostRows.reduce(function(sum, row) { return sum + row.value; }, 0);
+        var featureCostTop = featureCostRows.slice(0, 5);
+        var featureCostSegments = featureCostTop.map(function(row, idx) {
+            var featEsc = esc(row.feature).replace(/'/g, "\\'");
+            var demand = (featureDemand[row.feature] && featureDemand[row.feature].LOST) || { total: row.dealCount || 0 };
+            return {
+                label: row.feature,
+                value: row.value,
+                display: _wlMoneyText(row.value) + ' · ' + _wlDemandText(demand, true),
+                color: costPalette[idx % costPalette.length],
+                action: "_wlDrillFeature('" + featEsc + "','LOST')"
+            };
+        });
+        if (featureCostRows.length > featureCostTop.length) {
+            var otherValue = featureCostRows.slice(featureCostTop.length).reduce(function(sum, row) { return sum + row.value; }, 0);
+            var otherDemandTotal = featureCostRows.slice(featureCostTop.length).reduce(function(sum, row) {
+                var demand = featureDemand[row.feature] && featureDemand[row.feature].LOST;
+                return sum + (demand ? demand.total : row.dealCount || 0);
+            }, 0);
+            featureCostSegments.push({
+                label: 'Other feature gaps',
+                value: otherValue,
+                display: _wlMoneyText(otherValue) + ' · ' + otherDemandTotal + ' accts',
+                color: '#b76e8a',
+                action: '_wlFocusMatrix()'
+            });
+        }
+        html += _wlRenderFeatureCostDonut(_wlMoneyText(featureCostTotal), featureCostSegments);
+    }
 
-    <div class="wl-section">
-        <div class="wl-phase-badge wl-phase-later">Requires Process Changes</div>
-        <h3 class="wl-section-title">Phase 3 -- Close reason and lost ARR</h3>
-        <p class="wl-body">This is the phase that would make the tab genuinely powerful for
-        forecasting and coaching -- but it depends on HubSpot hygiene changes that the team
-        needs to make, not just engineering work.</p>
+    // ── CLICKABLE PART-TO-WHOLE CHARTS ──────────────────────────────────
+    var outcomeSegments = [
+        { label:'Won', value:S.analyzed_won_count || 0, display:String(S.analyzed_won_count || 0), color:'#34d399', action:"_wlSetEvidenceFilter('outcome','WON')" },
+        { label:'Lost', value:S.analyzed_lost_count || 0, display:String(S.analyzed_lost_count || 0), color:'#f87171', action:"_wlSetEvidenceFilter('outcome','LOST')" }
+    ];
 
-        <div class="wl-feature-list">
-            <div class="wl-feature wl-feature--blocked">
-                <div class="wl-feature-title">Lost reason breakdown
-                    <span class="wl-blocked-badge">Needs HubSpot change</span>
-                </div>
-                <div class="wl-feature-body"><code>hs_closed_lost_reason</code> is a native
-                HubSpot field that exists on every deal -- it's just never filled in. If reps
-                select a reason when moving a deal to Lost (Price, Competitor, No Budget,
-                Timing, Not a Fit, Unresponsive), this system can immediately surface a
-                breakdown chart. That single dropdown would answer more questions than
-                everything in Phase 2 combined.</div>
-            </div>
-            <div class="wl-feature wl-feature--blocked">
-                <div class="wl-feature-title">Lost ARR
-                    <span class="wl-blocked-badge">Needs HubSpot change</span>
-                </div>
-                <div class="wl-feature-body">Only 5 of 343 lost deals in the last 90 days
-                have an amount set. Lost ARR -- the revenue at risk from deals that didn't
-                close -- is effectively unknown. Requiring amount before a deal can be moved
-                to Lost in the Sales pipeline (not Pre Sales -- those are low-value individual
-                deals) would fix this immediately.</div>
-            </div>
-            <div class="wl-feature wl-feature--blocked">
-                <div class="wl-feature-title">Full segment coverage on deals
-                    <span class="wl-blocked-badge">Engineering + cost</span>
-                </div>
-                <div class="wl-feature-body">Phase 2 gets segment coverage on ~60% of deals
-                via call matching. Getting to 100% would require running each deal through
-                the same LLM classification used for calls -- feasible, but costs ~$0.05-0.10
-                per deal per sync. For the Pre Sales pipeline deals (individual creator names
-                like "[2026] CamilaOrdonez") the LLM can't reliably classify without more
-                context anyway, so the ROI is limited.</div>
-            </div>
-        </div>
-    </div>
+    var lossSegments = [];
+    if (hasLos) {
+        var lossRows = los.by_type.slice().sort(function(a, b) { return b.count - a.count; });
+        var visibleLossRows = lossRows;
+        if (lossRows.length > 5) {
+            visibleLossRows = lossRows.slice(0, 4);
+            var otherRows = lossRows.slice(4);
+            window._wlLossOtherTypes = otherRows.map(function(row) { return row.type; });
+            visibleLossRows.push({
+                type: '__OTHER__',
+                count: otherRows.reduce(function(sum, row) { return sum + row.count; }, 0),
+                share: otherRows.reduce(function(sum, row) { return sum + row.share; }, 0)
+            });
+        }
+        lossSegments = visibleLossRows.map(function(row) {
+            var isOther = row.type === '__OTHER__';
+            return {
+                label: isOther ? 'Other' : (outcomeLabel[row.type] || row.type),
+                value: row.count,
+                display: String(row.count),
+                color: isOther ? '#64748b' : (outcomeColor[row.type] || '#4b5563'),
+                action: "_wlSetEvidenceFilter('loss_type','" + row.type + "')"
+            };
+        });
+    }
 
-    <div class="wl-section wl-section--action">
-        <div class="wl-section-label">RECOMMENDED ACTIONS</div>
-        <h3 class="wl-section-title">Three things that would move this forward the most</h3>
+    var lostValueTotal = lostKnown + lostEst;
+    var confidenceSegments = [
+        { label:'Known lost value', value:lostKnown, display:_wlMoneyText(lostKnown), color:'#f87171', action:"_wlSetEvidenceFilter('value_confidence','known_lost')" },
+        { label:'Estimated lost value', value:lostEst, display:_wlMoneyText(lostEst), color:'#f0c040', action:"_wlSetEvidenceFilter('value_confidence','estimated_lost')" }
+    ];
+    html += '<div class="wl-pie-grid">';
+    html += _wlRenderDonut('Outcome Mix', String(totalAnalyzed), 'deals', outcomeSegments);
+    if (hasLos) html += _wlRenderDonut('Loss Reasons', String(los.total_lost_analyzed || 0), 'lost', lossSegments);
+    html += _wlRenderDonut('Lost Value Confidence', _wlMoneyText(lostValueTotal), 'lost value', confidenceSegments);
+    html += '</div>';
 
-        <div class="wl-action-list">
-            <div class="wl-action">
-                <div class="wl-action-number">1</div>
-                <div class="wl-action-content">
-                    <div class="wl-action-title">Make close reason required in HubSpot (Sales pipeline only)</div>
-                    <div class="wl-action-body">Set <code>hs_closed_lost_reason</code> as a required
-                    field when moving a Sales pipeline deal to Lost. A five-option dropdown takes
-                    30 seconds to fill in and would immediately unlock the most valuable analysis
-                    in this whole tab. Pre Sales deals don't need this -- the volume is too high
-                    and the deals are too small.</div>
-                </div>
-            </div>
-            <div class="wl-action">
-                <div class="wl-action-number">2</div>
-                <div class="wl-action-content">
-                    <div class="wl-action-title">Require amount on Sales pipeline lost deals</div>
-                    <div class="wl-action-body">Without amount on lost deals, lost ARR is
-                    unknowable. The amount should already be set by the time a deal reaches
-                    the proposal stage -- enforcing it at close just makes that explicit.
-                    This is a HubSpot pipeline settings change, not a rep behavior change.</div>
-                </div>
-            </div>
-            <div class="wl-action">
-                <div class="wl-action-number">3</div>
-                <div class="wl-action-content">
-                    <div class="wl-action-title">Build Phase 1 now, revisit Phase 2 in a month</div>
-                    <div class="wl-action-body">Phase 1 costs nothing in terms of data and gives
-                    the team a real win rate dashboard broken down by rep and pipeline. Once
-                    that's live and the team is using it, Phase 2 (call linking, feature signal)
-                    is the natural next layer. Phase 3 only makes sense after the HubSpot hygiene
-                    changes in actions 1 and 2 are in place -- otherwise the close reason and
-                    lost ARR sections would be permanently empty.</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    // ── FEATURE IMPACT MATRIX ─────────────────────────────────────────
+    html += '<div class="wl-matrix-section">' +
+        '<div class="wl-matrix-header">' +
+            '<div class="wl-section-label-new">Feature Impact Matrix</div>';
+    if (rows.length > 0) {
+        html += '<div class="wl-sort-pills">';
+        [['lost_risk','Lost Risk'],['win_drivers','Win Drivers'],['deal_count','Volume'],['table_stakes','Table Stakes']].forEach(function(pair) {
+            html += '<button class="wl-sort-pill' + (sortKey === pair[0] ? ' active' : '') + '" onclick="window._wlSortKey=\'' + pair[0] + '\';window._wlMatrixExpanded=false;buildWinLoss()">' + pair[1] + '</button>';
+        });
+        html += '</div>';
+    }
+    html += '</div>';
 
-</div>
-    `;
+    if (rows.length === 0) {
+        // Empty state with ghost bars
+        html += '<div class="wl-matrix-empty">' +
+            '<div class="wl-matrix-empty-bars">' +
+                '<div class="wl-dummy-bar" style="width:60%;opacity:0.08"></div>' +
+                '<div class="wl-dummy-bar" style="width:40%;opacity:0.05"></div>' +
+                '<div class="wl-dummy-bar" style="width:80%;opacity:0.06"></div>' +
+                '<div class="wl-dummy-bar" style="width:30%;opacity:0.04"></div>' +
+                '<div class="wl-dummy-bar" style="width:55%;opacity:0.07"></div>' +
+            '</div>' +
+            '<div class="wl-matrix-empty-text">' +
+                (isDryRun
+                    ? 'Run extraction with your Anthropic API key to populate the feature impact matrix.'
+                    : 'No feature signals extracted yet. Feature, competitor, and pricing data will appear after a live extraction run.') +
+            '</div>' +
+            '<code class="wl-null-cmd" style="margin-top:0.75rem">python3 fetch_lost_deals.py --days 180 --out test_output/win_loss.json</code>' +
+        '</div>';
+    } else {
+        // Sort rows based on selected key
+        var sorted = rows.slice().sort(function(a, b) {
+            if (sortKey === 'win_drivers')  return (b.won_known_value + b.won_estimated_value) - (a.won_known_value + a.won_estimated_value);
+            if (sortKey === 'deal_count')   return (b.won_deal_count + b.lost_deal_count) - (a.won_deal_count + a.lost_deal_count);
+            if (sortKey === 'table_stakes') return (b.classification === 'TABLE_STAKES' ? 1 : 0) - (a.classification === 'TABLE_STAKES' ? 1 : 0);
+            // default: lost_risk
+            return (b.lost_known_value - a.lost_known_value) || (b.lost_estimated_value - a.lost_estimated_value) || (b.lost_deal_count - a.lost_deal_count);
+        });
+
+        // Shared scale so equal bar lengths = equal value across both sides
+        var maxBar = Math.max.apply(null, sorted.map(function(r){
+            return Math.max(r.lost_known_value + r.lost_estimated_value, r.won_known_value + r.won_estimated_value);
+        }).concat([1]));
+        var maxL = maxBar;
+        var maxW = maxBar;
+        var badgeCls = { GAP:'wl-badge-gap', STRENGTH:'wl-badge-strength', TABLE_STAKES:'wl-badge-stakes', WATCH:'wl-badge-watch' };
+        var badgeLbl = { GAP:'Gap', STRENGTH:'Strength', TABLE_STAKES:'Table Stakes', WATCH:'Watch' };
+
+        html += '<div class="wl-matrix-legend-row">' +
+            '<span class="wl-matrix-leg-lost">&larr; Lost associated value</span>' +
+            '<span class="wl-matrix-leg-feat">Feature</span>' +
+            '<span class="wl-matrix-leg-won">Won associated value &rarr;</span>' +
+        '</div><div class="wl-matrix-rows">';
+
+        var matrixLimit = 10;
+        var visibleRows = matrixExpanded ? sorted : sorted.slice(0, matrixLimit);
+        visibleRows.forEach(function(row) {
+            var lv = row.lost_known_value + row.lost_estimated_value;
+            var wv = row.won_known_value  + row.won_estimated_value;
+            var lKnownW  = maxL > 0 ? Math.round((row.lost_known_value    / maxL) * 100) : 0;
+            var lEstW    = maxL > 0 ? Math.round((row.lost_estimated_value / maxL) * 100) : 0;
+            var wKnownW  = maxW > 0 ? Math.round((row.won_known_value     / maxW) * 100) : 0;
+            var wEstW    = maxW > 0 ? Math.round((row.won_estimated_value  / maxW) * 100) : 0;
+            var topComps = (row.top_competitors_in_lost_deals || []).slice(0,2).map(function(c){ return esc(c.name || c); }).join(', ');
+            var featEsc  = esc(row.feature).replace(/'/g, "\\'");
+            var drillOutcome = (sortKey === 'win_drivers' || wv > lv) ? 'WON' : 'LOST';
+            var demandAll = (featureDemand[row.feature] && featureDemand[row.feature].ALL) || {
+                total: (row.won_deal_count || 0) + (row.lost_deal_count || 0)
+            };
+
+            html += '<div class="wl-matrix-row" onclick="_wlDrillFeature(\'' + featEsc + '\',\'' + drillOutcome + '\')" role="button" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){_wlDrillFeature(\'' + featEsc + '\',\'' + drillOutcome + '\');event.preventDefault();}">';
+
+            // Left bar (lost)
+            html += '<div class="wl-matrix-left">' +
+                '<div class="wl-bar-wrap wl-bar-wrap--lost"><div class="wl-bar-track">' +
+                    '<div class="wl-bar-seg wl-bar-seg--lost-known" style="width:' + lKnownW + '%"></div>' +
+                    '<div class="wl-bar-seg wl-bar-seg--lost-est" style="width:' + lEstW + '%"></div>' +
+                '</div></div>' +
+                '<div class="wl-bar-meta wl-bar-meta--lost">' +
+                    (lv > 0 ? '<span class="wl-bar-val">' + _wlFmt(lv, row.lost_estimated_value > 0) + '</span>' : '') +
+                    '<span class="wl-bar-count">' + row.lost_deal_count + 'L</span>' +
+                    (topComps ? '<span class="wl-comp-tag">' + topComps + '</span>' : '') +
+                '</div>' +
+            '</div>';
+
+            // Center label
+            html += '<div class="wl-matrix-center">' +
+                '<span class="wl-feat-name">' + esc(row.feature) + '</span>' +
+                '<span class="wl-feat-badge ' + (badgeCls[row.classification] || 'wl-badge-watch') + '">' + (badgeLbl[row.classification] || 'Watch') + '</span>' +
+                '<span class="wl-demand-chip">' + esc(_wlDemandText(demandAll, false)) + '</span>' +
+                '<span class="wl-row-action">' + (drillOutcome === 'WON' ? 'Won notes' : 'Lost notes') + '</span>' +
+            '</div>';
+
+            // Right bar (won)
+            html += '<div class="wl-matrix-right">' +
+                '<div class="wl-bar-meta wl-bar-meta--won">' +
+                    '<span class="wl-bar-count">' + row.won_deal_count + 'W</span>' +
+                    (wv > 0 ? '<span class="wl-bar-val">' + _wlFmt(wv, row.won_estimated_value > 0) + '</span>' : '') +
+                '</div>' +
+                '<div class="wl-bar-wrap wl-bar-wrap--won"><div class="wl-bar-track">' +
+                    '<div class="wl-bar-seg wl-bar-seg--won-known" style="width:' + wKnownW + '%"></div>' +
+                    '<div class="wl-bar-seg wl-bar-seg--won-est" style="width:' + wEstW + '%"></div>' +
+                '</div></div>' +
+            '</div>';
+
+            html += '</div>'; // matrix row
+        });
+        html += '</div>'; // matrix-rows
+        if (sorted.length > matrixLimit) {
+            html += '<div class="wl-matrix-footer">' +
+                '<span class="wl-matrix-count">' + (matrixExpanded ? 'Showing all ' + sorted.length + ' features' : 'Showing top ' + matrixLimit + ' of ' + sorted.length + ' features') + '</span>' +
+                '<button type="button" class="wl-matrix-more-btn" onclick="window._wlMatrixExpanded=' + (matrixExpanded ? 'false' : 'true') + ';buildWinLoss()">' +
+                (matrixExpanded ? 'Collapse to top ' + matrixLimit : 'Expand to all ' + sorted.length) +
+                '</button></div>';
+        }
+    }
+    html += '</div>'; // wl-matrix-section
+
+    // ── COMPETITOR + PRICING CONTEXT ───────────────────────────────────
+    var pricingRows = WIN_LOSS.pricing_packaging_rows || [];
+    var insightCardCount = (crosswalk.length > 0 ? 1 : 0) + (pricingRows.length > 0 ? 1 : 0);
+    if (insightCardCount > 0) {
+        html += '<div class="wl-mid-row' + (insightCardCount === 1 ? ' wl-mid-row--single' : '') + '">';
+
+        if (crosswalk.length > 0) {
+            html += '<div class="wl-mid-card">' +
+                '<div class="wl-section-label-new">When we lose, who wins?</div>' +
+                '<div class="wl-crosswalk-list">';
+            crosswalk.slice(0, 5).forEach(function(row) {
+                var compArg = _wlJsString(row.competitor).replace(/"/g, '&quot;');
+                html += '<div class="wl-crosswalk-row" role="button" tabindex="0" onclick="_wlSetEvidenceFilter(\'competitor\', ' + compArg + ')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){_wlSetEvidenceFilter(\'competitor\', ' + compArg + ');event.preventDefault();}">' +
+                    '<div class="wl-crosswalk-top">' +
+                        '<span class="wl-crosswalk-name">' + esc(row.competitor) + '</span>' +
+                        '<span class="wl-crosswalk-meta">' + row.lost_deal_count + ' deal' + (row.lost_deal_count !== 1 ? 's' : '') + ' &middot; ' + _wlFmt(row.lost_associated_value, false) + '</span>' +
+                    '</div>' +
+                    '<div class="wl-crosswalk-feats">';
+                (row.top_features_in_lost_deals || []).forEach(function(f) {
+                    html += '<button type="button" class="wl-crosswalk-feat-tag" onclick="event.stopPropagation();_wlSetEvidenceFilter(\'feature\', ' + _wlJsString(f.feature).replace(/"/g, '&quot;') + ')">' + esc(f.feature) + ' &times;' + f.count + '</button>';
+                });
+                html += '</div></div>';
+            });
+            html += '</div></div>'; // crosswalk-list, mid-card
+        }
+
+        if (pricingRows.length > 0) {
+            html += '<div class="wl-pricing-section">' +
+                '<div class="wl-section-label-new">Pricing &amp; Packaging Signals</div>' +
+                '<div class="wl-pricing-grid">';
+            pricingRows.forEach(function(g) {
+                var pricingReason = g.reason || g.category || 'Other';
+                var pricingArg = _wlJsString(pricingReason).replace(/"/g, '&quot;');
+                html += '<div class="wl-pricing-card" role="button" tabindex="0" onclick="_wlSetEvidenceFilter(\'pricing\', ' + pricingArg + ')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){_wlSetEvidenceFilter(\'pricing\', ' + pricingArg + ');event.preventDefault();}">' +
+                    '<div class="wl-pricing-reason">' + esc(pricingReason) + '</div>' +
+                    '<div class="wl-pricing-chips">' +
+                        (g.won_count > 0 ? '<span class="wl-chip-won">W ' + g.won_count + '</span>' : '') +
+                        (g.lost_count > 0 ? '<span class="wl-chip-lost">L ' + g.lost_count + '</span>' : '') +
+                        '<span class="wl-chip-val">' + _wlFmt(g.associated_value, false) + '</span>' +
+                    '</div>';
+                (g.quotes || []).slice(0,2).forEach(function(q) {
+                    html += '<div class="wl-pricing-quote">' +
+                        '<span class="wl-pq-outcome wl-pq-' + q.outcome.toLowerCase() + '">' + q.outcome[0] + '</span>' +
+                        '<span class="wl-pq-text">"' + esc(q.text) + '"</span>' +
+                    '</div>';
+                });
+                html += '</div>';
+            });
+            html += '</div></div>';
+        }
+
+        html += '</div>'; // wl-mid-row
+    }
+
+    // ── DEAL EVIDENCE (collapsible) ───────────────────────────────────
+    if (deals.length > 0) {
+        var filtered  = deals.filter(function(d) {
+            var comps = d.competitors_mentioned || [];
+            var pricing = d.pricing_signals || [];
+            if (dealView !== 'ALL' && d.outcome !== dealView) return false;
+            if (drillFeat && !(d.features_mentioned || []).some(function(f){ return f.feature === drillFeat; })) return false;
+            if (competitorFilter && !comps.some(function(c) {
+                return (typeof c === 'object' ? (c.competitor || c.name || '') : String(c)) === competitorFilter;
+            })) return false;
+            if (pricingFilter && !pricing.some(function(ps) {
+                return (typeof ps === 'object' ? (ps.reason || ps.category || 'Other') : String(ps)) === pricingFilter;
+            })) return false;
+            if (lossTypeFilter) {
+                if (lossTypeFilter === '__OTHER__') {
+                    if ((window._wlLossOtherTypes || []).indexOf(d.loss_outcome_type || 'unknown') === -1) return false;
+                } else if ((d.loss_outcome_type || 'unknown') !== lossTypeFilter) {
+                    return false;
+                }
+            }
+            if (valueFilter === 'known_lost' && d.amount_estimated) return false;
+            if (valueFilter === 'estimated_lost' && !d.amount_estimated) return false;
+            return true;
+        });
+        var wonCount  = deals.filter(function(d){ return d.outcome === 'WON'; }).length;
+        var lostCount = deals.filter(function(d){ return d.outcome === 'LOST'; }).length;
+        var allCount = deals.length;
+        var activeFilterLabel = '';
+        if (drillFeat) activeFilterLabel = ' - ' + drillFeat;
+        if (competitorFilter) activeFilterLabel = ' - ' + competitorFilter;
+        if (pricingFilter) activeFilterLabel = ' - ' + pricingFilter;
+        if (lossTypeFilter) activeFilterLabel = ' - ' + (lossTypeFilter === '__OTHER__' ? 'Other loss reasons' : (outcomeLabel[lossTypeFilter] || lossTypeFilter));
+        if (valueFilter) activeFilterLabel = ' - ' + (valueFilter === 'estimated_lost' ? 'Estimated lost value' : 'Known lost value');
+        var hasEvidenceFilter = drillFeat || lossTypeFilter || valueFilter || competitorFilter || pricingFilter;
+
+        html += '<div class="wl-evidence-section">' +
+            '<button class="wl-evidence-toggle" onclick="window._wlExpanded=!window._wlExpanded;buildWinLoss()" aria-expanded="' + expanded + '">' +
+                '<span class="wl-section-label-new">Deal Evidence' + esc(activeFilterLabel) + '</span>' +
+                '<span class="wl-evidence-chevron">' + (expanded ? '&#9650;' : '&#9660;') + '</span>' +
+            '</button>';
+
+        if (expanded) {
+            html += '<div class="wl-deal-tabs">' +
+                '<button class="wl-deal-tab' + (dealView === 'ALL' ? '' : ' wl-deal-tab--inactive') + '" onclick="_wlSetEvidenceOutcome(\'ALL\')">All (' + allCount + ')</button>' +
+                '<button class="wl-deal-tab' + (dealView === 'WON' ? '' : ' wl-deal-tab--inactive') + '" onclick="_wlSetEvidenceOutcome(\'WON\')">Won (' + wonCount + ')</button>' +
+                '<button class="wl-deal-tab' + (dealView === 'LOST' ? '' : ' wl-deal-tab--inactive') + '" onclick="_wlSetEvidenceOutcome(\'LOST\')">Lost (' + lostCount + ')</button>';
+            if (hasEvidenceFilter) {
+                html += '<button class="wl-deal-tab wl-deal-tab--inactive" onclick="_wlClearEvidenceFilters()" style="margin-left:auto;color:#f87171;border-color:rgba(248,113,113,0.3)">Clear filter &times;</button>';
+            }
+            html += '</div>';
+
+            html += '<div class="wl-evidence-toolbar">' +
+                '<span class="wl-evidence-mode-label">Group by</span>' +
+                '<div class="wl-evidence-mode-pills">' +
+                    '<button type="button" class="wl-evidence-mode-pill' + (evidenceMode === 'mentions' ? ' active' : '') + '" onclick="_wlSetEvidenceMode(\'mentions\')">Feature mentions</button>' +
+                    '<button type="button" class="wl-evidence-mode-pill' + (evidenceMode === 'accounts' ? ' active' : '') + '" onclick="_wlSetEvidenceMode(\'accounts\')">Accounts</button>' +
+                '</div>' +
+            '</div>';
+
+            var sourceCards = [];
+            filtered.forEach(function(d) {
+                var dealName = _wlCleanName(d.name);
+                var dealMeta = d.outcome + ' · ' + (d.amount > 0 ? _wlFmtText(d.amount, d.amount_estimated) : '$0');
+                function addSourceCard(text, tag, featureName) {
+                    if (!text) return;
+                    sourceCards.push({
+                        deal: dealName,
+                        meta: dealMeta,
+                        quote: text,
+                        tag: tag || d.outcome,
+                        feature: featureName || '',
+                        reason: d.loss_reason || d.win_reason || d.close_lost_reason_field || ''
+                    });
+                }
+
+                if (drillFeat) {
+                    (d.features_mentioned || []).forEach(function(f) {
+                        if (f.feature === drillFeat) {
+                            addSourceCard(f.quote || d.loss_reason || d.win_reason, f.sentiment || d.outcome, f.feature);
+                        }
+                    });
+                } else if (pricingFilter) {
+                    (d.pricing_signals || []).forEach(function(ps) {
+                        if (typeof ps === 'object' && (ps.reason || ps.category || 'Other') === pricingFilter) {
+                            addSourceCard(ps.quote || ps.detail || d.loss_reason || d.win_reason, 'pricing', pricingFilter);
+                        }
+                    });
+                } else if (competitorFilter) {
+                    (d.competitors_mentioned || []).forEach(function(c) {
+                        var compName = typeof c === 'object' ? (c.competitor || c.name || '') : String(c);
+                        if (compName === competitorFilter) addSourceCard((typeof c === 'object' && (c.quote || c.detail)) || d.loss_reason || d.win_reason, competitorFilter, compName);
+                    });
+                } else if (lossTypeFilter || valueFilter) {
+                    addSourceCard(d.loss_reason || d.win_reason || d.close_lost_reason_field, d.outcome, d.loss_outcome_type || d.outcome);
+                } else {
+                    (d.features_mentioned || []).forEach(function(f) {
+                        if (f.feature && f.feature !== 'NEEDS_REVIEW') {
+                            addSourceCard(f.quote, f.sentiment || d.outcome, f.feature);
+                        }
+                    });
+                }
+            });
+
+            if (evidenceMode === 'mentions') {
+                if (sourceCards.length === 0) {
+                    html += '<div class="wl-matrix-empty-text" style="padding:1rem 1.5rem;text-align:left">No feature mentions match this filter.</div>';
+                } else {
+                    html += '<div class="wl-source-strip wl-source-strip--mentions">' +
+                    '<div class="wl-source-head">' +
+                        '<div class="wl-source-title">' + (drillFeat ? 'Feature Mentions' : 'Evidence Mentions') + esc(activeFilterLabel) + '</div>' +
+                        '<div class="wl-source-count">' + sourceCards.length + ' mention' + (sourceCards.length !== 1 ? 's' : '') + '</div>' +
+                    '</div><div class="wl-source-grid">';
+                    sourceCards.forEach(function(card) {
+                        html += '<div class="wl-source-card wl-source-card--mention">' +
+                        '<div class="wl-source-card-head">' +
+                            '<span class="wl-source-deal">' + esc(card.deal) + '</span>' +
+                            '<span>' + esc(card.meta) + '</span>' +
+                        '</div>' +
+                        '<div class="wl-source-quote">"' + esc(card.quote) + '"</div>' +
+                        '<div class="wl-source-meta">' +
+                            (card.feature ? '<span class="wl-source-pill">' + esc(card.feature) + '</span>' : '') +
+                            '<span class="wl-source-pill">' + esc(card.tag) + '</span>' +
+                            (card.reason ? '<span class="wl-source-pill">' + esc(card.reason).slice(0, 80) + '</span>' : '') +
+                        '</div>' +
+                    '</div>';
+                    });
+                    html += '</div></div>';
+                }
+            } else {
+                html += '<div class="wl-deal-list">';
+
+                if (filtered.length === 0) {
+                    html += '<div class="wl-matrix-empty-text" style="padding:1rem 1.5rem;text-align:left">No deals match this filter.</div>';
+                }
+                filtered.forEach(function(d, idx) {
+                    var name = _wlCleanName(d.name);
+                    var amtLabel = d.amount > 0 ? _wlFmt(d.amount, d.amount_estimated) : (d.outcome === 'LOST' ? '<span class="wl-est-dim">~$6k est.</span>' : '$0');
+                    var repName  = (d.rep_email || '').split('@')[0].replace('.', ' ');
+                    var noteDate = d.notes && d.notes[0] && d.notes[0].createdate
+                        ? new Date(d.notes[0].createdate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+                        : d.closedate ? d.closedate.slice(0,10) : '';
+                    var feats  = (d.features_mentioned   || []).filter(function(f){ return f.feature && f.feature !== 'NEEDS_REVIEW'; });
+                    var comps  = (d.competitors_mentioned || []);
+                    var pricing = (d.pricing_signals     || []);
+
+                    html += '<details class="wl-deal-item"' + (hasEvidenceFilter && idx < 3 ? ' open' : '') + '>' +
+                        '<summary class="wl-deal-summary">' +
+                            '<div class="wl-deal-summary-left">' +
+                                '<span class="wl-deal-dot wl-deal-dot--' + d.outcome.toLowerCase() + '"></span>' +
+                                '<span class="wl-deal-name">' + esc(name) + '</span>' +
+                                (d.loss_outcome_type && d.outcome === 'LOST' && d.loss_outcome_type !== 'unknown'
+                                    ? '<span class="wl-outcome-tag">' + esc(d.loss_outcome_type.replace(/_/g,' ')) + '</span>' : '') +
+                            '</div>' +
+                            '<div class="wl-deal-summary-right">' +
+                                amtLabel +
+                                '<span class="wl-deal-rep">' + esc(repName) + '</span>' +
+                                '<span class="wl-deal-date">' + esc(noteDate) + '</span>' +
+                            '</div>' +
+                        '</summary>' +
+                        '<div class="wl-deal-body">';
+
+                    if (d.win_reason)  html += '<div class="wl-deal-reason wl-deal-reason--won">&uarr; ' + esc(d.win_reason) + '</div>';
+                    if (d.loss_reason) html += '<div class="wl-deal-reason wl-deal-reason--lost">&darr; ' + esc(d.loss_reason) + '</div>';
+
+                    feats.forEach(function(f) {
+                        html += '<div class="wl-deal-feat">' +
+                            '<span class="wl-deal-feat-name">' + esc(f.feature) + '</span>' +
+                            '<span class="wl-deal-feat-sent wl-sent-' + (f.sentiment || 'neutral') + '">' + (f.sentiment || '') + '</span>' +
+                            (f.quote ? '<span class="wl-deal-quote-text">"' + esc(f.quote) + '"</span>' : '') +
+                        '</div>';
+                    });
+
+                    pricing.forEach(function(ps) {
+                        if (typeof ps === 'object') {
+                            html += '<div class="wl-deal-pricing">' +
+                                '<span class="wl-deal-pricing-icon">$</span>' +
+                                '<span>' + esc(ps.reason || '') + (ps.quote ? ': "' + esc(ps.quote) + '"' : '') + '</span>' +
+                            '</div>';
+                        }
+                    });
+
+                    if (comps.length > 0) {
+                        html += '<div class="wl-deal-comps">Competitors: ' + comps.map(function(c){ return esc(typeof c === 'object' ? (c.competitor || c.name || c) : c); }).join(', ') + '</div>';
+                    }
+                    if (d.close_lost_reason_field) html += '<div class="wl-deal-hs-reason">HubSpot: ' + esc(d.close_lost_reason_field) + '</div>';
+
+                    html += '</div></details>'; // deal-body, deal-item
+                });
+                html += '</div>'; // deal-list
+            }
+        }
+        html += '</div>'; // evidence-section
+    }
+
+    // ── FOOTNOTES ─────────────────────────────────────────────────────
+    html += '<div class="wl-footnotes">';
+    if (S.estimate_basis) html += '<p>' + esc(S.estimate_basis) + '</p>';
+    html += '<p>Dollar values are "associated deal value". The combined value of deals where a signal appeared. Not causal attribution. ' +
+        '<span class="wl-legend-swatch wl-legend-swatch--known"></span> known &nbsp;' +
+        '<span class="wl-legend-swatch wl-legend-swatch--est"></span> estimated (~)</p>';
+    html += '</div>';
+
+    html += '</div>'; // wl-page
+    el.innerHTML = html;
+}
+
+// ── drill helper ────────────────────────────────────────────────────────
+function _wlDrillFeature(featureName, preferredOutcome) {
+    window._wlExpanded = true;
+    window._wlDrillFeat = featureName;
+    window._wlDealView = preferredOutcome || 'LOST';
+    window._wlEvidenceMode = 'mentions';
+    window._wlLossTypeFilter = null;
+    window._wlValueFilter = null;
+    window._wlCompetitorFilter = null;
+    window._wlPricingFilter = null;
+    buildWinLoss();
+    _wlScrollEvidence();
 }
 
 // Init -- parse hash for exclusions, date range, and tab, then build

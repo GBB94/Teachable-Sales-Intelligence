@@ -22,7 +22,9 @@ sys.path.insert(0, REPO_DIR)
 TEMPLATE_PATH = os.path.join(REPO_DIR, "dashboard_template.html")
 OUTPUT_DIR = os.path.join(REPO_DIR, "test_output")
 OUTPUT_PATH = os.path.join(OUTPUT_DIR, "index.html")
+FEATURES_PATH = os.path.join(OUTPUT_DIR, "features.json")
 PERF_PATH = os.path.join(OUTPUT_DIR, "performance.json")
+WIN_LOSS_PATH = os.path.join(OUTPUT_DIR, "win_loss.json")
 
 
 def _extract_json_at(html: str, marker: str) -> dict | None:
@@ -56,8 +58,30 @@ def load_performance() -> dict | None:
         return json.load(f)
 
 
-def render_dashboard(data: dict, perf: dict | None, segment_defs: dict | None) -> str:
-    """Inject DATA, PERF, and SEGMENT_DEFS into dashboard_template.html."""
+def load_dashboard_data(existing_html: str) -> dict | None:
+    """Load canonical dashboard DATA, preferring the generated features JSON."""
+    if os.path.exists(FEATURES_PATH):
+        with open(FEATURES_PATH) as f:
+            print(f"  Using canonical data: {FEATURES_PATH}")
+            return json.load(f)
+    return extract_data_from_html(existing_html)
+
+
+def load_win_loss() -> dict | None:
+    if not os.path.exists(WIN_LOSS_PATH):
+        print(f"  INFO: {WIN_LOSS_PATH} not found. WIN_LOSS will be null.")
+        return None
+    with open(WIN_LOSS_PATH) as f:
+        data = json.load(f)
+    if data.get("dry_run"):
+        print("  INFO: win_loss.json is a dry-run preview. WIN_LOSS will be null.")
+        return None
+    return data
+
+
+def render_dashboard(data: dict, perf: dict | None, segment_defs: dict | None,
+                     win_loss: dict | None = None) -> str:
+    """Inject DATA, PERF, SEGMENT_DEFS, and WIN_LOSS into dashboard_template.html."""
     # Bake Clay prospecting snapshot if available
     try:
         from lib.clay import get_snapshot, get_seed_companies
@@ -76,6 +100,7 @@ def render_dashboard(data: dict, perf: dict | None, segment_defs: dict | None) -
     html = html.replace("{{DATA_JSON}}", json.dumps(data))
     html = html.replace("{{PERFORMANCE_JSON}}", json.dumps(perf) if perf else "null")
     html = html.replace("{{SEGMENT_DEFS_JSON}}", json.dumps(segment_defs) if segment_defs else "{}")
+    html = html.replace("{{WIN_LOSS_JSON}}", json.dumps(win_loss) if win_loss else "null")
     return html
 
 
@@ -89,7 +114,7 @@ def main():
     with open(OUTPUT_PATH) as f:
         existing_html = f.read()
 
-    data = extract_data_from_html(existing_html)
+    data = load_dashboard_data(existing_html)
     if not data:
         print("ERROR: Could not extract DATA from existing index.html.")
         sys.exit(1)
@@ -100,7 +125,8 @@ def main():
         segment_defs = {}
 
     perf = load_performance()
-    html = render_dashboard(data, perf, segment_defs)
+    win_loss = load_win_loss()
+    html = render_dashboard(data, perf, segment_defs, win_loss)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     with open(OUTPUT_PATH, "w") as f:
