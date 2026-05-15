@@ -4457,7 +4457,13 @@ body {
     font-size: 0.72rem;
     font-weight: 700;
 }
-.md-filters { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.md-filters-wrap { margin-bottom: 1.25rem; }
+.md-filters-wrap summary { list-style: none; }
+.md-filters-wrap summary::-webkit-details-marker { display: none; }
+.md-filters-toggle { cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600; color: #8b8fa3; padding: 0.5rem 0; user-select: none; }
+.md-filters-toggle:hover { color: #c8cad4; }
+.md-filters-chevron { font-size: 0.6rem; color: #5a5e72; }
+.md-filters { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.5rem; }
 .md-filter-group { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
 .md-filter-label {
     font-size: 0.7rem; color: #5a5e72; text-transform: uppercase; letter-spacing: 0.05em;
@@ -13468,7 +13474,10 @@ function buildMyDeals() {
     }
     h += '</div>';
 
-    // Filter controls
+    // Filter controls (collapsible)
+    var filtersOpen = window._mdFiltersOpen !== false; // open by default
+    h += '<details class="md-filters-wrap"' + (filtersOpen ? ' open' : '') + ' ontoggle="window._mdFiltersOpen=this.open">';
+    h += '<summary class="md-filters-toggle">Filters <span class="md-filters-chevron">' + (filtersOpen ? '&#9650;' : '&#9660;') + '</span></summary>';
     h += '<div class="md-filters">';
 
     // Date filter
@@ -13532,6 +13541,7 @@ function buildMyDeals() {
     }
 
     h += '</div>';
+    h += '</details>';
 
     // Deals list
     h += '<div class="md-section">';
