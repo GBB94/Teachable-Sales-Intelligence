@@ -3,7 +3,8 @@
 Fetch closed-won and closed-lost deals from HubSpot and write win_loss.json.
 
 Feature signals come from HubSpot structured close-time fields only:
-  - product_feedback dropdown (27 confirmed options, multi-select)
+  - notes = closed-won deal narrative
+  - loss_reason = Product Limitation marks product-limitation scope
   - notes_on_customer_feedback (stored verbatim)
 Competitor and loss type data come from structured HubSpot fields.
 No Anthropic API key required for default operation.
@@ -81,6 +82,7 @@ PRODUCT_FEEDBACK_OPTIONS = {
     "EU Data Residency (Regional Data Hosting Requirement)",
     "Embedded Learning Experience (No Separate Login)",
 }
+UNCLASSIFIED_PRODUCT_LIMITATION_FEATURE = "Product Limitation - Needs Review"
 # Only applied to Sales pipeline lost deals (Discovery stage or later by definition,
 # since Discovery is the first stage in the Sales pipeline). Pre Sales deals are
 # excluded by pipeline filter. Substance gating (MIN_NOTE_CHARS) further ensures
@@ -106,6 +108,7 @@ KEYWORD_OVERRIDE_TERMS = {
     'custom domain', 'white label', 'sso', 'saml', 'org hierarchy', 'reporting',
     'certificate', 'mobile app', 'api', 'webhook', 'salesforce', 'integration',
     'multi-tenant', 'organization',
+    'product limitation', 'prerequisite', 'push notification', 'wishlist',
 }
 
 
@@ -153,8 +156,10 @@ def pull_closed_deals(token: str, since: datetime, outcome_ids: dict) -> list[di
             "hubspot_owner_id", "pipeline", "createdate",
             "hs_closed_lost_reason",
             # Structured deal properties (primary signal source when populated)
+            "notes",                  # closed-won narrative field
             "notes_on_customer_feedback",
             "product_feedback",       # multi-select
+            "loss_reason",
             "loss_type",
             "kb_or_pd_deal",
             "uses_competitor_platform",
@@ -250,6 +255,95 @@ _FEATURE_KEYWORD_MAP = {
     "regional data": "EU Data Residency (Regional Data Hosting Requirement)",
     "embedded learning": "Embedded Learning Experience (No Separate Login)",
     "no separate login": "Embedded Learning Experience (No Separate Login)",
+    "prerequisite": "Course Sequencing / Completion Gating",
+    "prerequisites": "Course Sequencing / Completion Gating",
+    "lock course": "Course Sequencing / Completion Gating",
+    "locked course": "Course Sequencing / Completion Gating",
+    "sequential course": "Course Sequencing / Completion Gating",
+    "in-person course": "Hybrid Scheduling",
+    "in person course": "Hybrid Scheduling",
+    "on-site class": "Hybrid Scheduling",
+    "onsite class": "Hybrid Scheduling",
+    "hybrid": "Hybrid Scheduling",
+    "push notification": "Push Notifications",
+    "push notifications": "Push Notifications",
+    "targeted notification": "Push Notifications",
+    "segmented push": "Push Notifications",
+    "wishlist": "Wishlist / Favorites",
+    "wish list": "Wishlist / Favorites",
+    "favorites": "Wishlist / Favorites",
+    "save course": "Wishlist / Favorites",
+    "bookmark": "Wishlist / Favorites",
+    "tracking capabilities": "Completion Tracking",
+    "track completion": "Completion Tracking",
+    "tracking completion": "Completion Tracking",
+    "time spent on specific videos": "Completion Tracking",
+    "accountability tracking": "Completion Tracking",
+    "high levels of accountability": "Completion Tracking",
+    "custom work": "Custom Implementation / Expert Services",
+    "expert services": "Custom Implementation / Expert Services",
+    "build their tool internally": "Custom Implementation / Expert Services",
+    "manga": "Manga / Document Reader",
+    "pdf formatting": "Manga / Document Reader",
+    "community-first": "Community Features",
+    "home for her community": "Community Features",
+    "audience lives": "Community Features",
+    "discord": "Community Features",
+    "facebook groups": "Community Features",
+    "direct/group messaging": "Direct Messaging",
+    "group chats": "Direct Messaging",
+    "whatsapp-style": "Direct Messaging",
+    "coaching calendar": "Hybrid Scheduling",
+    "upcoming sessions": "Hybrid Scheduling",
+    "habit tracker": "Coaching Accountability",
+    "diary-style": "Coaching Accountability",
+    "call logging": "Completion Tracking",
+    "track completed sessions": "Completion Tracking",
+    "white label app": "White Label Mobile App",
+    "language functionality": "Localization / Multi-language Support",
+    "language functionalitaty": "Localization / Multi-language Support",
+    "marketplace": "Marketplace / Student Acquisition",
+    "bring students": "Marketplace / Student Acquisition",
+    "guarantees on registrations": "Marketplace / Student Acquisition",
+    "conversion tracking": "Reporting Dashboard",
+    "4k video": "Video Hosting",
+    "h.265": "Video Hosting",
+    "hevc": "Video Hosting",
+    "flac audio": "Video Hosting",
+    "youtube shopping": "YouTube Shopping Integration",
+    "shopify product tagging": "YouTube Shopping Integration",
+    "zapier reliability": "Zapier Integration",
+    "zapier automations": "Zapier Integration",
+    "embedding questions into videos": "Interactive Video",
+    "questions into videos": "Interactive Video",
+    "quiz question types": "Quiz Question Types",
+    "question/answer types": "Quiz Question Types",
+    "technical assessments": "Quiz / Assessment Builder",
+    "technical assessment": "Quiz / Assessment Builder",
+    "one attempt only": "Quiz / Assessment Builder",
+    "minimum passing score": "Quiz / Assessment Builder",
+    "only students who pass": "Registration Gating",
+    "higher level of customization": "Brand Customization",
+    "course builder customization": "Brand Customization",
+    "native automation": "Automation Features",
+    "native automation features": "Automation Features",
+    "integrate with our website shopify": "Embedded Course Widget",
+    "integrate with our website": "Embedded Course Widget",
+    "separate site": "One-Click Access (No Login Required)",
+    "stripe express dashboard": "Stripe Express Dashboard Limitations",
+    "main stripe dashboard": "Stripe Express Dashboard Limitations",
+    "organizations feature": "Organizations / Multi-tenancy",
+    "custom student experience": "Per-Student Course Customization by Coach",
+    "tags/metadata": "Quiz-Based Routing & Enrollment",
+    "automatically route": "Quiz-Based Routing & Enrollment",
+    "guided sequence": "Learning Paths",
+    "no catalog browsing": "Learning Paths",
+    "duolingo-style": "Learning Paths",
+    "ai-contect": "AI Course Generation",
+    "ai-content": "AI Course Generation",
+    "ai content": "AI Course Generation",
+    "ai platform": "AI Course Generation",
+    "help them create videos": "AI Course Generation",
 }
 
 
@@ -303,6 +397,15 @@ def _extract_features_from_notes(feedback_notes: str, outcome: str) -> list[dict
         }
         for name, quote in found.items()
     ]
+
+
+def _short_feedback_quote(text: str, limit: int = 280) -> str:
+    """Return a compact, readable excerpt from customer feedback notes."""
+    clean = re.sub(r"\s+", " ", text or "").strip()
+    if len(clean) <= limit:
+        return clean
+    trimmed = clean[:limit].rsplit(" ", 1)[0].strip()
+    return trimmed + "..."
 
 
 def _note_hash(note_objects: list) -> str:
@@ -418,6 +521,10 @@ def _build_deal_property_text(props: dict) -> str:
     notes so the extraction model sees structured signals first.
     """
     lines = []
+    won_notes = (props.get("notes") or "").strip()
+    if won_notes:
+        lines.append(f"Won Notes (structured): {won_notes}")
+
     feedback = (props.get("notes_on_customer_feedback") or "").strip()
     if feedback:
         lines.append(f"Customer Feedback (structured): {feedback}")
@@ -952,6 +1059,7 @@ def main():
     # Classify outcomes
     # Exclude all deals owned by excluded reps (non-sales roles, skew the data)
     EXCLUDE_OWNER_EMAILS = {"jerome.olaloye@teachable.com"}
+    EXCLUDE_DEAL_NAMES = {"edge factor"}  # outlier accounts that skew the data
     ALLOWED_LEAD_SOURCES = {"inbound", "outbound", "referral"}
 
     classified_deals = []
@@ -968,19 +1076,31 @@ def main():
             outcome = "LOST"
         else:
             continue
+        # Exclude specific deal names (case-insensitive)
+        deal_name = (props.get("dealname") or "").strip()
+        if deal_name.lower() in EXCLUDE_DEAL_NAMES:
+            continue
 
-        # Filter by lead source (only inbound, outbound, referral)
+        product_limitation_scope_override = (
+            outcome == "LOST"
+            and (props.get("loss_reason") or "").strip().lower() == "product limitation"
+        )
+
+        # Filter by lead source (only inbound, outbound, referral), but never
+        # drop a HubSpot-marked Product Limitation loss. Those are the source
+        # of truth for product-gap coverage.
         lead_source = (props.get("lead_source") or "").strip().lower()
-        if lead_source and lead_source not in ALLOWED_LEAD_SOURCES:
+        if lead_source and lead_source not in ALLOWED_LEAD_SOURCES and not product_limitation_scope_override:
             excluded_by_lead_source += 1
             continue
 
-        # Check owner exclusion by email (deterministic, no name-parsing fragility)
+        # Check owner exclusion by email (deterministic, no name-parsing fragility),
+        # again preserving any Product Limitation loss.
         owner_id = props.get("hubspot_owner_id", "")
         owner_info = owners.get(owner_id, {})
         owner_email = (owner_info.get("email") or "").lower()
         owner_name = owner_info.get("name", "")
-        if owner_email in EXCLUDE_OWNER_EMAILS:
+        if owner_email in EXCLUDE_OWNER_EMAILS and not product_limitation_scope_override:
             logger.debug("Excluding deal owned by %s (%s)", owner_name, owner_email)
             excluded_by_owner += 1
             continue
@@ -1022,8 +1142,10 @@ def main():
                 "close_lost_reason": props.get("hs_closed_lost_reason"),
                 "deal_property_text": deal_prop_text,
                 "structured_properties": {
+                    "notes": props.get("notes"),
                     "notes_on_customer_feedback": props.get("notes_on_customer_feedback"),
                     "product_feedback": props.get("product_feedback"),
+                    "loss_reason": props.get("loss_reason"),
                     "loss_type": props.get("loss_type"),
                     "kb_or_pd_deal": props.get("kb_or_pd_deal"),
                     "uses_competitor_platform": props.get("uses_competitor_platform"),
@@ -1070,13 +1192,24 @@ def main():
         props = raw_deal.get("properties", {})
         amount, is_estimated = deal_amounts[did]
 
-        # Substance gate: feedback notes OR substantive engagement notes
+        # Substance gate: outcome-specific close notes OR substantive engagement notes.
+        # Closed-won deals use the HubSpot deal property named "notes"; closed-lost
+        # product feedback uses "notes_on_customer_feedback".
+        close_won_notes = _sanitize_note(props.get("notes") or "")
         feedback_notes = _sanitize_note(props.get("notes_on_customer_feedback") or "")
+        primary_close_notes = close_won_notes if outcome == "WON" else feedback_notes
+        primary_close_notes_field = "notes" if outcome == "WON" else "notes_on_customer_feedback"
         eng_notes = deal_notes.get(did, [])
         supporting_text = _build_supporting_notes_text(eng_notes) if eng_notes else ""
-        combined_text = feedback_notes + " " + supporting_text
+        combined_text = primary_close_notes + " " + supporting_text
+        hubspot_loss_reason = (props.get("loss_reason") or "").strip()
+        product_limitation_marked = (
+            outcome == "LOST"
+            and hubspot_loss_reason.lower() == "product limitation"
+        )
 
-        if len(combined_text.strip()) < MIN_NOTE_CHARS \
+        if not product_limitation_marked \
+                and len(combined_text.strip()) < MIN_NOTE_CHARS \
                 and not _note_has_keyword_override(combined_text):
             continue
 
@@ -1093,14 +1226,33 @@ def main():
             except (ValueError, AttributeError):
                 closedate = closedate_raw[:10] if len(closedate_raw) >= 10 else closedate_raw
 
-        # ── Feature gaps: from notes_on_customer_feedback only ─────────────
-        combined_features = _extract_features_from_notes(feedback_notes, outcome)
+        product_feedback_raw = (props.get("product_feedback") or "").strip()
+        product_feedback_markers = _parse_product_feedback(product_feedback_raw)
+
+        # ── Feature signals: won deals use won notes; lost feature gaps are
+        # marker-first and only use notes after HubSpot says Product Limitation.
+        if outcome == "WON" or product_limitation_marked:
+            combined_features = _extract_features_from_notes(primary_close_notes, outcome)
+        else:
+            combined_features = []
+        if product_limitation_marked and not combined_features:
+            combined_features = [{
+                "feature": UNCLASSIFIED_PRODUCT_LIMITATION_FEATURE,
+                "sentiment": "negative",
+                "source": "feedback_notes",
+                "loss_causal": True,
+                "quote": _short_feedback_quote(feedback_notes) or "No customer feedback note captured.",
+                "needs_review": True,
+            }]
 
         # ── Competitor / loss type from structured HubSpot fields ────────
         comp_platform = (props.get("competitor_platform") or "").strip()
         competitors_mentioned = [comp_platform] if comp_platform else []
         loss_type_raw = (props.get("loss_type") or "").strip().lower().replace(" ", "_")
-        loss_outcome_type = loss_type_raw if loss_type_raw else ("unknown" if outcome == "LOST" else None)
+        if product_limitation_marked:
+            loss_outcome_type = "product_gap"
+        else:
+            loss_outcome_type = loss_type_raw if loss_type_raw else ("unknown" if outcome == "LOST" else None)
 
         if outcome == "WON":
             analyzed_won += 1
@@ -1170,9 +1322,15 @@ def main():
             "lead_source": props.get("lead_source"),
             "close_lost_reason_field": props.get("hs_closed_lost_reason"),
             "kb_or_pd_deal": props.get("kb_or_pd_deal"),
+            "hubspot_loss_reason": hubspot_loss_reason,
             "loss_type": props.get("loss_type"),
+            "product_limitation_marked": product_limitation_marked,
+            "product_feedback_marker_count": len(product_feedback_markers),
             "competitor_platform": props.get("competitor_platform"),
+            "close_won_notes": close_won_notes,
             "notes_on_customer_feedback": feedback_notes,
+            "primary_close_notes": primary_close_notes,
+            "primary_close_notes_field": primary_close_notes_field,
             "features_mentioned": combined_features,
             "competitors_mentioned": competitors_mentioned,
             "pricing_signals": [],

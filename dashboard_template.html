@@ -4157,6 +4157,353 @@ body {
     .wl-kpi-value { font-size: 1.6rem; }
 }
 
+/* ====== My Deals view ====== */
+.md-page { padding: 1.5rem 0; }
+.md-header { margin-bottom: 1.5rem; }
+.md-title { font-size: 1.3rem; font-weight: 700; color: #e5e7eb; margin-bottom: 0.25rem; }
+.md-subtitle { font-size: 0.82rem; color: #5a5e72; }
+.md-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.md-kpi {
+    background: #12141c; border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px; padding: 1rem 1.25rem; position: relative; overflow: hidden;
+}
+.md-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.md-kpi--won::before { background: linear-gradient(90deg, #34d399, transparent); }
+.md-kpi--lost::before { background: linear-gradient(90deg, #f87171, transparent); }
+.md-kpi-label { font-size: 0.72rem; color: #5a5e72; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+.md-kpi-value { font-size: 1.5rem; font-weight: 700; color: #e5e7eb; font-variant-numeric: tabular-nums; }
+.md-kpi--won .md-kpi-value { color: #34d399; }
+.md-kpi--lost .md-kpi-value { color: #f87171; }
+.md-section { margin-bottom: 2rem; }
+.md-section-title {
+    font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.md-section-title--won { color: #34d399; }
+.md-section-title--lost { color: #f87171; }
+.md-deal {
+    background: #12141c; border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 8px; margin-bottom: 0.5rem; overflow: hidden;
+    transition: border-color 0.15s;
+}
+.md-deal:hover { border-color: rgba(255,255,255,0.08); }
+.md-deal-header {
+    display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+    cursor: pointer; user-select: none;
+}
+.md-deal-arrow {
+    font-size: 0.6rem; color: #5a5e72; transition: transform 0.2s; flex-shrink: 0; width: 12px;
+}
+.md-deal.open .md-deal-arrow { transform: rotate(90deg); }
+.md-deal-name {
+    flex: 1; font-size: 0.88rem; font-weight: 500; color: #c8cad2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.md-deal-meta { display: flex; gap: 1rem; align-items: center; flex-shrink: 0; }
+.md-deal-amount { font-size: 0.82rem; font-weight: 600; color: #e5e7eb; font-variant-numeric: tabular-nums; }
+.md-deal-amount--est { color: #5a5e72; }
+.md-deal-date { font-size: 0.75rem; color: #5a5e72; }
+.md-deal-rep { font-size: 0.75rem; color: #4a5568; }
+.md-deal-badge {
+    font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+}
+.md-deal-badge--won { background: rgba(52,211,153,0.1); color: #34d399; }
+.md-deal-badge--lost { background: rgba(248,113,113,0.1); color: #f87171; }
+.md-deal-body {
+    max-height: 0; overflow: hidden; transition: max-height 0.25s ease, padding 0.15s;
+    padding: 0 1rem; border-top: 0px solid transparent;
+}
+.md-deal.open .md-deal-body {
+    max-height: 600px; padding: 0.75rem 1rem 1rem; border-top: 1px solid rgba(255,255,255,0.04);
+}
+.md-deal-notes-label { font-size: 0.72rem; color: #5a5e72; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.4rem; }
+.md-deal-notes {
+    font-size: 0.82rem; color: #8b8fa3; line-height: 1.55; white-space: pre-wrap;
+    background: rgba(255,255,255,0.02); border-radius: 6px; padding: 0.6rem 0.8rem;
+}
+.md-deal-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.6rem; }
+.md-deal-tag {
+    font-size: 0.68rem; padding: 2px 7px; border-radius: 4px;
+    background: rgba(74,108,247,0.08); color: #6b7cff;
+}
+.md-deal-tag--competitor { background: rgba(240,192,64,0.08); color: #f0c040; }
+.md-deal-tag--loss { background: rgba(248,113,113,0.06); color: #f87171; }
+.md-note-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    scroll-snap-type: y proximity;
+}
+.md-note-card {
+    background: linear-gradient(145deg, #151822 0%, #10131b 100%);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    min-height: min(620px, calc(100vh - 190px));
+    padding: 1.4rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 1.25rem;
+    scroll-snap-align: start;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+.md-note-main { min-width: 0; display: flex; flex-direction: column; gap: 1rem; }
+.md-note-kicker {
+    font-size: 0.72rem;
+    color: #6b7cff;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+.md-note-title-row { display: flex; align-items: flex-start; gap: 0.9rem; }
+.md-note-title { flex: 1; font-size: 1.45rem; line-height: 1.15; color: #f3f4f6; font-weight: 700; }
+.md-note-slide {
+    color: #6b7084;
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    padding-top: 0.25rem;
+}
+.md-note-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    color: #8b8fa3;
+    font-size: 0.78rem;
+}
+.md-note-pill {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 4px 9px;
+    background: rgba(255,255,255,0.025);
+}
+.md-note-pill--loss { color: #fca5a5; border-color: rgba(248,113,113,0.2); background: rgba(248,113,113,0.055); }
+.md-note-feedback {
+    flex: 1;
+    color: #d9dbe5;
+    font-size: clamp(1rem, 1.6vw, 1.22rem);
+    line-height: 1.72;
+    white-space: pre-wrap;
+    background: rgba(5,7,12,0.34);
+    border: 1px solid rgba(255,255,255,0.055);
+    border-radius: 12px;
+    padding: 1.15rem 1.25rem;
+}
+.md-note-empty {
+    color: #6b7084;
+    font-style: italic;
+}
+.md-note-aside {
+    border-left: 1px solid rgba(255,255,255,0.06);
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.md-note-side-block { display: flex; flex-direction: column; gap: 0.45rem; }
+.md-note-side-label {
+    font-size: 0.68rem;
+    color: #5a5e72;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+.md-note-side-value { color: #c8cad2; font-size: 0.9rem; line-height: 1.45; }
+.md-note-feature-list, .md-note-comp-list { display: flex; flex-wrap: wrap; gap: 0.38rem; }
+.md-note-feature {
+    font-size: 0.72rem;
+    color: #b9c3ff;
+    background: rgba(107,124,255,0.1);
+    border: 1px solid rgba(107,124,255,0.22);
+    border-radius: 999px;
+    padding: 4px 9px;
+}
+.md-note-comp {
+    font-size: 0.72rem;
+    color: #f6d989;
+    background: rgba(240,192,64,0.08);
+    border: 1px solid rgba(240,192,64,0.18);
+    border-radius: 999px;
+    padding: 4px 9px;
+}
+.md-source-note {
+    color: #6b7084;
+    font-size: 0.76rem;
+    line-height: 1.45;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 0.75rem;
+}
+.md-review-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+.md-summary-card {
+    background: rgba(18,20,28,0.84);
+    border: 1px solid rgba(255,255,255,0.055);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+}
+.md-summary-label {
+    color: #6b7084;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+.md-summary-value {
+    color: #f3f4f6;
+    font-size: 1.3rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+.md-summary-sub { color: #6b7084; font-size: 0.76rem; margin-top: 0.2rem; }
+.md-review-layout {
+    display: grid;
+    grid-template-columns: 270px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+.md-review-index {
+    position: sticky;
+    top: 0.75rem;
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+    background: rgba(15,17,23,0.78);
+    border: 1px solid rgba(255,255,255,0.055);
+    border-radius: 12px;
+    padding: 0.75rem;
+}
+.md-index-title {
+    color: #8b9eff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+}
+.md-index-list { display: flex; flex-direction: column; gap: 0.35rem; }
+.md-index-link {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 0.55rem 0.6rem;
+    cursor: pointer;
+    color: #9ca3af;
+    font-family: 'DM Sans', sans-serif;
+}
+.md-index-link:hover {
+    background: rgba(255,255,255,0.035);
+    border-color: rgba(255,255,255,0.06);
+    color: #e5e7eb;
+}
+.md-index-name {
+    display: block;
+    color: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 0.2rem;
+}
+.md-index-meta {
+    display: flex;
+    gap: 0.4rem;
+    color: #5a5e72;
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+}
+.md-signal-filter-row {
+    align-items: flex-start;
+}
+.md-signal-filter-row .md-filter-label {
+    padding-top: 0.35rem;
+}
+.md-note-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.15rem;
+}
+.md-note-nav-btn {
+    border: 1px solid rgba(255,255,255,0.075);
+    background: rgba(255,255,255,0.035);
+    color: #c8cad2;
+    border-radius: 8px;
+    padding: 0.48rem 0.7rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+.md-note-nav-btn:hover:not(:disabled) {
+    border-color: rgba(107,124,255,0.35);
+    color: #f3f4f6;
+    background: rgba(107,124,255,0.1);
+}
+.md-note-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+.md-note-marker {
+    color: #7dd3fc;
+    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(56,189,248,0.18);
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+.md-filters { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.md-filter-group { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.md-filter-label {
+    font-size: 0.7rem; color: #5a5e72; text-transform: uppercase; letter-spacing: 0.05em;
+    font-weight: 600; min-width: 70px;
+}
+.md-filter-pill {
+    font-size: 0.75rem; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);
+    background: transparent; color: #6b7084; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+}
+.md-filter-pill:hover { border-color: rgba(255,255,255,0.12); color: #c8cad2; }
+.md-filter-pill.active {
+    background: rgba(74,108,247,0.12); border-color: rgba(74,108,247,0.3); color: #8b9eff; font-weight: 600;
+}
+.md-empty { text-align: center; color: #3a3e52; padding: 2rem; font-size: 0.88rem; }
+.md-pw-gate { display: flex; align-items: center; justify-content: center; min-height: 320px; }
+.md-pw-card {
+    background: #16181f; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 2.5rem; width: 340px; text-align: center;
+}
+.md-pw-input {
+    width: 100%; box-sizing: border-box; background: #0f1117;
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+    padding: 10px 14px; color: #e5e7eb; font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif; outline: none; margin-bottom: 8px;
+}
+.md-pw-btn {
+    width: 100%; padding: 10px; border-radius: 8px; border: none;
+    background: #e5e7eb; color: #0f1117; font-weight: 600; font-size: 0.88rem;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+}
+@media (max-width: 780px) { .md-kpi-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 900px) {
+    .md-review-summary { grid-template-columns: 1fr 1fr; }
+    .md-review-layout { grid-template-columns: 1fr; }
+    .md-review-index { position: static; max-height: none; }
+    .md-note-card { grid-template-columns: 1fr; min-height: 0; }
+    .md-note-aside { border-left: 0; border-top: 1px solid rgba(255,255,255,0.06); padding-left: 0; padding-top: 1rem; }
+}
+@media (max-width: 500px) {
+    .md-kpi-row { grid-template-columns: 1fr; }
+    .md-review-summary { grid-template-columns: 1fr; }
+    .md-note-card { padding: 1rem; }
+    .md-note-title { font-size: 1.15rem; }
+}
+
 /* Overview mid row */
 .ov-mid-row {
     display: grid;
@@ -4358,6 +4705,7 @@ body {
         <div class="tab" data-tab="prospecting" data-tooltip="Target accounts and outreach signals" onclick="switchTab('prospecting')">Prospecting <svg class="tab-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
         <div class="tab" data-tab="performance" data-tooltip="Rep and pipeline performance metrics" onclick="switchTab('performance')">Performance</div>
         <div class="tab" data-tab="winloss" data-tooltip="Win/loss analysis with revenue-weighted signals" onclick="switchTab('winloss')">Win/Loss</div>
+        <div class="tab" data-tab="mydeals" data-tooltip="Your closed-lost customer feedback notes" onclick="switchTab('mydeals')">My Deals <svg class="tab-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
     </div>
     <div class="assumptions-bar" id="assumptions-bar" onclick="toggleAssumptions()">
         <span class="assumptions-bar-icon">&#9432;</span>
@@ -4367,14 +4715,14 @@ body {
     </div>
     <div class="assumptions-body" id="assumptions-body">
         <ul>
-            <li><strong>AI extraction:</strong> All feature mentions, sentiment, and signals are extracted by Claude from call transcripts. Accuracy depends on transcript quality and model interpretation.</li>
-            <li><strong>Transcript source:</strong> Recordings come from Fireflies.ai. Calls without recordings or with poor audio are excluded automatically.</li>
+            <li><strong>Features, Calls, Reports:</strong> Feature mentions, sentiment, and signals are extracted by Claude from Fireflies.ai call transcripts. Accuracy depends on transcript quality and model interpretation. Calls without recordings or with poor audio are excluded.</li>
+            <li><strong>Win/Loss:</strong> Signals come from HubSpot deal properties: closed-won Notes, closed-lost customer feedback notes, product-limitation markers, and competitor fields. No call transcripts are used. Dollar values are associative, not causal. They show the combined value of deals where a signal appeared, not proof the signal caused the outcome.</li>
+            <li><strong>Estimated deal values:</strong> Deals missing an amount are estimated at $6,000 (base enterprise cost). Marked with ~ throughout.</li>
+            <li><strong>Personas:</strong> Buyer personas are inferred by AI from job title, language, and conversation context. They are not CRM-verified.</li>
+            <li><strong>Competitors:</strong> Competitor data comes from two sources: AI extraction from call transcripts (Competitors tab) and HubSpot structured fields (Win/Loss tab). A prospect mentioning a competitor does not confirm they are using or evaluating that product.</li>
+            <li><strong>Performance:</strong> Pipeline and activity metrics come from HubSpot CRM and Mixmax. Data syncs periodically, so recent activity may not yet be reflected.</li>
+            <li><strong>Prospecting:</strong> Account and contact data is sourced from Clay. Enrichment accuracy depends on Clay's upstream data providers.</li>
             <li><strong>Sentiment is directional:</strong> Positive/negative/neutral labels reflect tone in context, not objective product quality. A "negative" mention may be constructive feedback.</li>
-            <li><strong>Win/Loss values are associative, not causal:</strong> Dollar figures show the combined value of deals where a signal appeared. They do not prove the signal caused the outcome.</li>
-            <li><strong>Estimated values use median backfill:</strong> Deals missing an amount are estimated from the median of their pipeline stage. Marked with ~ throughout.</li>
-            <li><strong>Persona classification is inferred:</strong> Buyer personas are assigned by AI based on title, language, and context. They are not CRM-verified.</li>
-            <li><strong>Competitor mentions are not endorsements:</strong> A prospect mentioning a competitor does not confirm they are using or evaluating that product.</li>
-            <li><strong>Performance metrics lag:</strong> HubSpot and Mixmax data syncs periodically. Recent activity may not yet be reflected.</li>
         </ul>
     </div>
     <div class="filter-row" id="filter-row">
@@ -4413,6 +4761,7 @@ body {
     <div id="prospecting-view" style="display:none"></div>
     <div id="performance-view" style="display:none"></div>
     <div id="winloss-view" style="display:none"></div>
+    <div id="mydeals-view" style="display:none"></div>
 </div>
 
 <div id="perf-drawer" class="perf-drawer" hidden role="region" aria-label="Rep detail"></div>
@@ -5784,6 +6133,8 @@ var _featInitialized = false;   // Whether the scaffold (KPI bar, filters, table
 // ---- Data pipeline: getFilteredFeatures() ----
 function getFilteredFeatures() {
     let data = [..._featAllData];
+    // Hide NEEDS_REVIEW category by default (banner still shows count)
+    data = data.filter(f => f.category !== 'NEEDS_REVIEW');
     const q = (document.getElementById('q') ? document.getElementById('q').value : '').toLowerCase();
 
     // Segment filter: narrow each feature's mentions to matching segments,
@@ -8483,10 +8834,11 @@ function buildPersonas() {
         });
     });
 
-    // Sort segments by call count desc, NEEDS_REVIEW always last
+    // Hide NEEDS_REVIEW segment by default (banner still shows count)
+    delete segGroups['NEEDS_REVIEW'];
+
+    // Sort segments by call count desc
     const sortedSegs = Object.entries(segGroups).sort((a, b) => {
-        if (a[0] === 'NEEDS_REVIEW') return 1;
-        if (b[0] === 'NEEDS_REVIEW') return -1;
         return b[1].calls.length - a[1].calls.length;
     });
 
@@ -9965,6 +10317,7 @@ function switchTab(tab) {
     const isProsp  = (tab === 'prospecting');
     const isPerf   = (tab === 'performance');
     const isWL     = (tab === 'winloss');
+    const isMD     = (tab === 'mydeals');
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.getElementById('features-view').style.display = tab === 'features' ? '' : 'none';
     document.getElementById('calls-view').style.display = tab === 'calls' ? '' : 'none';
@@ -9974,8 +10327,9 @@ function switchTab(tab) {
     document.getElementById('prospecting-view').style.display = isProsp ? '' : 'none';
     document.getElementById('performance-view').style.display = isPerf ? '' : 'none';
     document.getElementById('winloss-view').style.display     = isWL  ? '' : 'none';
-    document.getElementById('filter-row').style.display = (isProsp || isPerf || isWL) ? 'none' : '';
-    document.querySelector('.search-box').style.display = (isReport || isProsp || isPerf || isWL || tab === 'personas' || tab === 'competitors') ? 'none' : '';
+    document.getElementById('mydeals-view').style.display     = isMD  ? '' : 'none';
+    document.getElementById('filter-row').style.display = (isProsp || isPerf || isWL || isMD) ? 'none' : '';
+    document.querySelector('.search-box').style.display = (isReport || isProsp || isPerf || isWL || isMD || tab === 'personas' || tab === 'competitors') ? 'none' : '';
     document.getElementById('co-dd').style.display = (tab === 'features' || tab === 'personas' || tab === 'reports') ? '' : 'none';
     document.getElementById('seg-dd').style.display = (tab === 'features' || tab === 'calls' || tab === 'personas' || tab === 'competitors' || tab === 'reports') ? '' : 'none';
     document.getElementById('comp-filter-dd').style.display = tab === 'competitors' ? '' : 'none';
@@ -9998,6 +10352,7 @@ function switchTab(tab) {
     if (tab === 'prospecting') buildProspecting();
     if (tab === 'performance') buildPerformance();
     if (tab === 'winloss')     buildWinLoss();
+    if (tab === 'mydeals')     buildMyDeals();
 }
 
 function filter(q) {
@@ -12664,6 +13019,561 @@ function _wlRenderFeatureCostDonut(centerValue, segments) {
     return html;
 }
 
+function _wlPrimaryCloseNotes(d) {
+    return (d.primary_close_notes || (d.outcome === 'WON' ? d.close_won_notes : d.notes_on_customer_feedback) || '').trim();
+}
+function _wlPrimaryCloseNotesLabel(d) {
+    if (d.primary_close_notes_field === 'notes' || (d.outcome === 'WON' && d.close_won_notes)) return 'HubSpot notes';
+    return 'Customer feedback notes';
+}
+
+// ====== My Deals customer feedback review ======
+
+var _mdUnlocked = false;
+var _mdOutcomeFilter = 'LOST';
+var _mdReasonFilter = 'product_gap';
+var _mdRepFilter = 'mine';
+var _mdDaysFilter = 30;
+var _mdNeedFilter = 'all';
+var _mdQueueFilter = 'active';
+
+function mdSubmitPassword() {
+    var input = document.getElementById('md-pw-input');
+    var error = document.getElementById('md-pw-error');
+    if (!input || !input.value) return;
+    var pw = input.value.trim();
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw)).then(function(buf) {
+        fetch('/api/clay/verify-password', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({password: pw})
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.valid) {
+                _mdUnlocked = true;
+                buildMyDeals();
+            } else {
+                error.textContent = 'Incorrect password. Try again.';
+                input.style.borderColor = 'rgba(220,80,80,0.4)';
+                input.value = '';
+                input.focus();
+            }
+        }).catch(function() {
+            if (window._clayToken) {
+                _mdUnlocked = true;
+                buildMyDeals();
+            } else {
+                error.textContent = 'Connection error. Try again.';
+            }
+        });
+    });
+}
+
+function mdToggleDeal(id) {
+    var el = document.getElementById('md-deal-' + id);
+    if (el) el.classList.toggle('open');
+}
+
+function mdSetOutcome(val) { _mdOutcomeFilter = val; buildMyDeals(); }
+function mdSetReason(val) { _mdReasonFilter = val; buildMyDeals(); }
+function mdSetRep(val) { _mdRepFilter = val; buildMyDeals(); }
+function mdSetDays(val) { _mdDaysFilter = parseInt(val, 10); buildMyDeals(); }
+function mdSetNeed(val) { _mdNeedFilter = val; buildMyDeals(); }
+function mdSetQueue(val) { _mdQueueFilter = val === 'dismissed' ? 'dismissed' : 'active'; buildMyDeals(); }
+
+function _mdDismissKey() {
+    return 'tsi_mydeals_dismissed_v1';
+}
+
+function _mdLoadDismissed() {
+    try {
+        return JSON.parse(localStorage.getItem(_mdDismissKey()) || '{}') || {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function _mdSaveDismissed(map) {
+    try {
+        localStorage.setItem(_mdDismissKey(), JSON.stringify(map || {}));
+    } catch (e) {}
+}
+
+function mdDismissDeal(id) {
+    var dismissed = _mdLoadDismissed();
+    dismissed[id] = true;
+    _mdSaveDismissed(dismissed);
+    buildMyDeals();
+}
+
+function mdRestoreDeal(id) {
+    var dismissed = _mdLoadDismissed();
+    delete dismissed[id];
+    _mdSaveDismissed(dismissed);
+    buildMyDeals();
+}
+
+function mdJumpToDeal(id) {
+    var el = document.getElementById('md-deal-' + id);
+    if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+function mdGoToCard(direction, id) {
+    var cards = Array.prototype.slice.call(document.querySelectorAll('#mydeals-view .md-note-card'));
+    if (!cards.length) return;
+    var current = cards.findIndex(function(card) { return card.id === 'md-deal-' + id; });
+    if (current < 0) current = 0;
+    var next = direction === 'prev' ? Math.max(0, current - 1) : Math.min(cards.length - 1, current + 1);
+    cards[next].scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+function _mdBindKeyboard() {
+    if (window._mdKeysBound) return;
+    window._mdKeysBound = true;
+    document.addEventListener('keydown', function(event) {
+        if (typeof currentTab !== 'undefined' && currentTab !== 'mydeals') return;
+        var tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+        if (event.key !== 'ArrowDown' && event.key !== 'ArrowRight' && event.key !== 'ArrowUp' && event.key !== 'ArrowLeft') return;
+
+        var cards = Array.prototype.slice.call(document.querySelectorAll('#mydeals-view .md-note-card'));
+        if (!cards.length) return;
+        var current = 0;
+        cards.forEach(function(card, idx) {
+            if (card.getBoundingClientRect().top <= 120) current = idx;
+        });
+        var next = (event.key === 'ArrowUp' || event.key === 'ArrowLeft') ? Math.max(0, current - 1) : Math.min(cards.length - 1, current + 1);
+        cards[next].scrollIntoView({behavior: 'smooth', block: 'start'});
+        event.preventDefault();
+    });
+}
+
+function _mdFeedbackText(d) {
+    return (d.primary_close_notes || (d.outcome === 'WON' ? d.close_won_notes : d.notes_on_customer_feedback) || '').trim();
+}
+
+function _mdFeedbackLabel(d) {
+    return d.outcome === 'WON' ? 'Won deal notes' : 'Customer feedback note';
+}
+
+function _mdFeedbackEmptyText(d) {
+    return d.outcome === 'WON'
+        ? 'No HubSpot won notes captured for this deal.'
+        : 'No customer feedback note captured for this deal.';
+}
+
+function _mdFeatureName(f) {
+    return typeof f === 'object' ? (f.feature || '') : (f || '');
+}
+
+function _mdFeedbackFeatures(d) {
+    var feedback = _mdFeedbackText(d);
+    if (!feedback) return [];
+    var seen = {};
+    return (d.features_mentioned || []).filter(function(f) {
+        if (!f) return false;
+        var name = _mdFeatureName(f);
+        if (!name || seen[name]) return false;
+        var isNoteDerived = typeof f === 'string' || f.source === 'feedback_notes' || f.loss_causal === true || !!f.quote;
+        if (isNoteDerived) seen[name] = true;
+        return isNoteDerived;
+    });
+}
+
+function _mdHasProductLimitationMarker(d) {
+    var hubspotReason = (d.hubspot_loss_reason || '').toLowerCase();
+    if (hubspotReason === 'product limitation') return true;
+    if (d.product_limitation_marked === true) return true;
+
+    // Backward-compatible fallback for older win_loss.json files that do not
+    // yet include the marker fields. Rebuild data to make this marker-driven.
+    if (d.product_limitation_marked === undefined && d.hubspot_loss_reason === undefined) {
+        if ((d.product_feedback_marker_count || 0) > 0) return true;
+        if (typeof d.product_feedback === 'string' && d.product_feedback.trim()) return true;
+    }
+    return false;
+}
+
+function _mdGetLossCategory(d) {
+    var lt = (d.loss_type || '').toLowerCase();
+    if (_mdHasProductLimitationMarker(d)) return 'product_gap';
+    if (lt.indexOf('stalled') >= 0) return 'stalled';
+    if (lt.indexOf('bad qualification') >= 0) return 'bad_qualification';
+    if (lt.indexOf('contract') >= 0) return 'contract';
+    if (lt.indexOf('rejected') >= 0) return 'rejected_terms';
+    return 'other';
+}
+
+var _mdLossCategoryLabels = {
+    'all': 'All Reasons',
+    'product_gap': 'Product Limitation',
+    'rejected_terms': 'Rejected Terms',
+    'stalled': 'Stalled',
+    'bad_qualification': 'Bad Qualification',
+    'contract': 'Contract Not Signed',
+    'other': 'Other'
+};
+
+function buildMyDeals() {
+    var el = document.getElementById('mydeals-view');
+    if (!el) return;
+
+    // Password gate
+    if (!_mdUnlocked && !window._clayToken) {
+        el.innerHTML =
+            '<div class="md-pw-gate">' +
+            '<div class="md-pw-card">' +
+            '<svg style="width:32px;height:32px;margin-bottom:12px;opacity:0.4" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>' +
+            '<div style="color:#e5e7eb;font-weight:600;margin-bottom:4px">This view is protected</div>' +
+            '<div style="color:#4b5563;font-size:0.82rem;margin-bottom:1.25rem">Enter the dashboard password to continue</div>' +
+            '<input type="password" id="md-pw-input" class="md-pw-input" placeholder="Enter password" autocomplete="off" onkeydown="if(event.key===\'Enter\')mdSubmitPassword()">' +
+            '<div id="md-pw-error" style="font-size:0.78rem;min-height:1.2rem;margin-bottom:8px;color:rgba(220,80,80,0.9)"></div>' +
+            '<button class="md-pw-btn" onclick="mdSubmitPassword()">Confirm</button>' +
+            '</div></div>';
+        return;
+    }
+
+    if (!WIN_LOSS || !WIN_LOSS.deals || WIN_LOSS.deals.length === 0) {
+        el.innerHTML = '<div class="md-page"><div class="md-empty">No win/loss data available. Run fetch_lost_deals.py first.</div></div>';
+        return;
+    }
+    _mdBindKeyboard();
+
+    // Get deals within selected time window
+    var now = new Date();
+    var cutoffStr = '1970-01-01';
+    if (_mdDaysFilter > 0) {
+        var cutoff = new Date(now.getTime() - _mdDaysFilter * 24 * 60 * 60 * 1000);
+        cutoffStr = cutoff.toISOString().slice(0, 10);
+    }
+    var allRecent = WIN_LOSS.deals.filter(function(d) { return d.closedate >= cutoffStr; });
+
+    // Discover reps
+    var repEmails = {};
+    allRecent.forEach(function(d) {
+        var e = d.rep_email || '';
+        if (e) repEmails[e] = (repEmails[e] || 0) + 1;
+    });
+    var repList = Object.keys(repEmails).sort();
+    var myEmail = 'zach.mccall@teachable.com';
+
+    // Apply rep filter
+    var repFiltered = allRecent;
+    if (_mdRepFilter === 'mine') {
+        repFiltered = allRecent.filter(function(d) { return d.rep_email === myEmail; });
+    } else if (_mdRepFilter !== 'all') {
+        repFiltered = allRecent.filter(function(d) { return d.rep_email === _mdRepFilter; });
+    }
+
+    // Apply outcome filter
+    var filtered = repFiltered;
+    if (_mdOutcomeFilter === 'WON') {
+        filtered = repFiltered.filter(function(d) { return d.outcome === 'WON'; });
+    } else if (_mdOutcomeFilter === 'LOST') {
+        filtered = repFiltered.filter(function(d) { return d.outcome === 'LOST'; });
+    }
+
+    // Collect loss reason counts (from rep+outcome filtered set, for the reason filter pills)
+    var lostForReasons = repFiltered.filter(function(d) { return d.outcome === 'LOST'; });
+    var reasonCounts = {};
+    lostForReasons.forEach(function(d) {
+        var cat = _mdGetLossCategory(d);
+        reasonCounts[cat] = (reasonCounts[cat] || 0) + 1;
+    });
+
+    // Apply reason filter (only when viewing lost deals)
+    if (_mdOutcomeFilter === 'LOST' && _mdReasonFilter !== 'all') {
+        filtered = filtered.filter(function(d) { return _mdGetLossCategory(d) === _mdReasonFilter; });
+    }
+
+    var dismissedMap = _mdLoadDismissed();
+    var beforeNeedFilter = filtered.slice();
+    var needCounts = {};
+    beforeNeedFilter.forEach(function(d) {
+        _mdFeedbackFeatures(d).forEach(function(f) {
+            var name = _mdFeatureName(f);
+            if (name) needCounts[name] = (needCounts[name] || 0) + 1;
+        });
+    });
+    var needOrder = Object.keys(needCounts).sort(function(a, b) {
+        return needCounts[b] - needCounts[a] || a.localeCompare(b);
+    });
+    if (_mdNeedFilter !== 'all') {
+        filtered = filtered.filter(function(d) {
+            return _mdFeedbackFeatures(d).some(function(f) { return _mdFeatureName(f) === _mdNeedFilter; });
+        });
+    }
+
+    var beforeQueueFilter = filtered.slice();
+    var dismissedInScope = beforeQueueFilter.filter(function(d) { return dismissedMap[d.id]; }).length;
+    if (_mdQueueFilter === 'dismissed') {
+        filtered = filtered.filter(function(d) { return dismissedMap[d.id]; });
+    } else {
+        filtered = filtered.filter(function(d) { return !dismissedMap[d.id]; });
+    }
+
+    filtered.sort(function(a, b) { return b.closedate.localeCompare(a.closedate); });
+
+    // Review stats (from rep-filtered, before reason/signal filters)
+    var allLost = repFiltered.filter(function(d) { return d.outcome === 'LOST'; });
+    var productMarked = allLost.filter(function(d) { return _mdHasProductLimitationMarker(d); });
+    var productMarkedValue = productMarked.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+    var productMarkedWithNotes = productMarked.filter(function(d) { return !!_mdFeedbackText(d); }).length;
+    var productMarkedWithSignals = productMarked.filter(function(d) { return _mdFeedbackFeatures(d).length > 0; }).length;
+    var productMarkedDismissed = productMarked.filter(function(d) { return dismissedMap[d.id]; }).length;
+    var selectedValue = beforeQueueFilter.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+    var selectedNotesCount = beforeQueueFilter.filter(function(d) { return !!_mdFeedbackText(d); }).length;
+    var selectedSignalsCount = beforeQueueFilter.filter(function(d) { return _mdFeedbackFeatures(d).length > 0; }).length;
+    var selectedWonCount = beforeQueueFilter.filter(function(d) { return d.outcome === 'WON'; }).length;
+    var selectedLostCount = beforeQueueFilter.filter(function(d) { return d.outcome === 'LOST'; }).length;
+    var selectedWonValue = beforeQueueFilter
+        .filter(function(d) { return d.outcome === 'WON'; })
+        .reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+    var selectedLostValue = beforeQueueFilter
+        .filter(function(d) { return d.outcome === 'LOST'; })
+        .reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+
+    function fmt(v) { return '$' + v.toLocaleString('en-US', {maximumFractionDigits: 0}); }
+    function fmtDate(d) {
+        if (!d) return '';
+        var p = d.split('-');
+        return p.length >= 3 ? p[1] + '/' + p[2] + '/' + p[0].slice(2) : d;
+    }
+    function repName(email) {
+        if (!email) return '';
+        var name = email.split('@')[0].replace('.', ' ');
+        return name.split(' ').map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+    }
+    function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function renderDeal(d, idx, total) {
+        var feedback = _mdFeedbackText(d);
+        var feedbackLabel = _mdFeedbackLabel(d);
+        var hubspotLossReason = d.hubspot_loss_reason || '';
+        var lossReason = d.loss_reason || d.close_lost_reason_field || '';
+        var features = _mdFeedbackFeatures(d);
+        var competitors = (d.competitors_mentioned || []).filter(function(c) { return c && c !== 'Not Applicable'; });
+        var lossType = d.loss_type || '';
+        var lossCat = _mdGetLossCategory(d);
+        var isWon = d.outcome === 'WON';
+        var amountText = (d.amount_estimated ? '~' : '') + fmt(d.amount || 0);
+
+        var html = '<article class="md-note-card" id="md-deal-' + d.id + '">';
+        html += '<div class="md-note-main">';
+        html += '<div class="md-note-kicker">' + esc(feedbackLabel) + '</div>';
+        html += '<div class="md-note-title-row">';
+        html += '<div class="md-note-title">' + esc(d.name) + '</div>';
+        html += '<div class="md-note-slide">' + (idx + 1) + ' / ' + total + '</div>';
+        html += '</div>';
+
+        html += '<div class="md-note-meta">';
+        if (d.rep_email) html += '<span class="md-note-pill">' + esc(repName(d.rep_email)) + '</span>';
+        html += '<span class="md-note-pill">' + esc(amountText) + '</span>';
+        html += '<span class="md-note-pill">' + esc(fmtDate(d.closedate)) + '</span>';
+        if (!isWon && lossCat !== 'other') {
+            html += '<span class="md-note-pill md-note-pill--loss">' + esc(_mdLossCategoryLabels[lossCat] || lossCat) + '</span>';
+        }
+        html += '<span class="md-note-pill">' + esc(d.outcome) + '</span>';
+        html += '</div>';
+
+        if (feedback) {
+            html += '<div class="md-note-feedback">' + esc(feedback) + '</div>';
+        } else {
+            html += '<div class="md-note-feedback md-note-empty">' + esc(_mdFeedbackEmptyText(d)) + '</div>';
+        }
+        html += '<div class="md-note-actions">';
+        html += '<button class="md-note-nav-btn" onclick="mdGoToCard(\'prev\',\'' + d.id + '\')" ' + (idx === 0 ? 'disabled' : '') + '>Previous</button>';
+        html += '<button class="md-note-nav-btn" onclick="mdGoToCard(\'next\',\'' + d.id + '\')" ' + (idx >= total - 1 ? 'disabled' : '') + '>Next</button>';
+        if (dismissedMap[d.id]) {
+            html += '<button class="md-note-nav-btn" onclick="mdRestoreDeal(\'' + d.id + '\')">Restore</button>';
+        } else {
+            html += '<button class="md-note-nav-btn" onclick="mdDismissDeal(\'' + d.id + '\')">Dismiss</button>';
+        }
+        html += '</div>';
+        html += '</div>';
+
+        html += '<aside class="md-note-aside">';
+        if (d.rep_email) {
+            html += '<div class="md-note-side-block"><div class="md-note-side-label">Deal Owner</div><div class="md-note-side-value" style="font-weight:600">' + esc(repName(d.rep_email)) + '</div></div>';
+        }
+        if (isWon) {
+            html += '<div class="md-note-side-block"><div class="md-note-side-label">Source field</div><div class="md-note-side-value"><span class="md-note-marker">HubSpot Notes</span></div></div>';
+            html += '<div class="md-note-side-block"><div class="md-note-side-label">Outcome</div><div class="md-note-side-value">Closed won</div></div>';
+        } else {
+            html += '<div class="md-note-side-block"><div class="md-note-side-label">Marker</div><div class="md-note-side-value"><span class="md-note-marker">' + (_mdHasProductLimitationMarker(d) ? 'Product limitation marked' : 'No product limitation marker') + '</span></div></div>';
+            html += '<div class="md-note-side-block"><div class="md-note-side-label">HubSpot loss reason</div><div class="md-note-side-value">' + esc(hubspotLossReason || 'Not captured') + '</div></div>';
+            html += '<div class="md-note-side-block"><div class="md-note-side-label">HubSpot loss type</div><div class="md-note-side-value">' + esc(lossType || 'Not captured') + '</div></div>';
+            if (lossReason) {
+                html += '<div class="md-note-side-block"><div class="md-note-side-label">Closed lost reason</div><div class="md-note-side-value">' + esc(lossReason) + '</div></div>';
+            }
+        }
+        html += '<div class="md-note-side-block"><div class="md-note-side-label">' + (isWon ? 'Won note signals' : 'Product need signals') + '</div>';
+        if (features.length > 0) {
+            html += '<div class="md-note-feature-list">';
+            features.forEach(function(f) {
+                var fn = _mdFeatureName(f);
+                if (fn) html += '<span class="md-note-feature">' + esc(fn) + '</span>';
+            });
+            html += '</div>';
+        } else {
+            html += '<div class="md-note-side-value md-note-empty">No feature signal extracted from this note.</div>';
+        }
+        html += '</div>';
+        if (competitors.length > 0) {
+            html += '<div class="md-note-side-block"><div class="md-note-side-label">Competitors</div><div class="md-note-comp-list">';
+            competitors.forEach(function(c) {
+                var cn = typeof c === 'object' ? (c.competitor || c.name || '') : c;
+                if (cn) html += '<span class="md-note-comp">' + esc(cn) + '</span>';
+            });
+            html += '</div></div>';
+        }
+        html += '<div class="md-source-note">' + (isWon
+            ? 'Closed-won detail comes from the HubSpot Notes property shown in won-deal alerts.'
+            : 'Deal inclusion uses the product-limitation marker. Displayed product needs come from customer feedback notes, not the feature dropdown choices.') + '</div>';
+        html += '</aside>';
+        html += '</article>';
+        return html;
+    }
+
+    // Build filter bar
+    function jsArg(value) {
+        return String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+    function pill(label, value, currentVal, onclick) {
+        var active = value === currentVal;
+        return '<button class="md-filter-pill' + (active ? ' active' : '') + '" onclick="' + onclick + '(\'' + jsArg(value) + '\')">' + esc(label) + '</button>';
+    }
+    var ownerContext = _mdRepFilter === 'mine' ? 'Zach-owned' : (_mdRepFilter === 'all' ? 'selected owner set' : repName(_mdRepFilter));
+
+    var h = '<div class="md-page">';
+    h += '<div class="md-header">';
+    var periodLabel = _mdDaysFilter > 0 ? ('Last ' + _mdDaysFilter + ' days') : 'All time';
+    var pageTitle = _mdOutcomeFilter === 'WON'
+        ? 'My Deals: Closed-Won Notes'
+        : (_mdOutcomeFilter === 'LOST' ? 'My Deals: Product Limitation Review' : 'My Deals Review');
+    var pageSubtitle = _mdOutcomeFilter === 'WON'
+        ? periodLabel + '. Won cards use the HubSpot Notes property.'
+        : (_mdOutcomeFilter === 'LOST'
+            ? periodLabel + '. Marker decides which deals count; customer feedback notes supply the visible evidence.'
+            : periodLabel + '. Won cards use HubSpot Notes; lost product-limitations use customer feedback notes.');
+    h += '<div class="md-title">' + esc(pageTitle) + '</div>';
+    h += '<div class="md-subtitle">' + esc(pageSubtitle) + '</div>';
+    h += '</div>';
+
+    // Review summary
+    h += '<div class="md-review-summary">';
+    if (_mdOutcomeFilter === 'WON') {
+        h += '<div class="md-summary-card"><div class="md-summary-label">Won Deals</div><div class="md-summary-value">' + beforeQueueFilter.length + '</div><div class="md-summary-sub">' + esc(ownerContext) + ' closed-won deals</div></div>';
+        h += '<div class="md-summary-card"><div class="md-summary-label">Won Value</div><div class="md-summary-value">' + fmt(selectedValue) + '</div><div class="md-summary-sub">' + esc(periodLabel) + ' selected period</div></div>';
+        h += '<div class="md-summary-card"><div class="md-summary-label">Won Notes</div><div class="md-summary-value">' + selectedNotesCount + ' / ' + beforeQueueFilter.length + '</div><div class="md-summary-sub">HubSpot Notes captured</div></div>';
+        h += '<div class="md-summary-card"><div class="md-summary-label">Visible Cards</div><div class="md-summary-value">' + filtered.length + '</div><div class="md-summary-sub">' + selectedSignalsCount + ' cards with extracted signals</div></div>';
+    } else if (_mdOutcomeFilter === 'all') {
+        h += '<div class="md-summary-card"><div class="md-summary-label">Selected Deals</div><div class="md-summary-value">' + beforeQueueFilter.length + '</div><div class="md-summary-sub">' + selectedWonCount + ' won / ' + selectedLostCount + ' lost</div></div>';
+        h += '<div class="md-summary-card"><div class="md-summary-label">Selected Value</div><div class="md-summary-value">' + fmt(selectedValue) + '</div><div class="md-summary-sub">' + esc(periodLabel) + ' selected period</div></div>';
+        h += '<div class="md-summary-card"><div class="md-summary-label">Won Value</div><div class="md-summary-value">' + fmt(selectedWonValue) + '</div><div class="md-summary-sub">closed-won value</div></div>';
+        h += '<div class="md-summary-card"><div class="md-summary-label">Lost Value</div><div class="md-summary-value">' + fmt(selectedLostValue) + '</div><div class="md-summary-sub">closed-lost value</div></div>';
+    } else {
+        var allLostValue = allLost.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+        var plPct = allLost.length > 0 ? Math.round(productMarked.length / allLost.length * 100) : 0;
+        h += '<div class="md-summary-card"><div class="md-summary-label">Product Limitation</div><div class="md-summary-value">' + productMarked.length + ' / ' + allLost.length + '</div><div class="md-summary-sub">' + plPct + '% of ' + esc(ownerContext) + ' losses</div></div>';
+        h += '<div class="md-summary-card"><div class="md-summary-label">At-Risk Value</div><div class="md-summary-value">' + fmt(productMarkedValue) + '</div><div class="md-summary-sub">of ' + fmt(allLostValue) + ' total lost</div></div>';
+        h += '<div class="md-summary-card"><div class="md-summary-label">Feedback Notes</div><div class="md-summary-value">' + productMarkedWithNotes + ' / ' + productMarked.length + '</div><div class="md-summary-sub">cards with customer feedback</div></div>';
+        h += '<div class="md-summary-card"><div class="md-summary-label">Signals Extracted</div><div class="md-summary-value">' + productMarkedWithSignals + '</div><div class="md-summary-sub">' + productMarkedDismissed + ' reviewed / dismissed</div></div>';
+    }
+    h += '</div>';
+
+    // Filter controls
+    h += '<div class="md-filters">';
+
+    // Date filter
+    h += '<div class="md-filter-group">';
+    h += '<span class="md-filter-label">Queue</span>';
+    h += pill('Active', 'active', _mdQueueFilter, 'mdSetQueue');
+    h += pill('Dismissed (' + dismissedInScope + ')', 'dismissed', _mdQueueFilter, 'mdSetQueue');
+    h += '</div>';
+
+    // Date filter
+    h += '<div class="md-filter-group">';
+    h += '<span class="md-filter-label">Period</span>';
+    h += pill('7d', 7, _mdDaysFilter, 'mdSetDays');
+    h += pill('30d', 30, _mdDaysFilter, 'mdSetDays');
+    h += pill('90d', 90, _mdDaysFilter, 'mdSetDays');
+    h += pill('All Time', 0, _mdDaysFilter, 'mdSetDays');
+    h += '</div>';
+
+    // Rep filter
+    h += '<div class="md-filter-group">';
+    h += '<span class="md-filter-label">Rep</span>';
+    h += pill('My Deals', 'mine', _mdRepFilter, 'mdSetRep');
+    h += pill('All Reps', 'all', _mdRepFilter, 'mdSetRep');
+    repList.forEach(function(e) {
+        if (e === myEmail) return;
+        h += pill(repName(e), e, _mdRepFilter, 'mdSetRep');
+    });
+    h += '</div>';
+
+    // Outcome filter
+    h += '<div class="md-filter-group">';
+    h += '<span class="md-filter-label">Outcome</span>';
+    h += pill('All', 'all', _mdOutcomeFilter, 'mdSetOutcome');
+    h += pill('Won', 'WON', _mdOutcomeFilter, 'mdSetOutcome');
+    h += pill('Lost', 'LOST', _mdOutcomeFilter, 'mdSetOutcome');
+    h += '</div>';
+
+    // Loss reason filter (only visible when outcome=LOST)
+    if (_mdOutcomeFilter === 'LOST') {
+        h += '<div class="md-filter-group">';
+        h += '<span class="md-filter-label">Loss Reason</span>';
+        h += pill('All Reasons', 'all', _mdReasonFilter, 'mdSetReason');
+        var reasonOrder = ['product_gap', 'rejected_terms', 'stalled', 'bad_qualification', 'contract', 'other'];
+        reasonOrder.forEach(function(key) {
+            var count = reasonCounts[key] || 0;
+            if (count > 0) {
+                h += pill(_mdLossCategoryLabels[key] + ' (' + count + ')', key, _mdReasonFilter, 'mdSetReason');
+            }
+        });
+        h += '</div>';
+    }
+
+    if (needOrder.length > 0 || _mdNeedFilter !== 'all') {
+        h += '<div class="md-filter-group md-signal-filter-row">';
+        h += '<span class="md-filter-label">Note Signals</span>';
+        h += pill('All Signals', 'all', _mdNeedFilter, 'mdSetNeed');
+        needOrder.slice(0, 14).forEach(function(name) {
+            h += pill(name + ' (' + needCounts[name] + ')', name, _mdNeedFilter, 'mdSetNeed');
+        });
+        h += '</div>';
+    }
+
+    h += '</div>';
+
+    // Deals list
+    h += '<div class="md-section">';
+    var sectionLabel = _mdOutcomeFilter === 'all' ? 'All Deals' : (_mdOutcomeFilter === 'WON' ? 'Won' : 'Lost');
+    var sectionClass = _mdOutcomeFilter === 'WON' ? 'md-section-title--won' : (_mdOutcomeFilter === 'LOST' ? 'md-section-title--lost' : '');
+    h += '<div class="md-section-title ' + sectionClass + '">' + sectionLabel + ' (' + filtered.length + ')</div>';
+    if (filtered.length === 0) {
+        h += '<div class="md-empty">No matching deals.</div>';
+    } else {
+        h += '<div class="md-review-layout">';
+        h += '<aside class="md-review-index"><div class="md-index-title">Review Queue</div><div class="md-index-list">';
+        filtered.forEach(function(d, i) {
+            var amountText = (d.amount_estimated ? '~' : '') + fmt(d.amount || 0);
+            h += '<button class="md-index-link" onclick="mdJumpToDeal(\'' + d.id + '\')">' +
+                '<span class="md-index-name">' + esc((i + 1) + '. ' + d.name) + '</span>' +
+                '<span class="md-index-meta"><span>' + esc(fmtDate(d.closedate)) + '</span><span>' + esc(amountText) + '</span></span>' +
+            '</button>';
+        });
+        h += '</div></aside>';
+        h += '<div class="md-note-list">';
+        filtered.forEach(function(d, i) { h += renderDeal(d, i, filtered.length); });
+        h += '</div></div>';
+    }
+    h += '</div>';
+
+    h += '</div>';
+    el.innerHTML = h;
+}
+
 function buildWinLoss() {
     var el = document.getElementById('winloss-view');
     if (!el) return;
@@ -12774,7 +13684,7 @@ function buildWinLoss() {
 
     html += '</div>'; // wl-kpi-row
 
-    var outcomeLabel = {competitive_loss:'Competitive',no_decision:'No Decision',price_budget:'Price/Budget',product_gap:'Product Gap',timing:'Timing',bad_fit:'Bad Fit',unknown:'Unknown'};
+    var outcomeLabel = {competitive_loss:'Competitive',no_decision:'No Decision',price_budget:'Price/Budget',product_gap:'Product Limitation',timing:'Timing',bad_fit:'Bad Fit',unknown:'Unknown'};
     var outcomeColor = {competitive_loss:'#f87171',no_decision:'#94a3b8',price_budget:'#f0c040',product_gap:'#c084fc',timing:'#60a5fa',bad_fit:'#fb923c',unknown:'#4b5563'};
     window._wlLossOtherTypes = [];
     var rows = WIN_LOSS.feature_impact_rows || [];
@@ -13085,7 +13995,7 @@ function buildWinLoss() {
         var hasEvidenceFilter = drillFeat || lossTypeFilter || valueFilter || competitorFilter || pricingFilter;
 
         html += '<div class="wl-evidence-section">' +
-            '<button class="wl-evidence-toggle" onclick="window._wlExpanded=!window._wlExpanded;buildWinLoss()" aria-expanded="' + expanded + '">' +
+            '<button class="wl-evidence-toggle" onclick="window._wlExpanded=!window._wlExpanded;if(window._wlExpanded)window._wlEvidenceMode=\'accounts\';buildWinLoss()" aria-expanded="' + expanded + '">' +
                 '<span class="wl-section-label-new">Deal Evidence' + esc(activeFilterLabel) + '</span>' +
                 '<span class="wl-evidence-chevron">' + (expanded ? '&#9650;' : '&#9660;') + '</span>' +
             '</button>';
@@ -13112,6 +14022,7 @@ function buildWinLoss() {
             filtered.forEach(function(d) {
                 var dealName = _wlCleanName(d.name);
                 var dealMeta = d.outcome + ' · ' + (d.amount > 0 ? _wlFmtText(d.amount, d.amount_estimated) : '$0');
+                var primaryNotes = _wlPrimaryCloseNotes(d);
                 function addSourceCard(text, tag, featureName) {
                     if (!text) return;
                     sourceCards.push({
@@ -13120,7 +14031,7 @@ function buildWinLoss() {
                         quote: text,
                         tag: tag || d.outcome,
                         feature: featureName || '',
-                        reason: d.loss_reason || d.win_reason || d.close_lost_reason_field || ''
+                        reason: d.hubspot_loss_reason || d.loss_reason || d.win_reason || d.close_lost_reason_field || ''
                     });
                 }
 
@@ -13142,13 +14053,21 @@ function buildWinLoss() {
                         if (compName === competitorFilter) addSourceCard((typeof c === 'object' && (c.quote || c.detail)) || d.loss_reason || d.win_reason, competitorFilter, compName);
                     });
                 } else if (lossTypeFilter || valueFilter) {
-                    addSourceCard(d.loss_reason || d.win_reason || d.close_lost_reason_field, d.outcome, d.loss_outcome_type || d.outcome);
+                    addSourceCard(
+                        primaryNotes || d.loss_reason || d.win_reason || d.close_lost_reason_field || d.hubspot_loss_reason,
+                        d.hubspot_loss_reason || d.outcome,
+                        d.loss_outcome_type || d.outcome
+                    );
                 } else {
+                    var sourceCountBefore = sourceCards.length;
                     (d.features_mentioned || []).forEach(function(f) {
                         if (f.feature && f.feature !== 'NEEDS_REVIEW') {
                             addSourceCard(f.quote, f.sentiment || d.outcome, f.feature);
                         }
                     });
+                    if (d.outcome === 'WON' && sourceCards.length === sourceCountBefore) {
+                        addSourceCard(primaryNotes, _wlPrimaryCloseNotesLabel(d), 'Won notes');
+                    }
                 }
             });
 
@@ -13193,6 +14112,8 @@ function buildWinLoss() {
                     var feats  = (d.features_mentioned   || []).filter(function(f){ return f.feature && f.feature !== 'NEEDS_REVIEW'; });
                     var comps  = (d.competitors_mentioned || []);
                     var pricing = (d.pricing_signals     || []);
+                    var primaryNotes = _wlPrimaryCloseNotes(d);
+                    var primaryNotesLabel = _wlPrimaryCloseNotesLabel(d);
 
                     var portalId = WIN_LOSS.hubspot_portal_id || '50445500';
                     var hsLink = 'https://app.hubspot.com/contacts/' + portalId + '/deal/' + d.id;
@@ -13203,7 +14124,7 @@ function buildWinLoss() {
                                 '<span class="wl-deal-dot wl-deal-dot--' + d.outcome.toLowerCase() + '"></span>' +
                                 '<a href="' + hsLink + '" target="_blank" rel="noopener" class="wl-deal-name wl-deal-link" onclick="event.stopPropagation()" title="Open in HubSpot">' + esc(name) + ' &#8599;</a>' +
                                 (d.loss_outcome_type && d.outcome === 'LOST' && d.loss_outcome_type !== 'unknown'
-                                    ? '<span class="wl-outcome-tag">' + esc(d.loss_outcome_type.replace(/_/g,' ')) + '</span>' : '') +
+                                    ? '<span class="wl-outcome-tag">' + esc(outcomeLabel[d.loss_outcome_type] || d.loss_outcome_type.replace(/_/g,' ')) + '</span>' : '') +
                             '</div>' +
                             '<div class="wl-deal-summary-right">' +
                                 amtLabel +
@@ -13226,9 +14147,10 @@ function buildWinLoss() {
                         html += '</div>';
                     }
 
-                    // Customer feedback notes verbatim
-                    if (d.notes_on_customer_feedback) {
-                        html += '<blockquote class="wl-deal-feedback-quote">"' + esc(d.notes_on_customer_feedback) + '"</blockquote>';
+                    // Outcome-specific close notes verbatim
+                    if (primaryNotes) {
+                        html += '<div class="wl-deal-pricing"><strong>' + esc(primaryNotesLabel) + ':</strong></div>';
+                        html += '<blockquote class="wl-deal-feedback-quote">"' + esc(primaryNotes) + '"</blockquote>';
                     }
 
                     pricing.forEach(function(ps) {
@@ -13243,7 +14165,8 @@ function buildWinLoss() {
                     if (comps.length > 0) {
                         html += '<div class="wl-deal-comps">Competitors: ' + comps.map(function(c){ return esc(typeof c === 'object' ? (c.competitor || c.name || c) : c); }).join(', ') + '</div>';
                     }
-                    if (d.close_lost_reason_field) html += '<div class="wl-deal-hs-reason">HubSpot: ' + esc(d.close_lost_reason_field) + '</div>';
+                    if (d.hubspot_loss_reason) html += '<div class="wl-deal-hs-reason">HubSpot loss reason: ' + esc(d.hubspot_loss_reason) + '</div>';
+                    if (d.close_lost_reason_field) html += '<div class="wl-deal-hs-reason">HubSpot close-lost note: ' + esc(d.close_lost_reason_field) + '</div>';
 
                     html += '</div></details>'; // deal-body, deal-item
                 });
