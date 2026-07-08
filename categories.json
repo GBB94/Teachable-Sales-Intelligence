@@ -111,5 +111,57 @@
       ]
     }
   ],
-  "suggested_new_categories": []
+  "suggested_new_categories": [
+    {
+      "name": "Platform & Integrations",
+      "first_seen": "2026-07-02",
+      "count": 8,
+      "examples": [
+        "White Glove Onboarding",
+        "Data Backup / Restore",
+        "WCAG / Accessibility Compliance",
+        "PDF Accessibility Checker"
+      ]
+    },
+    {
+      "name": "Commerce & Checkout",
+      "first_seen": "2026-07-02",
+      "count": 2,
+      "examples": [
+        "Threshold-Based Cohort Enrollment (Kickstarter Model)"
+      ]
+    },
+    {
+      "name": "Customer Success & Services",
+      "first_seen": "2026-07-02",
+      "count": 2,
+      "examples": [
+        "White Glove Onboarding"
+      ]
+    },
+    {
+      "name": "Customer Success & Support",
+      "first_seen": "2026-07-02",
+      "count": 4,
+      "examples": [
+        "White Glove Onboarding"
+      ]
+    },
+    {
+      "name": "Compliance & Credentialing",
+      "first_seen": "2026-07-02",
+      "count": 2,
+      "examples": [
+        "PDF Content Accessibility Checker"
+      ]
+    },
+    {
+      "name": "Customer Success & Onboarding",
+      "first_seen": "2026-07-02",
+      "count": 2,
+      "examples": [
+        "White Glove Onboarding"
+      ]
+    }
+  ]
 }
