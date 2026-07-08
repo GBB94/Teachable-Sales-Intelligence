@@ -1,7 +1,9 @@
 # PROJECT STATUS
 
-**Last updated:** 2026-06-22
-**Updated by:** Codex (win/loss feature taxonomy audit)
+**Last updated:** 2026-07-08
+**Updated by:** Claude Opus 4.8 (HubSpot data refresh + 106-call analysis batch)
+
+**This session:** Refreshed HubSpot win/loss + performance data (fetch_lost_deals/fetch_performance, 180d). Ran full analysis workflow on 106 triaged calls via parallel Sonnet subagents (extract) + serial validate/inject: 67 calls yielded features, 39 were empty (no-shows/internal All-Hands/vendor demos: Storylane, Clay, Civic IQ), 43 junk marked. Dashboard now ~2,027 feature mentions. NEEDS_REVIEW surfaced off-taxonomy competitors (iSpring, Blackboard, LinkedIn Learning, Docebo, Google Classroom, Smart Horizons, LearnUpon, Learnify, Patreon, Scoops, EasyGenerator, +more) and suggested categories/segments (logged in categories.json/segments.json for review — NOT yet added canonical). 10 no-show calls retain a cosmetic pending flag (inject only clears it when features exist).
 
 ---
 
